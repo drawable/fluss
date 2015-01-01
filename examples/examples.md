@@ -32,9 +32,9 @@ We need
 * The input box for the new todo
 * A list of todos
 * A todo consisting of
-** The checkbox for un-/completing
-** The text
-** A button for deleting the todo
+    * The checkbox for un-/completing
+    * The text
+    * A button for deleting the todo
 * An indicator for how many todos are uncompleted
 * A button to clear the completed todos
 
