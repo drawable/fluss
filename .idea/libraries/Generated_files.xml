@@ -6,7 +6,10 @@
         <item url="file://$PROJECT_DIR$/examples/Todos_1/application.js" />
         <item url="file://$PROJECT_DIR$/src/plugins.js" />
         <item url="file://$PROJECT_DIR$/src/stream.js" />
+        <item url="file://$PROJECT_DIR$/examples/Todos_1/ui.js" />
         <item url="file://$PROJECT_DIR$/src/emitter.js" />
+        <item url="file://$PROJECT_DIR$/examples/Todos_1/actions.js" />
+        <item url="file://$PROJECT_DIR$/src/store.js" />
         <item url="file://$PROJECT_DIR$/src/errors.js" />
         <item url="file://$PROJECT_DIR$/src/baseActions.js" />
         <item url="file://$PROJECT_DIR$/src/dispatcher.js" />
@@ -14,11 +17,14 @@
       </sourceFilesUrls>
     </properties>
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/src/tools.js" />
       <root url="file://$PROJECT_DIR$/src/plugins.js" />
       <root url="file://$PROJECT_DIR$/examples/Todos_1/application.js" />
-      <root url="file://$PROJECT_DIR$/src/stream.js" />
       <root url="file://$PROJECT_DIR$/src/emitter.js" />
+      <root url="file://$PROJECT_DIR$/examples/Todos_1/ui.js" />
+      <root url="file://$PROJECT_DIR$/examples/Todos_1/actions.js" />
+      <root url="file://$PROJECT_DIR$/src/tools.js" />
+      <root url="file://$PROJECT_DIR$/src/stream.js" />
+      <root url="file://$PROJECT_DIR$/src/store.js" />
       <root url="file://$PROJECT_DIR$/src/errors.js" />
       <root url="file://$PROJECT_DIR$/src/baseActions.js" />
       <root url="file://$PROJECT_DIR$/src/dispatcher.js" />

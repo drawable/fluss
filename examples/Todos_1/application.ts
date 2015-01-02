@@ -1,3 +1,5 @@
+/// <reference path="../types/react.d.ts" />
+
 /**
  * Created by Stephan on 02.01.2015.
  */
@@ -7,6 +9,8 @@
 import BaseActions = require("../../src/baseActions");
 import Plugins = require("../../src/plugins");
 import Store = require("../../src/store");
+import UI = require("./ui");
+import Actions = require("./actions");
 
 class Application extends Plugins.PluginContainer {
 
@@ -22,17 +26,13 @@ class Application extends Plugins.PluginContainer {
 
 /**
  * This will create a new todo record
- * @param text
+ * @param title
  * @returns {IRecordStore}
  */
-function createTodo(text:string):Store.IRecordStore {
-    return Store.record({ text: text, complete: false });
+function createTodo(title:string):Store.IRecordStore {
+    return Store.record({ title: title, completed: false });
 }
 
-
-enum ACTIONS {
-    ADD_TODO = BaseActions.firstAction
-}
 
 class AddTodo extends Plugins.BasePlugin {
 
@@ -42,6 +42,25 @@ class AddTodo extends Plugins.BasePlugin {
 }
 
 
+class CompleteTodo extends Plugins.BasePlugin {
+    run(container:Application, action:number, todo:any) {
+        todo.completed = true;
+    }
+}
+
+class IncompleteTodo extends Plugins.BasePlugin {
+    run(container:Application, action:number, todo:any) {
+        todo.completed = false;
+    }
+}
+
+class CompleteAll extends Plugins.BasePlugin {
+    run(container:Application, action:number, todo:any) {
+        container.todos.forEach(function(todo) {
+            todo.completed = true;
+        })
+    }
+}
 
 /**
  * This creates a new application object
@@ -50,7 +69,22 @@ class AddTodo extends Plugins.BasePlugin {
 function createApplication() {
     var app = new Application();
 
-    app.wrap(ACTIONS.ADD_TODO, new AddTodo());
+    app.wrap(Actions.ACTIONS.ADD_TODO, new AddTodo());
+    app.wrap(Actions.ACTIONS.COMPLETE_TODO, new CompleteTodo());
+    app.wrap(Actions.ACTIONS.INCOMPLETE_TODO, new IncompleteTodo());
+    app.wrap(Actions.ACTIONS.COMPLETE_ALL, new CompleteAll());
 
     return app;
 }
+
+
+function init() {
+    var container = document.getElementById("todoapp");
+    var app = createApplication();
+
+    React["renderComponent"](UI.AppView({ todos: app.todos }), container);
+
+    Actions.addTodo("A new Todo");
+}
+
+init();

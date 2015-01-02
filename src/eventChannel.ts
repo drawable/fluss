@@ -5,7 +5,7 @@
 "use strict";
 
 import Emitter = require("./emitter");
-import Stream = require("stream");
+import Stream = require("./stream");
 
 export interface  IEventChannel {
     subscribe(emitter:string, event:any, handler:Emitter.FEventHandler)

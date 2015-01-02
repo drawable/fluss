@@ -4,7 +4,7 @@
 
 "use strict";
 
-import Dispatcher = require("dispatcher");
+import Dispatcher = require("./dispatcher");
 
 export enum ACTIONS  {
     __ANY__,

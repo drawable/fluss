@@ -4,8 +4,8 @@
 
 "use strict";
 
-import Tools = require("tools");
-import Stream = require("stream")
+import Tools = require("./tools");
+import Stream = require("./stream")
 
 export function isStore(thing):boolean {
     return thing instanceof RecordStore || thing instanceof ArrayStore;

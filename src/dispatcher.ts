@@ -4,9 +4,9 @@
 
 "use strict";
 
-import Errors = require("errors");
-import EventChannel = require("eventChannel");
-import Actions = require("baseActions");
+import Errors = require("./errors");
+import EventChannel = require("./eventChannel");
+import Actions = require("./baseActions");
 
 /**
  * Undoable. Base class for objects that can be restored from data.

@@ -4,7 +4,7 @@
 
 "use strict";
 
-import EventChannel = require("eventChannel");
+import EventChannel = require("./eventChannel");
 
 export interface IErrorHandler {
     error(message:string, that?:any);
