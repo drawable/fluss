@@ -1,0 +1,23 @@
+{
+  "name": "fluss-examples",
+  "version": "0.1.0",
+  "homepage": "https://github.com/drawable/fluss",
+  "authors": [
+    "Stephan Smola <Smola@farbspender.de>"
+  ],
+  "description": "Examples for fluss using todo mvc",
+  "moduleType": [
+    "node"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "todomvc-common": "~0.3.1"
+  }
+}

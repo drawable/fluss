@@ -9,7 +9,6 @@ export function elementPositionAndSize(element) {
     return { x: rect.left, y: rect.top, w: rect.width, h: rect.height };
 }
 
-
 var pfx = [
                 { id: "webkit", camelCase: true},
                 { id: "MS", camelCase: true},
