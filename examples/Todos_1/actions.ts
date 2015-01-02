@@ -11,7 +11,7 @@ export enum ACTIONS {
     ADD_TODO = 1000,
     COMPLETE_TODO,
     INCOMPLETE_TODO,
-    COMPLETE_ALL
+    TOGGLE_ALL
 }
 
 export function addTodo(title:string) {
@@ -26,7 +26,7 @@ export function incompleteTodo(todo) {
     Dispatcher.dispatch(ACTIONS.INCOMPLETE_TODO, todo);
 }
 
-export function completeAll() {
-    Dispatcher.dispatch(ACTIONS.COMPLETE_ALL);
+export function toggleAll(state:boolean) {
+    Dispatcher.dispatch(ACTIONS.TOGGLE_ALL, state);
 }
 

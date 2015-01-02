@@ -54,10 +54,10 @@ class IncompleteTodo extends Plugins.BasePlugin {
     }
 }
 
-class CompleteAll extends Plugins.BasePlugin {
-    run(container:Application, action:number, todo:any) {
+class ToggleAll extends Plugins.BasePlugin {
+    run(container:Application, action:number, state:boolean) {
         container.todos.forEach(function(todo) {
-            todo.completed = true;
+            todo.completed = state;
         })
     }
 }
@@ -72,7 +72,7 @@ function createApplication() {
     app.wrap(Actions.ACTIONS.ADD_TODO, new AddTodo());
     app.wrap(Actions.ACTIONS.COMPLETE_TODO, new CompleteTodo());
     app.wrap(Actions.ACTIONS.INCOMPLETE_TODO, new IncompleteTodo());
-    app.wrap(Actions.ACTIONS.COMPLETE_ALL, new CompleteAll());
+    app.wrap(Actions.ACTIONS.TOGGLE_ALL, new ToggleAll());
 
     return app;
 }

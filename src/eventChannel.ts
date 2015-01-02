@@ -143,7 +143,7 @@ class EventStream extends Stream.Stream {
 
     dispose() {
         super.dispose();
-        unsubscribe(this._emitterID, event, this._handler);
+        unsubscribe(this._emitterID, this._event, this._handler);
     }
 }
 

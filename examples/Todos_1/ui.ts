@@ -11,8 +11,30 @@ import Actions = require("./actions");
 
 export var AppView = React.createClass({
 
-    handleToggleAll: function() {
-        Actions.completeAll();
+    todoUpdates: null,
+
+    handleToggleAll: function(event) {
+        Actions.toggleAll(event.currentTarget.checked);
+        this.setState({ allChecked: event.currentTarget.checked })
+    },
+
+    componentDidMount: function() {
+        this.todoUpdates = this.props.todos.updates();
+
+        var that = this;
+        this.todoUpdates.filter(function(update) {
+            return update.item === "completed" && update.value === false;
+        }).forEach(function() {
+            that.setState({ allChecked: false })
+        })
+    },
+
+    componentWillUnmount: function() {
+        this.todoUpdates.dispose();
+    },
+
+    getInitialState: function() {
+        return { allChecked: false }
     },
 
     render: function () {
@@ -20,7 +42,7 @@ export var AppView = React.createClass({
             React.DOM.h1({}, "todos"),
             NewTodo({}),
             React.DOM.section({ id: "main"},
-                React.DOM.input({ type: "checkbox", id: "toggle-all", onClick: this.handleToggleAll }),
+                React.DOM.input({ type: "checkbox", id: "toggle-all", onClick: this.handleToggleAll, checked: this.state.allChecked }),
                 TodoList({ todos: this.props.todos })
             )
         )
@@ -69,7 +91,6 @@ var TodoList = React.createClass({
 
         var that = this;
         this.newTodos.forEach(function() {
-            console.log("new Todo");
             that.forceUpdate();
         })
     },

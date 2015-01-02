@@ -13,23 +13,33 @@ export function isStore(thing):boolean {
 
 
 export interface OUpdateInfo<T> {
+    path?:string;
     item:T;
     value:any;
     store:IStore
 }
 
-function createUpdateInfo<T>(item:T, value:any, store:IStore):OUpdateInfo<T> {
-    return {
+function createUpdateInfo<T>(item:T, value:any, store:IStore, path?:string):OUpdateInfo<T> {
+
+    var r = {
         item:item,
         value:value,
         store:store
+    };
+
+    if (path) {
+        r["path"] = path;
     }
+
+    return r;
 }
 
 export interface IStore {
     newItems():Stream.IStream;
     removedItems():Stream.IStream;
     updates():Stream.IStream;
+
+    immutable():IStore;
 }
 
 export interface IRecordStore extends IStore {
@@ -51,7 +61,7 @@ class Store implements IStore {
         this._updateStreams = [];
     }
 
-    private removeStream(list, stream) {
+    removeStream(list, stream) {
         var i = list.indexOf(stream);
         if (i !== -1) {
             list.splice(i, 1);
@@ -88,6 +98,10 @@ class Store implements IStore {
         });
         return s;
     }
+
+    immutable():IStore {
+        return null;
+    }
 }
 
 
@@ -95,6 +109,7 @@ class RecordStore extends Store implements IRecordStore {
 
     private _data;
     private _subStreams:{};
+    private _immutable:IStore;
 
     [n:string]:any;
 
@@ -123,7 +138,7 @@ class RecordStore extends Store implements IRecordStore {
             var that = this;
             subStream = value.updates();
             subStream.forEach(function(update) {
-                var info = createUpdateInfo<string>(name + "." + update.item, update.value, update.store);
+                var info = createUpdateInfo<string>(update.item, update.value, update.store, update.path ? name + "." + update.path : name + "." + update.item);
                 that._updateStreams.forEach(function(stream) {
                     stream.push(info);
                 })
@@ -190,7 +205,47 @@ class RecordStore extends Store implements IRecordStore {
             throw new Error("Unknown property '" + name + "'.");
         }
     }
+
+    immutable():IStore {
+        if (!this._immutable) {
+            this._immutable = new ImmutableRecord(this);
+        }
+
+        return this._immutable;
+    }
 }
+
+
+class ImmutableRecord extends Store {
+
+    constructor(private _record:IRecordStore) {
+        super();
+    }
+
+    immutable():IStore {
+        return this;
+    }
+
+    updates():Stream.IStream {
+        var parentStream = this._record.updates();
+
+        var stream = Stream.createStream();
+
+        parentStream.forEach(function(update) {
+            stream.push(update);
+        });
+
+        var that = this;
+        this._updateStreams.push(stream);
+        stream.onClose(function() {
+            that.removeStream(that._updateStreams, stream);
+        });
+
+        return stream;
+    }
+}
+
+
 
 function buildDeep(value:any):any {
     function getItem(value) {
@@ -408,7 +463,7 @@ class ArrayStore extends Store implements IArrayStore {
                 updates: value.updates()
             };
             substream.updates.forEach(function(update) {
-                var updateInfo = createUpdateInfo<string>(item + "." + update.item, update.value, that);
+                var updateInfo = createUpdateInfo<string>(update.item, update.value, that, update.path ? item + "." + update.path : item + "." + update.item);
                 that._updateStreams.forEach(function(stream) {
                     stream.push(updateInfo);
                 })
