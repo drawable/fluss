@@ -24,7 +24,7 @@ fluss uses CommonJS modules to ease the transition from the frontend to the back
 
 ## Getting started
 
-### Create stores ...
+Create stores ...
 
     var todos = Store.array();
     todos.push(Store.record( { id: 0, title: "learn fluss...", completed: false } );
@@ -33,7 +33,7 @@ fluss uses CommonJS modules to ease the transition from the frontend to the back
         console.log(todo.title + " is " + (todo.completed ? "done" : "active"));
     });
 
-### ... and use streams to observe changes
+... and use streams to observe changes
 
     todos.updates()
          .filter(function(update) {
@@ -46,7 +46,7 @@ fluss uses CommonJS modules to ease the transition from the frontend to the back
 
     todos[0].completed = true;
 
-### Create a container for plugins
+Create a container for plugins
 
     class Application extends Plugins.PluginContainer {
 
@@ -59,7 +59,7 @@ fluss uses CommonJS modules to ease the transition from the frontend to the back
 
     var application = new Application();
 
-### Create a plugin...
+Create a plugin...
 
     class AddTodo extends Plugins.BasePlugin {
 
@@ -68,15 +68,14 @@ fluss uses CommonJS modules to ease the transition from the frontend to the back
         }
     }
 
-### ... add it to your application...
+... add it to your application...
 
     var NEW_TODO:number = 1000;
     application.wrap(NEW_TODO, new AddTodo());
 
-### ... and execute the action
+... and execute the action
 
     Dispatcher.dispatch(NEW_TODO, "... and make an awesome app with it");
-
 
 
 ## A full example
