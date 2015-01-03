@@ -118,6 +118,77 @@ describe("Data stores", function () {
 
             expect(calls["sub.2.x"]).to.equal(20);
         });
+
+        it("provide a immutable proxy that supports all reading methods including the streams for update, new items and removed items", function() {
+            var store:any = Store.record({ a: 1, b: "x"} );
+            var imm:any = store.immutable;
+            var calls = {};
+
+            imm.updates().forEach(function(update) {
+                calls[update.item] = update.value;
+            });
+
+            imm.newItems().forEach(function(update) {
+                calls[update.item] = update.value;
+            });
+
+            imm.removedItems().forEach(function(update) {
+                calls[update.item] = update.value;
+            });
+
+            expect(store.a).to.equal(imm.a);
+            expect(store.b).to.equal(imm.b);
+
+            store.a = 12;
+            expect(store.a).to.equal(imm.a);
+            expect(calls["a"]).to.equal(12);
+
+            store.removeItem("b");
+            expect(calls["b"]).to.equal(null);
+
+            store.addItem("z", 42);
+            expect(calls["z"]).to.equal(42);
+            expect(store.z).to.equal(imm.z);
+
+            imm.a = 100;
+            expect(store.a).to.equal(imm.a);
+            expect(imm.a).to.equal(12);
+        });
+
+        it("will return immutable substores by it's immutable proxy", function() {
+            var store = Store.record();
+            var sub = Store.record({ a: 1 });
+            store.addItem("sub", sub);
+
+            var imm = store.immutable;
+            expect(Store.isStore(store["sub"])).to.be.ok();
+            expect(imm.isImmutable).to.be.ok();
+            expect(imm["sub"].isImmutable).to.be.ok();
+        });
+
+        it("can be disposed and will delete all data and dispose all streams", function() {
+            var closes = 0;
+            var store:any = Store.record({ a: 1, b: "x"} );
+
+            store.updates().onClose(function() {
+                closes++;
+            });
+            store.newItems().onClose(function() {
+                closes++;
+            });
+            store.removedItems().onClose(function() {
+                closes++;
+            });
+            store.disposing().onClose(function() {
+                closes++;
+            });
+
+            store.dispose();
+            expect(closes).to.equal(4);
+            expect(store.a).to.be.undefined();
+        });
+
+        it("will dispose all substores when being disposed");
     });
 
     describe("and array stores. They", function () {
@@ -235,19 +306,19 @@ describe("Data stores", function () {
             expect(calls).to.equal("");
 
             var i = store.pop();         //--> 1, 2, 3, 4
-            expect(calls).to.equal("(4=5)");
+            expect(calls).to.equal("(4=null)");
             expect(i).to.equal(5);
 
             i = store.shift();           //--> 2, 3, 4
-            expect(calls).to.equal("(4=5)(0=1)");
+            expect(calls).to.equal("(4=null)(0=null)");
             expect(i).to.equal(1);
 
             i = store.shift();           //--> 3, 4
-            expect(calls).to.equal("(4=5)(0=1)(0=2)");
+            expect(calls).to.equal("(4=null)(0=null)(0=null)");
             expect(i).to.equal(2);
 
             i = store.pop();             //--> 3
-            expect(calls).to.equal("(4=5)(0=1)(0=2)(1=4)");
+            expect(calls).to.equal("(4=null)(0=null)(0=null)(1=null)");
             expect(i).to.equal(4);
 
             expect(store.length).to.equal(1);
@@ -394,6 +465,48 @@ describe("Data stores", function () {
             expect(upCalls[6]).to.equal(3);
             expect(upCalls[7]).to.equal(4);
             expect(upCount).to.equal(2);
+        });
+
+        it("provide an immutable proxy that provides all non changing methods and the streams", function() {
+            var store = Store.array([1, 2, 3, 4]);
+            var imm:Store.IImmutableArrayStore = <Store.IImmutableArrayStore>store.immutable;
+            var calls = {};
+
+            imm.updates().forEach(function(update) {
+                calls[update.item] = update.value;
+            });
+
+            imm.newItems().forEach(function(update) {
+                calls[update.item] = update.value;
+            });
+
+            imm.removedItems().forEach(function(update) {
+                calls[update.item] = update.value;
+            });
+
+            function checkEQ() {
+                for (var i = 0; i < store.length; i++) {
+                    expect(imm[i]).to.equal(store[i]);
+                }
+            }
+
+            checkEQ();
+
+            store[3] = 100;
+            checkEQ();
+            expect(store.length).to.equal(imm.length);
+
+            store.push(10);
+            checkEQ();
+            expect(store.length).to.equal(imm.length);
+
+            expect(calls[3]).to.equal(100);
+            expect(calls[4]).to.equal(10);
+
+            store.pop();
+            checkEQ();
+            expect(store.length).to.equal(imm.length);
+            expect(calls[4]).to.equal(null);
         })
     });
 
@@ -455,7 +568,8 @@ describe("Data stores", function () {
             expect(updateCount).to.equal(10);
         });
 
-        it("will propagate added items up in nested stores", function() {
+        it("will propagate added items up in nested stores"
+            /*, function() {
             return;
             var store:any = Store.record();
             var sub:any = Store.record({ a: 1, b: 2});
@@ -468,7 +582,8 @@ describe("Data stores", function () {
             news.forEach(function(update) {
                 calls[update.item] = update.value;
             });
-        });
+        }*/
+        );
     });
 
 });

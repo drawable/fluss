@@ -38,13 +38,19 @@ export interface IStore {
     newItems():Stream.IStream;
     removedItems():Stream.IStream;
     updates():Stream.IStream;
+    disposing():Stream.IStream;
 
-    immutable():IStore;
+    dispose();
+
+    immutable:IStore;
+
+    isImmutable:boolean;
 }
 
 export interface IRecordStore extends IStore {
     addItem(name:string, initial?:any);
     removeItem(name:string);
+    keys:string[];
 
     [n:string]:any;
 }
@@ -54,11 +60,17 @@ class Store implements IStore {
     public _addItemsStreams:Stream.IStream[];
     public _removeItemsStreams:Stream.IStream[];
     public _updateStreams:Stream.IStream[];
+    public _disposingStreams:Stream.IStream[];
 
     constructor() {
         this._addItemsStreams = [];
         this._removeItemsStreams = [];
         this._updateStreams = [];
+        this._disposingStreams = [];
+    }
+
+    get isImmutable():boolean {
+        return false;
     }
 
     removeStream(list, stream) {
@@ -99,10 +111,44 @@ class Store implements IStore {
         return s;
     }
 
-    immutable():IStore {
+    get immutable():IStore {
         return null;
     }
+
+    disposing():Stream.IStream {
+        var that = this;
+        var s = Stream.createStream("disposing");
+        this._disposingStreams.push(s);
+
+        s.onClose(function() {
+            that.removeStream(that._disposingStreams, s);
+        });
+        return s;
+    }
+
+    private disposeStreams(streamList:Stream.IStream[]) {
+        streamList.forEach(function(stream) {
+            stream.dispose();
+        });
+    }
+
+    dispose() {
+        this._disposingStreams.forEach(function(stream) {
+            stream.push(true);
+        });
+
+        this.disposeStreams(this._disposingStreams);
+        this.disposeStreams(this._updateStreams);
+        this.disposeStreams(this._addItemsStreams);
+        this.disposeStreams(this._removeItemsStreams);
+    }
 }
+
+
+class ImmutableStore extends Store {
+
+}
+
 
 
 class RecordStore extends Store implements IRecordStore {
@@ -206,34 +252,102 @@ class RecordStore extends Store implements IRecordStore {
         }
     }
 
-    immutable():IStore {
+    get immutable():IStore {
         if (!this._immutable) {
             this._immutable = new ImmutableRecord(this);
         }
 
         return this._immutable;
     }
+
+    get keys():string[] {
+        var r = [];
+        for (var k in this._data) {
+            r.push(k);
+        }
+
+        return r;
+    }
+
+    dispose() {
+        var that = this;
+        this.keys.forEach(function(key) {
+            if(isStore(that[key])) {
+                that[key].dispose();
+            }
+            delete that[key];
+        });
+        this._data = null;
+
+        super.dispose();
+    }
+}
+
+export interface IImmutableRecordStore extends IStore {
+    keys:string[];
+    [n:string]:any;
 }
 
 
-class ImmutableRecord extends Store {
+class ImmutableRecord extends ImmutableStore implements IImmutableRecordStore {
+
+    [n:string]:any;
 
     constructor(private _record:IRecordStore) {
         super();
+        var that = this;
+
+        _record.keys.forEach(function(key) {
+            that.addItem(key);
+        });
+
+        _record.newItems().forEach(function(update) {
+            that.addItem(update.item);
+        }).until(_record.disposing());
+
+        _record.removedItems().forEach(function(update) {
+            that.removeItem(update.item);
+        }).until(_record.disposing());
     }
 
-    immutable():IStore {
+    get isImmutable():boolean {
+        return true;
+    }
+
+    get immutable():IStore {
         return this;
     }
 
-    updates():Stream.IStream {
-        var parentStream = this._record.updates();
+    private addItem(name:string) {
+        var that = this;
+        Object.defineProperty(this, name, {
+            configurable: true,
+            get: function():any {
+                if (isStore(that._record[name])) {
+                    return that._record[name].immutable;
+                }
+                return that._record[name];
+            },
 
+            set: function(value:any) {
+            }
+        });
+    }
+
+    private removeItem(name:string) {
+        delete this[name];
+    }
+
+    get keys():string[] {
+        return this._record.keys;
+    }
+
+    private subscribeParentStream(parentStream:Stream.IStream):Stream.IStream {
         var stream = Stream.createStream();
 
         parentStream.forEach(function(update) {
             stream.push(update);
-        });
+        }).until(this._record.disposing());
 
         var that = this;
         this._updateStreams.push(stream);
@@ -243,9 +357,23 @@ class ImmutableRecord extends Store {
 
         return stream;
     }
+
+    updates():Stream.IStream {
+        return this.subscribeParentStream(this._record.updates());
+    }
+
+    newItems():Stream.IStream {
+        return this.subscribeParentStream(this._record.newItems());
+    }
+
+    removedItems():Stream.IStream {
+        return this.subscribeParentStream(this._record.removedItems());
+    }
+
+    disposing():Stream.IStream {
+        return this.subscribeParentStream(this._record.disposing());
+    }
 }
-
-
 
 function buildDeep(value:any):any {
     function getItem(value) {
@@ -336,11 +464,30 @@ export interface IArrayStore extends IStore {
     [n:number]:any;
 }
 
+export interface IImmutableArrayStore extends IStore {
+    toString():string;
+    toLocaleString():string;
+    forEach(callbackfn: (value: any, index: number, array: any[]) => void, thisArg?: any);
+    every(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): boolean;
+    some(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): boolean;
+    indexOf(value:any):number;
+    lastIndexOf(searchElement: any, fromIndex?: number): number;
+    join(separator?: string):string;
+    map(callbackfn: (value: any, index: number, array: any[]) => any, thisArg?: any):any[];
+    filter(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): any[];
+    reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue?: any):any;
+
+    length:number;
+
+    [n:number]:any;
+}
+
 
 class ArrayStore extends Store implements IArrayStore {
     private _data:any[];
     private _maxProps:number;
     private _substreams;
+    private _immutable:IImmutableArrayStore;
 
     [n:number]:any;
 
@@ -561,7 +708,7 @@ class ArrayStore extends Store implements IArrayStore {
         this.disposeSubstream(r);
 
         this._removeItemsStreams.forEach(function(stream) {
-            stream.push(createUpdateInfo<number>(that._data.length, r, that));
+            stream.push(createUpdateInfo<number>(that._data.length, null, that));
         });
 
         return r;
@@ -574,7 +721,7 @@ class ArrayStore extends Store implements IArrayStore {
         this.disposeSubstream(r);
 
         this._removeItemsStreams.forEach(function(stream) {
-            stream.push(createUpdateInfo<number>(0, r, that));
+            stream.push(createUpdateInfo<number>(0, null, that));
         });
 
         return r;
@@ -626,7 +773,166 @@ class ArrayStore extends Store implements IArrayStore {
     remove(atIndex:number, count:number = 1):any[] {
         return this.splice(atIndex, count);
     }
+
+    dispose() {
+        for (var i = 0; i < this.length; i++) {
+            if (isStore(this[i])) {
+                this[i].dispose();
+            }
+
+            delete this[i];
+        }
+        this._data = null;
+
+        super.dispose();
+    }
+
+    get immutable():IImmutableArrayStore {
+        if (!this._immutable) {
+            this._immutable = new ImmutableArray(this);
+        }
+
+        return this._immutable;
+    }
 }
+
+
+class ImmutableArray extends ImmutableStore implements IImmutableArrayStore {
+
+    private _maxProps:number;
+
+    constructor(private _array:IArrayStore) {
+        super();
+
+        var that = this;
+        _array.newItems().forEach(function(update) {
+            that.updateProperties();
+        }).until(_array.disposing());
+
+        // We do nothing when removing items. The getter will return undefined.
+        /*
+        _array.removedItems().forEach(function(update) {
+
+        }).until(_array.disposing());
+        */
+
+        this._maxProps = 0;
+        this.updateProperties();
+    }
+
+    private updateProperties() {
+        var that = this;
+        var i;
+
+        for (i = this._maxProps; i < this._array.length; i++) {
+            (function(index) {
+                Object.defineProperty(that, "" + index, {
+                    configurable: true,
+                    get: function():any {
+                        if (isStore(that._array[index])) {
+                            return that._array[index].immutable;
+                        }
+                        return that._array[index];
+                    },
+
+                    set: function(value:any) {
+                    }
+                })
+            })(i);
+        }
+
+        this._maxProps = this._array.length;
+    }
+
+    toString():string {
+        return this._array.toString();
+    }
+
+    toLocaleString():string {
+        return this._array.toString();
+    }
+
+    forEach(callbackfn: (value: any, index: number, array: any[]) => void, thisArg?: any) {
+        return this._array.forEach(callbackfn);
+    }
+
+    every(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): boolean {
+        return this._array.forEach(callbackfn);
+    }
+
+    some(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): boolean {
+        return this._array.forEach(callbackfn);
+    }
+
+    indexOf(value:any):number {
+        return this._array.indexOf(value);
+    }
+
+    lastIndexOf(searchElement: any, fromIndex?: number): number {
+        return this._array.lastIndexOf(searchElement, fromIndex);
+    }
+
+    join(separator?: string):string {
+        return this._array.join(separator);
+    }
+
+    map(callbackfn: (value: any, index: number, array: any[]) => any, thisArg?: any):any[] {
+        //This is dirty but anything else would be inperformant just because typescript does not have protected scope
+        return this._array["_data"].map(callbackfn);
+    }
+
+    filter(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): any[] {
+        //This is dirty but anything else would be inperformant just because typescript does not have protected scope
+        return this._array["_data"].filter(callbackfn);
+    }
+
+    reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue?: any):any {
+        return this._array.reduce(callbackfn, initialValue);
+    }
+
+    get length():number {
+        return this._array.length;
+    }
+
+    [n:number]:any;
+
+    private subscribeParentStream(parentStream:Stream.IStream):Stream.IStream {
+        var stream = Stream.createStream();
+
+        parentStream.forEach(function(update) {
+            stream.push(update);
+        }).until(this._array.disposing());
+
+        var that = this;
+        this._updateStreams.push(stream);
+        stream.onClose(function() {
+            that.removeStream(that._updateStreams, stream);
+        });
+
+        return stream;
+    }
+
+    updates():Stream.IStream {
+        return this.subscribeParentStream(this._array.updates());
+    }
+
+    newItems():Stream.IStream {
+        return this.subscribeParentStream(this._array.newItems());
+    }
+
+    removedItems():Stream.IStream {
+        return this.subscribeParentStream(this._array.removedItems());
+    }
+
+    disposing():Stream.IStream {
+        return this.subscribeParentStream(this._array.disposing());
+    }
+
+    get immutable():IStore {
+        return this;
+    }
+}
+
 
 export function array(initial?:any[]):IArrayStore {
     if (initial) {
