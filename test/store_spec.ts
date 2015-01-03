@@ -507,7 +507,18 @@ describe("Data stores", function () {
             checkEQ();
             expect(store.length).to.equal(imm.length);
             expect(calls[4]).to.equal(null);
-        })
+        });
+
+        it("will find the index of an substores immutable", function() {
+            var store = Store.array([1, 2, 3]);
+            var sub = Store.record({ a: "b" });
+            store.push(sub);
+
+            var imm = sub.immutable;
+
+            expect(store.indexOf(sub)).to.equal(3);
+            expect(store.indexOf(imm)).to.equal(3);
+        });
     });
 
     describe("using streams they all", function() {

@@ -9,9 +9,25 @@
 import Stream = require("../../src/stream");
 import Actions = require("./actions");
 
+
+
+var componentLifeCycle = {
+    _willUnmount:null,
+
+    componentDidMount: function() {
+        this._willUnmount = Stream.createStream("component-unmount");
+    },
+
+    componentWillUnmount: function() {
+        this._willUnmount.push(true);
+        this._willUnmount.dispose();
+    }
+};
+
+
 export var AppView = React.createClass({
 
-    todoUpdates: null,
+    mixins: [componentLifeCycle],
 
     handleToggleAll: function(event) {
         Actions.toggleAll(event.currentTarget.checked);
@@ -19,18 +35,26 @@ export var AppView = React.createClass({
     },
 
     componentDidMount: function() {
-        this.todoUpdates = this.props.todos.updates();
-
         var that = this;
-        this.todoUpdates.filter(function(update) {
-            return update.item === "completed" && update.value === false;
-        }).forEach(function() {
-            that.setState({ allChecked: false })
-        })
-    },
 
-    componentWillUnmount: function() {
-        this.todoUpdates.dispose();
+        this.props.todos.updates()
+            .until(this._willUnmount)
+            .filter(function(update) {
+                return update.item === "completed" && update.value === false;
+            }).forEach(function() {
+                that.setState({ allChecked: false })
+            });
+
+        this.props.todos.newItems()
+            .until(this._willUnmount)
+            .forEach(function() {
+                //New todos are never completed... this is a weak condition :-( Better would be tying this to the count of completed
+                that.setState({ allChecked: false })
+            })
+            .combine(this.props.todos.removedItems().until(this._willUnmount))
+            .forEach(function() {
+                that.forceUpdate();
+            });
     },
 
     getInitialState: function() {
@@ -44,7 +68,8 @@ export var AppView = React.createClass({
             React.DOM.section({ id: "main"},
                 React.DOM.input({ type: "checkbox", id: "toggle-all", onClick: this.handleToggleAll, checked: this.state.allChecked }),
                 TodoList({ todos: this.props.todos })
-            )
+            ),
+            this.props.todos.length ? Footer({ todos: this.props.todos }) : null
         )
     }
 });
@@ -73,30 +98,30 @@ var NewTodo = React.createClass({
 
 
     render: function() {
-        return React.DOM.form({ id: "todo-form", onSubmit: this.killSubmit },
-            React.DOM.input({ id: "new-todo", placeholder: "What needs to be done?", autofocus: "autofocus",
-                              onChange: this.handleInput, onKeyDown: this.handleKeyDown,
-                              value: this.state.value })
-        )
+        return React.DOM.input({ id: "new-todo", placeholder: "What needs to be done?", autofocus: "autofocus",
+            onChange: this.handleInput, onKeyDown: this.handleKeyDown,
+            value: this.state.value })
     }
 });
 
 
 var TodoList = React.createClass({
 
-    newTodos: null,
+    mixins: [componentLifeCycle],
 
     componentDidMount: function() {
-        this.newTodos = this.props.todos.newItems();
-
         var that = this;
-        this.newTodos.forEach(function() {
+        this.props.todos.newItems()
+            .until(this._willUnmount)
+            .forEach(function() {
             that.forceUpdate();
-        })
-    },
+        });
 
-    componentWillUnmount: function() {
-        this.newTodos.dispose();
+        this.props.todos.removedItems()
+            .until(this._willUnmount)
+            .forEach(function() {
+                that.forceUpdate();
+            })
     },
 
     render: function() {
@@ -110,19 +135,15 @@ var TodoList = React.createClass({
 
 var Todo = React.createClass({
 
-    updates:null,
+    mixins: [componentLifeCycle],
 
     componentDidMount: function() {
-        this.updates = this.props.todo.updates();
-
         var that = this;
-        this.updates.forEach(function() {
-            that.forceUpdate();
-        })
-    },
-
-    componentWillUnmount: function() {
-        this.updates.dispose();
+        this.props.todo.updates()
+            .until(this._willUnmount)
+            .forEach(function() {
+                that.forceUpdate();
+            })
     },
 
     handleCompletion: function(event) {
@@ -133,14 +154,61 @@ var Todo = React.createClass({
         }
     },
 
+    handleRemove: function() {
+        Actions.removeTodo(this.props.todo);
+    },
+
     render: function() {
-        return React.DOM.li({},
+        return React.DOM.li({ className: this.props.todo.completed ? "completed" : ""},
             React.DOM.div({ className: "view" },
                 React.DOM.input({ className: "toggle", type: "checkbox", checked: this.props.todo.completed, onChange: this.handleCompletion }),
                 React.DOM.label({ }, this.props.todo.title ),
-                React.DOM.button({ className: "destroy "})
+                React.DOM.button({ className: "destroy", onClick: this.handleRemove})
             )
         );
     }
 
+});
+
+var Footer = React.createClass({
+
+    mixins: [componentLifeCycle],
+
+    componentDidMount: function() {
+        var that = this;
+        this.props.todos.updates()
+            .until(this._willUnmount)
+            .filter(function(update) {
+                return update.item === "completed";
+            }).forEach(function() {
+                that.forceUpdate();
+            });
+
+        this.props.todos.newItems()
+            .until(this._willUnmount)
+            .forEach(function() {
+                that.forceUpdate();
+            });
+
+        this.props.todos.removedItems()
+            .until(this._willUnmount)
+            .forEach(function() {
+                that.forceUpdate();
+            })
+    },
+
+    handleClearCompleted: function() {
+        Actions.removeCompleted();
+    },
+
+    render: function() {
+        var count = this.props.todos.filter(function(todo) {
+            return todo.completed === false
+        }).length;
+
+        return React.DOM.footer({ id: "footer" },
+            React.DOM.span({ id: "todo-count"}, React.DOM.strong({}, count), count === 1 ? " item left" : " items left"),
+            React.DOM.button({ id: "clear-completed", onClick: this.handleClearCompleted}, "Clear completed (" + (this.props.todos.length - count) + ")")
+        )
+    }
 });

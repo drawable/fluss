@@ -8,7 +8,7 @@ import Tools = require("./tools");
 import Stream = require("./stream")
 
 export function isStore(thing):boolean {
-    return thing instanceof RecordStore || thing instanceof ArrayStore;
+    return thing instanceof RecordStore || thing instanceof ArrayStore || thing instanceof ImmutableRecord || thing instanceof ImmutableArray;
 }
 
 
@@ -293,21 +293,21 @@ class ImmutableRecord extends ImmutableStore implements IImmutableRecordStore {
 
     [n:string]:any;
 
-    constructor(private _record:IRecordStore) {
+    constructor(private _parent:IRecordStore) {
         super();
         var that = this;
 
-        _record.keys.forEach(function(key) {
+        _parent.keys.forEach(function(key) {
             that.addItem(key);
         });
 
-        _record.newItems().forEach(function(update) {
+        _parent.newItems().forEach(function(update) {
             that.addItem(update.item);
-        }).until(_record.disposing());
+        }).until(_parent.disposing());
 
-        _record.removedItems().forEach(function(update) {
+        _parent.removedItems().forEach(function(update) {
             that.removeItem(update.item);
-        }).until(_record.disposing());
+        }).until(_parent.disposing());
     }
 
     get isImmutable():boolean {
@@ -323,10 +323,10 @@ class ImmutableRecord extends ImmutableStore implements IImmutableRecordStore {
         Object.defineProperty(this, name, {
             configurable: true,
             get: function():any {
-                if (isStore(that._record[name])) {
-                    return that._record[name].immutable;
+                if (isStore(that._parent[name])) {
+                    return that._parent[name].immutable;
                 }
-                return that._record[name];
+                return that._parent[name];
             },
 
             set: function(value:any) {
@@ -339,7 +339,7 @@ class ImmutableRecord extends ImmutableStore implements IImmutableRecordStore {
     }
 
     get keys():string[] {
-        return this._record.keys;
+        return this._parent.keys;
     }
 
     private subscribeParentStream(parentStream:Stream.IStream):Stream.IStream {
@@ -347,7 +347,7 @@ class ImmutableRecord extends ImmutableStore implements IImmutableRecordStore {
 
         parentStream.forEach(function(update) {
             stream.push(update);
-        }).until(this._record.disposing());
+        }).until(this._parent.disposing());
 
         var that = this;
         this._updateStreams.push(stream);
@@ -359,19 +359,19 @@ class ImmutableRecord extends ImmutableStore implements IImmutableRecordStore {
     }
 
     updates():Stream.IStream {
-        return this.subscribeParentStream(this._record.updates());
+        return this.subscribeParentStream(this._parent.updates());
     }
 
     newItems():Stream.IStream {
-        return this.subscribeParentStream(this._record.newItems());
+        return this.subscribeParentStream(this._parent.newItems());
     }
 
     removedItems():Stream.IStream {
-        return this.subscribeParentStream(this._record.removedItems());
+        return this.subscribeParentStream(this._parent.removedItems());
     }
 
     disposing():Stream.IStream {
-        return this.subscribeParentStream(this._record.disposing());
+        return this.subscribeParentStream(this._parent.disposing());
     }
 }
 
@@ -520,7 +520,11 @@ class ArrayStore extends Store implements IArrayStore {
     }
 
     indexOf(value:any):number {
-        return this._data.indexOf(value);
+        if (isStore(value) && value.isImmutable) {
+            return this._data.indexOf(value["_parent"]);
+        } else {
+            return this._data.indexOf(value);
+        }
     }
 
     lastIndexOf(searchElement: any, fromIndex?: number): number {
@@ -801,13 +805,13 @@ class ImmutableArray extends ImmutableStore implements IImmutableArrayStore {
 
     private _maxProps:number;
 
-    constructor(private _array:IArrayStore) {
+    constructor(private _parent:IArrayStore) {
         super();
 
         var that = this;
-        _array.newItems().forEach(function(update) {
+        _parent.newItems().forEach(function(update) {
             that.updateProperties();
-        }).until(_array.disposing());
+        }).until(_parent.disposing());
 
         // We do nothing when removing items. The getter will return undefined.
         /*
@@ -824,15 +828,15 @@ class ImmutableArray extends ImmutableStore implements IImmutableArrayStore {
         var that = this;
         var i;
 
-        for (i = this._maxProps; i < this._array.length; i++) {
+        for (i = this._maxProps; i < this._parent.length; i++) {
             (function(index) {
                 Object.defineProperty(that, "" + index, {
                     configurable: true,
                     get: function():any {
-                        if (isStore(that._array[index])) {
-                            return that._array[index].immutable;
+                        if (isStore(that._parent[index])) {
+                            return that._parent[index].immutable;
                         }
-                        return that._array[index];
+                        return that._parent[index];
                     },
 
                     set: function(value:any) {
@@ -841,57 +845,57 @@ class ImmutableArray extends ImmutableStore implements IImmutableArrayStore {
             })(i);
         }
 
-        this._maxProps = this._array.length;
+        this._maxProps = this._parent.length;
     }
 
     toString():string {
-        return this._array.toString();
+        return this._parent.toString();
     }
 
     toLocaleString():string {
-        return this._array.toString();
+        return this._parent.toString();
     }
 
     forEach(callbackfn: (value: any, index: number, array: any[]) => void, thisArg?: any) {
-        return this._array.forEach(callbackfn);
+        return this._parent.forEach(callbackfn);
     }
 
     every(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): boolean {
-        return this._array.forEach(callbackfn);
+        return this._parent.forEach(callbackfn);
     }
 
     some(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): boolean {
-        return this._array.forEach(callbackfn);
+        return this._parent.forEach(callbackfn);
     }
 
     indexOf(value:any):number {
-        return this._array.indexOf(value);
+        return this._parent.indexOf(value);
     }
 
     lastIndexOf(searchElement: any, fromIndex?: number): number {
-        return this._array.lastIndexOf(searchElement, fromIndex);
+        return this._parent.lastIndexOf(searchElement, fromIndex);
     }
 
     join(separator?: string):string {
-        return this._array.join(separator);
+        return this._parent.join(separator);
     }
 
     map(callbackfn: (value: any, index: number, array: any[]) => any, thisArg?: any):any[] {
         //This is dirty but anything else would be inperformant just because typescript does not have protected scope
-        return this._array["_data"].map(callbackfn);
+        return this._parent["_data"].map(callbackfn);
     }
 
     filter(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): any[] {
         //This is dirty but anything else would be inperformant just because typescript does not have protected scope
-        return this._array["_data"].filter(callbackfn);
+        return this._parent["_data"].filter(callbackfn);
     }
 
     reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue?: any):any {
-        return this._array.reduce(callbackfn, initialValue);
+        return this._parent.reduce(callbackfn, initialValue);
     }
 
     get length():number {
-        return this._array.length;
+        return this._parent.length;
     }
 
     [n:number]:any;
@@ -901,7 +905,7 @@ class ImmutableArray extends ImmutableStore implements IImmutableArrayStore {
 
         parentStream.forEach(function(update) {
             stream.push(update);
-        }).until(this._array.disposing());
+        }).until(this._parent.disposing());
 
         var that = this;
         this._updateStreams.push(stream);
@@ -913,19 +917,19 @@ class ImmutableArray extends ImmutableStore implements IImmutableArrayStore {
     }
 
     updates():Stream.IStream {
-        return this.subscribeParentStream(this._array.updates());
+        return this.subscribeParentStream(this._parent.updates());
     }
 
     newItems():Stream.IStream {
-        return this.subscribeParentStream(this._array.newItems());
+        return this.subscribeParentStream(this._parent.newItems());
     }
 
     removedItems():Stream.IStream {
-        return this.subscribeParentStream(this._array.removedItems());
+        return this.subscribeParentStream(this._parent.removedItems());
     }
 
     disposing():Stream.IStream {
-        return this.subscribeParentStream(this._array.disposing());
+        return this.subscribeParentStream(this._parent.disposing());
     }
 
     get immutable():IStore {

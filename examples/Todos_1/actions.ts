@@ -11,7 +11,9 @@ export enum ACTIONS {
     ADD_TODO = 1000,
     COMPLETE_TODO,
     INCOMPLETE_TODO,
-    TOGGLE_ALL
+    TOGGLE_ALL,
+    REMOVE_TODO,
+    REMOVE_COMPLETED
 }
 
 export function addTodo(title:string) {
@@ -30,3 +32,10 @@ export function toggleAll(state:boolean) {
     Dispatcher.dispatch(ACTIONS.TOGGLE_ALL, state);
 }
 
+export function removeTodo(todo) {
+    Dispatcher.dispatch(ACTIONS.REMOVE_TODO, todo);
+}
+
+export function removeCompleted() {
+    Dispatcher.dispatch(ACTIONS.REMOVE_COMPLETED);
+}

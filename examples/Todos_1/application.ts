@@ -62,6 +62,31 @@ class ToggleAll extends Plugins.BasePlugin {
     }
 }
 
+class RemoveTodo extends Plugins.BasePlugin {
+    run(container:Application, action:number, todo:any) {
+        container.todos.splice(container.todos.indexOf(todo), 1);
+    }
+}
+
+class RemoveCompleted extends Plugins.BasePlugin {
+    run(container:Application, action:number) {
+        // We work on the immutable because map then creates a simple array instead of a store
+        var idx = container.todos.immutable["map"](function (todo, index) {
+            if (todo.completed) {
+                return index
+            }
+            return -1;
+        });
+
+        idx.reverse();
+        idx.forEach(function(index) {
+            if (index !== -1) {
+                container.todos.splice(index, 1);
+            }
+        });
+    }
+}
+
 /**
  * This creates a new application object
  * @returns {Application}
@@ -73,7 +98,8 @@ function createApplication() {
     app.wrap(Actions.ACTIONS.COMPLETE_TODO, new CompleteTodo());
     app.wrap(Actions.ACTIONS.INCOMPLETE_TODO, new IncompleteTodo());
     app.wrap(Actions.ACTIONS.TOGGLE_ALL, new ToggleAll());
-
+    app.wrap(Actions.ACTIONS.REMOVE_TODO, new RemoveTodo());
+    app.wrap(Actions.ACTIONS.REMOVE_COMPLETED, new RemoveCompleted());
     return app;
 }
 
@@ -82,9 +108,10 @@ function init() {
     var container = document.getElementById("todoapp");
     var app = createApplication();
 
-    React["renderComponent"](UI.AppView({ todos: app.todos }), container);
+    // Always pass immutable stores to the frontend to prevent disruption of the data flow.
+    React["renderComponent"](UI.AppView({ todos: app.todos.immutable }), container);
 
-    Actions.addTodo("A new Todo");
+    Actions.addTodo("Learn some fluss");
 }
 
 init();
