@@ -89,7 +89,7 @@ Most importantly it is fun to write.
 
 fluss is the result of both an ambitious project as well as a learning experience. Very good implementations for reactive
 programming exist ([BaconJS](https://baconjs.github.io/), [kefir.js](http://pozadi.github.io/kefir/), [RxJS](https://github.com/Reactive-Extensions/RxJS))
-but to completely wrap my head around these I wanted to implement my own version (which is very lightweight
+but to completely wrap my head around reactive programming I wanted to implement my own version (which is very lightweight
 and can and will not compete with existing frameworks in regards of features).
 
 I tried to come up with simple implementations for the different modules. The reactive streams are less than 500 sloc
@@ -99,6 +99,10 @@ at the moment, the stores are less than 800 sloc.
 ## Stability
 
 Be careful. This is beta software. APIs may change.
+
+## License
+
+[MIT](LICENSE)
 
 
 
