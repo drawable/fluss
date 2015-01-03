@@ -46,9 +46,23 @@ fluss uses CommonJS modules to ease the transition from the frontend to the back
 
     todos[0].completed = true;
 
+### Create a container for plugins
+
+    class Application extends Plugins.PluginContainer {
+
+        todos:Store.IArrayStore;
+
+        constructor() {
+            super("Application");
+            this._todos = Store.array();
+    }
+
+    var application = new Application();
+
 ### Create a plugin...
 
     class AddTodo extends Plugins.BasePlugin {
+
         run(container:Application.Application, action:number, title:string) {
             container.todos.push(Store.record({ title: title, completed: false }));
         }
@@ -71,10 +85,10 @@ Please see the [tutorial](examples/tutorial.md).
 
 ## Why reinvent the wheel?
 
-Most importantly it was fun to write.
+Most importantly it is fun to write.
 
 fluss is the result of both an ambitious project as well as a learning experience. Very good implementations for reactive
-programming exist ([BaconJS](https://baconjs.github.io/), [kefir.js](http://pozadi.github.io/kefir/), [RxJS](https://github.com/Reactive-Extensions/RxJS), )
+programming exist ([BaconJS](https://baconjs.github.io/), [kefir.js](http://pozadi.github.io/kefir/), [RxJS](https://github.com/Reactive-Extensions/RxJS))
 but to completely wrap my head around these I wanted to implement my own version (which is very lightweight
 and can and will not compete with existing frameworks in regards of features).
 
