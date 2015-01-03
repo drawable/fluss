@@ -1,7 +1,7 @@
 fluss
 =====
 
-fluss is an opinionated application framework for the frontend and the backend. It is an interpretation
+fluss is an opinionated application framework for the frontend and the backend. It is an interpretation of the
 [flux architecture](http://facebook.github.io/flux/) that establishes a unidirectional flow of data through the application.
 
 fluss is written in Typescript. It can be used on the frontend and on the backend. fluss is written with views developed
@@ -40,12 +40,13 @@ fluss uses CommonJS modules to ease the transition from the frontend to the back
             return update.item === "completed";
          })
          .forEach(function(update) {
-            console.log(update.store.title + " was " + (update.value ? "completed" : "opened"));
+            console.log(update.store.title +
+                        " was " + (update.value ? "completed" : "opened"));
          ));
 
     todos[0].completed = true;
 
-### Create a plugin
+### Create a plugin...
 
     class AddTodo extends Plugins.BasePlugin {
         run(container:Application.Application, action:number, title:string) {
@@ -53,7 +54,7 @@ fluss uses CommonJS modules to ease the transition from the frontend to the back
         }
     }
 
-### ... add it to your application
+### ... add it to your application...
 
     var NEW_TODO:number = 1000;
     application.wrap(NEW_TODO, new AddTodo());
