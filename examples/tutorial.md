@@ -6,7 +6,7 @@ a view written in [React](http://facebook.github.io/react/) in mind. So there is
 In this example based tutorial we will recreate the app used by [TodoMVC](http://todomvc.com/) and we will use React for the view layer.
 It is a good example of an app that demonstrates several aspects of web app development without being too complicated.
 The first step will recreate the app with all functionality described in the
-[TodoMVC specification](https://github.com/tastejs/todomvc/blob/master/app-spec.md). In steps two and three we will
+[TodoMVC specification](https://github.com/tastejs/todomvc/blob/master/app-spec.md). In the later steps we will
 then add further functionality to demonstrate different aspects of fluss that are not covered by the original specification.
 
 * [Todos - Step 1. The standard application](step1.md)

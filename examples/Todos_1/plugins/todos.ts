@@ -10,7 +10,6 @@ import Store = require("../../../src/store");
 
 
 export class AddTodo extends Plugins.BasePlugin {
-
     run(container:Application.Application, action:number, title:string) {
         container.todos.push(Store.record({ title: title, completed: false }));
     }
