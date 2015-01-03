@@ -13,7 +13,10 @@ export enum ACTIONS {
     INCOMPLETE_TODO,
     TOGGLE_ALL,
     REMOVE_TODO,
-    REMOVE_COMPLETED
+    REMOVE_COMPLETED,
+    SHOW_ALL,
+    SHOW_ACTIVE,
+    SHOW_COMPLETED
 }
 
 export function addTodo(title:string) {

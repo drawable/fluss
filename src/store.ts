@@ -861,7 +861,7 @@ class ImmutableArray extends ImmutableStore implements IImmutableArrayStore {
     }
 
     every(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): boolean {
-        return this._parent.forEach(callbackfn);
+        return this._parent.every(callbackfn);
     }
 
     some(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): boolean {

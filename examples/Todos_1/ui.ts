@@ -34,31 +34,43 @@ export var AppView = React.createClass({
         this.setState({ allChecked: event.currentTarget.checked })
     },
 
+    updateState: function() {
+        var ac = this.props.todos.every(function(todo) {
+            return todo.completed === true;
+        });
+
+        this.setState({ allChecked: ac})
+    },
+
     componentDidMount: function() {
         var that = this;
 
         this.props.todos.updates()
             .until(this._willUnmount)
             .filter(function(update) {
-                return update.item === "completed" && update.value === false;
+                return update.item === "completed";
             }).forEach(function() {
-                that.setState({ allChecked: false })
+                that.updateState();
             });
 
         this.props.todos.newItems()
             .until(this._willUnmount)
             .forEach(function() {
-                //New todos are never completed... this is a weak condition :-( Better would be tying this to the count of completed
-                that.setState({ allChecked: false })
+                that.updateState();
+                that.forceUpdate();
             })
             .combine(this.props.todos.removedItems().until(this._willUnmount))
             .forEach(function() {
+                that.updateState();
                 that.forceUpdate();
             });
     },
 
     getInitialState: function() {
-        return { allChecked: false }
+        return { allChecked: this.props.todos.every(function(todo) {
+            return todo.completed === true;
+        })
+        }
     },
 
     render: function () {

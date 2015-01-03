@@ -2,40 +2,42 @@
   <library name="Generated files" type="javaScript">
     <properties>
       <sourceFilesUrls>
-        <item url="file://$PROJECT_DIR$/examples/Todos_1/application.js" />
         <item url="file://$PROJECT_DIR$/src/plugins.js" />
+        <item url="file://$PROJECT_DIR$/examples/Todos_1/application.js" />
         <item url="file://$PROJECT_DIR$/test/dispatcher_spec.js" />
-        <item url="file://$PROJECT_DIR$/examples/Todos_1/ui.js" />
         <item url="file://$PROJECT_DIR$/src/emitter.js" />
+        <item url="file://$PROJECT_DIR$/examples/Todos_1/ui.js" />
         <item url="file://$PROJECT_DIR$/examples/Todos_1/actions.js" />
         <item url="file://$PROJECT_DIR$/test/stream_spec.js" />
         <item url="file://$PROJECT_DIR$/test/plugin_spec.js" />
         <item url="file://$PROJECT_DIR$/src/tools.js" />
+        <item url="file://$PROJECT_DIR$/examples/Todos_1/plugins/plugins.js" />
         <item url="file://$PROJECT_DIR$/src/stream.js" />
         <item url="file://$PROJECT_DIR$/src/store.js" />
         <item url="file://$PROJECT_DIR$/src/errors.js" />
         <item url="file://$PROJECT_DIR$/src/baseActions.js" />
-        <item url="file://$PROJECT_DIR$/test/store_spec.js" />
         <item url="file://$PROJECT_DIR$/src/dispatcher.js" />
+        <item url="file://$PROJECT_DIR$/test/store_spec.js" />
         <item url="file://$PROJECT_DIR$/src/eventChannel.js" />
       </sourceFilesUrls>
     </properties>
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/src/plugins.js" />
       <root url="file://$PROJECT_DIR$/examples/Todos_1/application.js" />
+      <root url="file://$PROJECT_DIR$/src/plugins.js" />
       <root url="file://$PROJECT_DIR$/test/dispatcher_spec.js" />
-      <root url="file://$PROJECT_DIR$/src/emitter.js" />
       <root url="file://$PROJECT_DIR$/examples/Todos_1/ui.js" />
+      <root url="file://$PROJECT_DIR$/src/emitter.js" />
       <root url="file://$PROJECT_DIR$/examples/Todos_1/actions.js" />
       <root url="file://$PROJECT_DIR$/test/stream_spec.js" />
       <root url="file://$PROJECT_DIR$/test/plugin_spec.js" />
       <root url="file://$PROJECT_DIR$/src/tools.js" />
+      <root url="file://$PROJECT_DIR$/examples/Todos_1/plugins/todos.js" />
       <root url="file://$PROJECT_DIR$/src/stream.js" />
       <root url="file://$PROJECT_DIR$/src/store.js" />
       <root url="file://$PROJECT_DIR$/src/errors.js" />
       <root url="file://$PROJECT_DIR$/src/baseActions.js" />
-      <root url="file://$PROJECT_DIR$/src/dispatcher.js" />
       <root url="file://$PROJECT_DIR$/test/store_spec.js" />
+      <root url="file://$PROJECT_DIR$/src/dispatcher.js" />
       <root url="file://$PROJECT_DIR$/src/eventChannel.js" />
     </CLASSES>
     <SOURCES />

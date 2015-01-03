@@ -507,6 +507,10 @@ describe("Data stores", function () {
             checkEQ();
             expect(store.length).to.equal(imm.length);
             expect(calls[4]).to.equal(null);
+
+            expect(imm.every(function(value) {
+                return typeof value !== "undefined";
+            })).not.to.be.undefined();
         });
 
         it("will find the index of an substores immutable", function() {

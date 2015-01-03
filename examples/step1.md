@@ -1,18 +1,18 @@
-# Tutorial
+## Todos - Step 1. The standard application
 
-fluss is a framework but it is not fully automatic. It provides the means to establish the data flow. So expect to do
-at least some thing by hand.
-
-## Todos - 1
-
-Let's build the todo app as known from [Todo MVC}(http://todomvc.com/). We'll start by laying out what we'll need.
+The [TodoMVC specification](https://github.com/tastejs/todomvc/blob/master/app-spec.md) tells us everything we need.
 
 ### Data
 
-Of course we'll need a todo. It has a text and a flag that indicates if the todo is already done.
+Of course we'll need a todo. It has the following fields
 
-We need a list of todos. That can be an array.
+* ID
+* Title
+* Completed flag
 
+We need a list of todos. That will be an array.
+
+The data we'll create needs to be stored in local storage.
 
 ### Actions
 
@@ -24,6 +24,7 @@ Actions are primarily what the user triggers in order for the app to do somethin
 * Delete a todo
 * Complete all uncompleted todos
 * Clear completed todos
+
 
 ### UI
 
@@ -109,7 +110,3 @@ for that action beginning with the last plugin that was wrapped for that action.
 Now we're god to go for adding a todo. But we need a UI first. We'll use React-js for building the UI.
 
 #### Basic html
-
-
-
-
