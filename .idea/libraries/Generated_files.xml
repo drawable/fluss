@@ -11,10 +11,11 @@
         <item url="file://$PROJECT_DIR$/test/stream_spec.js" />
         <item url="file://$PROJECT_DIR$/test/plugin_spec.js" />
         <item url="file://$PROJECT_DIR$/src/tools.js" />
-        <item url="file://$PROJECT_DIR$/examples/Todos_1/plugins/plugins.js" />
+        <item url="file://$PROJECT_DIR$/examples/Todos_1/plugins/todos.js" />
         <item url="file://$PROJECT_DIR$/src/stream.js" />
         <item url="file://$PROJECT_DIR$/src/store.js" />
         <item url="file://$PROJECT_DIR$/src/errors.js" />
+        <item url="file://$PROJECT_DIR$/src/index.js" />
         <item url="file://$PROJECT_DIR$/src/baseActions.js" />
         <item url="file://$PROJECT_DIR$/src/dispatcher.js" />
         <item url="file://$PROJECT_DIR$/test/store_spec.js" />
@@ -36,6 +37,7 @@
       <root url="file://$PROJECT_DIR$/src/store.js" />
       <root url="file://$PROJECT_DIR$/src/errors.js" />
       <root url="file://$PROJECT_DIR$/src/baseActions.js" />
+      <root url="file://$PROJECT_DIR$/src/index.js" />
       <root url="file://$PROJECT_DIR$/test/store_spec.js" />
       <root url="file://$PROJECT_DIR$/src/dispatcher.js" />
       <root url="file://$PROJECT_DIR$/src/eventChannel.js" />
