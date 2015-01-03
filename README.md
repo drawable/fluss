@@ -25,7 +25,7 @@ I developed fluss as a learning project. To understand reactive patterns I imple
 
 ## How to get started
 
-Please see the [tutorial](examples/examples.md).
+Please see the [tutorial](examples/tutorial.md).
 
 ## Beta
 
