@@ -7,11 +7,9 @@
 import Dispatcher = require("./dispatcher");
 
 export enum ACTIONS  {
-    __ANY__,
-    UNDO,
+    __ANY__ = -1000,
+    UNDO = -2000,
 }
-
-export var firstAction:number = 1000;
 
 /**
  * Generic action trigger that can be fed by passing the action id and parameters.

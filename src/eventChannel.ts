@@ -94,11 +94,18 @@ export interface IEmitter extends Emitter.IEmitter {
 
 export class ChanneledEmitter extends Emitter.Emitter {
 
+    private emitterID:string;
 
-    constructor(private emitterID:string) {
+    constructor(_emitterID?:string) {
         super();
 
-        if (emitterIDs.indexOf(emitterID) !== -1) {
+        if (_emitterID) {
+            this.emitterID = _emitterID;
+        } else {
+            this.emitterID = "Emitter" + emitterIDs.length;
+        }
+
+        if (emitterIDs.indexOf(this.emitterID) !== -1) {
             throw new Error("Duplicate emitterID. This is not supported");
         }
     }

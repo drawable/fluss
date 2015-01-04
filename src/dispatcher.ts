@@ -132,9 +132,6 @@ export interface IDispatcher {
 }
 
 
-
-var __ANY_ACTION___ = 0;
-
 /**
  * Implementation of a dispatcher as described by the FLUX pattern.
  */
@@ -196,7 +193,7 @@ class Dispatcher implements IDispatcher {
                 handler.apply(this, args);
             });
 
-            doit(__ANY_ACTION___, function(handler, args) {
+            doit(Actions.ACTIONS.__ANY__, function(handler, args) {
                 handler.apply(this, [type, args]);
             }, type);
 

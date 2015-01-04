@@ -14,13 +14,13 @@ var rename = require("gulp-rename");
 
 
 gulp.task("compile-tsc", function() {
-    gulp.src(["./src/**/*.ts"])
+    gulp.src(["./src/**/*.ts", "./test/**/*.ts"])
         .pipe(typescript({ module: "commonjs",
             target: "ES5",
             sourcemap: true,
             outDir: "./"
         }))
-        .pipe(gulp.dest("./src"));
+        .pipe(gulp.dest("./"));
 });
 
 gulp.task("bundle-todos1", function() {

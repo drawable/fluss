@@ -187,7 +187,7 @@ export class PluginContainer extends EventChannel.ChanneledEmitter implements IP
     private _runningPlugins;
     private _mementos;
 
-    constructor(emitterId) {
+    constructor(emitterId?:string) {
         super(emitterId);
         this._plugins = {};
         this._anyPlugins = [];

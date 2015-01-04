@@ -366,7 +366,7 @@ describe("Plugins (IOC)", function() {
         Dispatcher.dispatch(42, "X");
         var cs = getCallSignature();
         expect(cs).to.equal("(42:r-A-X)(42:f-A)");
-    })
+    });
 
     it("can wrap a specific action and any-plugins are still called", function() {
         var anyA = new SimplePlugin("A");

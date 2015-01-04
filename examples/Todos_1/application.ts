@@ -19,7 +19,7 @@ export class Application extends Plugins.PluginContainer {
     filter:Store.IRecordStore;
 
     constructor() {
-        super("Application");
+        super();
 
         this._todos = Store.array();
         this.filter = Store.record({

@@ -8,7 +8,7 @@ import Dispatcher = require("../../src/dispatcher");
 import BaseActions = require("../../src/baseActions");
 
 export enum ACTIONS {
-    ADD_TODO = 1000,
+    ADD_TODO,
     COMPLETE_TODO,
     INCOMPLETE_TODO,
     TOGGLE_ALL,

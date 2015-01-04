@@ -50,22 +50,14 @@ objects that encapsulate the functionality of an action optionally including the
         todos:Store.IArrayStore;
 
         constructor() {
-            super("Application");
+            super();
 
             this.todos = Store.array();
         }
     }
 
-The super-calls argument is an identifier for the event channel to bind the applications events to this channel. The application has
-one property, an array-store holding all todos.
+The application has one property, an array-store holding all todos.
 
-Next we'll need a means to create a new todo.
-
-    export function createTodo(text:string):Store.IRecordStore {
-        return Store.record({ text: text, complete: false });
-    }
-
-We use a simple function that creates a new record for the todo text.
 
 ### Adding a new todo
 
