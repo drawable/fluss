@@ -1,8 +1,8 @@
-## Todos - Step 1. The standard application
+# Todos - Step 1. The standard application
 
 The [TodoMVC specification](https://github.com/tastejs/todomvc/blob/master/app-spec.md) tells us everything we need.
 
-### Data
+## Data
 
 Of course we'll need a todo. It has the following fields
 
@@ -14,7 +14,7 @@ We need a list of todos. That will be an array.
 
 The data we'll create needs to be stored in local storage.
 
-### Actions
+## Actions
 
 Actions are primarily what the user triggers in order for the app to do something. So for the todo app we'll need the following
 
@@ -29,7 +29,7 @@ Actions are primarily what the user triggers in order for the app to do somethin
 * Filter completed
 
 
-### UI
+## UI
 
 We need
 
@@ -46,20 +46,25 @@ We need
 * A combined trigger/indicator for toggling all todos and displaying if all are completed
 * Buttons for filtering all, only active, only completed todos
 
-### Preparation
+## Preparation
 
 Create a new project like you use to do. Install fluss
 
     npm install fluss
 
-### The application object
+Use the following Typrescipt transpiler settings
+
+* -t ES5
+* -m commonjs
+
+## The application object
 
 We start by creating an application object. This will hold the stores and will be the container for the plugins. Plugins are
 objects that encapsulate the functionality of an action optionally including the means to undo/redo that action. Create a
 file `application.ts`.
 
-    import Plugins = require("../../src/plugins");
-    import Store = require("../../src/store");
+    import Plugins = require("fluss/src/plugins");
+    import Store = require("fluss/src/store");
 
     export class Application extends Plugins.PluginContainer {
 
@@ -75,15 +80,15 @@ file `application.ts`.
 The application has one property, an array-store holding all todos.
 
 
-### Adding a new todo
+## Adding a new todo
 
 Now we need a way to add a new todo to our list. This will be our first action and the first plugin we'll implement. Create a
 new file actions.ts
 
-    import Dispatcher = require("../../src/dispatcher");
-    import BaseActions = require("../../src/baseActions");
+    import Dispatcher = require("fluss/src/dispatcher");
+    import BaseActions = require("fluss/src/baseActions");
 
-    enum ACTIONS {
+    export enum ACTIONS {
         ADD_TODO
     }
 
@@ -101,9 +106,9 @@ for our action.
 
 Next we implement a plugin for that action. We'll create a new file `plugins/todos.ts` for that.
 
-    import Plugins      = require("../../../src/plugins");
-    import Application  = require("../application");
-    import Store        = require("../../../src/store");
+    import Plugins      = require("fluss/src/plugins");
+    import Application  = require("application");
+    import Store        = require("fluss/src/store");
 
     export class AddTodo extends Plugins.BasePlugin {
         run(container:Application.Application, action:number, title:string) {
@@ -114,7 +119,7 @@ Next we implement a plugin for that action. We'll create a new file `plugins/tod
 At the moment the `run` method is all we need. Besides the container (our application) and the action we expect the text
 of the todo to be passed. When the action is executed we simply create a new record store and push it to the list of todos.
 
-#### Adding the plugin to the application
+## Adding the plugin to the application
 
 We have defined the plugin but it would not do anything when the action is triggered. We need to add the plugin to the application first.
 
@@ -137,12 +142,12 @@ We 'wrap an instance of our new plugin around the application object' for the AD
 more than one plugin can ba wrapped around the plugin for any action and these plugins then will all be executed one after the other
 for that action beginning with the last plugin that was wrapped for that action.
 
-### UI
+## UI
 
 Now we're good to go for adding a todo. But we need a UI first. We'll use React-js for building the UI. I won't go into details
 on how React works. What we'll do is not too sophisticated but you should be familiar with the basic principles of React in order to follow.
 
-#### Basic html
+## Basic html
 
 The html is very simple. Create a new file `index.html`:
 
@@ -151,8 +156,8 @@ The html is very simple. Create a new file `index.html`:
     <head lang="en">
         <meta charset="UTF-8">
         <title>fluss &amp; react js</title>
-        <link rel="stylesheet" href="../bower_components/todomvc-common/base.css">
-        <script type="text/javascript" src="../bower_components/react/react.min.js"></script>
+        <link rel="stylesheet" href="bower_components/todomvc-common/base.css">
+        <script type="text/javascript" src="bower_components/react/react.min.js"></script>
     </head>
     <body>
         <section id="todoapp">
@@ -160,8 +165,160 @@ The html is very simple. Create a new file `index.html`:
     </body>
     </html>
 
+
+In addition we use bower to add todomvc-commons to get nice styles and React.
+
+    bower install todomvc-common
+    bower install react
+
 The rest of the UI will be created using React in Typescript code. We'll not be using JSX fo this tutorial.
 
+## Type definitions for React
+
+Since we're using React with typescript we need to install proper typedefinitions. We use [tsd](https://github.com/DefinitelyTyped/tsd/tree/master).
+
+    tsd query react -a install
+
+## Todo-List Component
+
+We start by creating a todo list component that display the todos in the array-store. Create a new file `ui/todosList.ts`.
+(This is some old style React atm. Will update to the new API soon).
+
+Let's first define a component that display a todo. It will receive on property `todo` and we simply display it's properties according to the styles
+in TodoMVC.
+
+    var Todo = React.createClass({
+
+        render: function() {
+            return React.DOM.li({ className: this.props.todo.completed ? "completed" : ""},
+                React.DOM.div({ className: "view" },
+                    React.DOM.input({ className: "toggle", type: "checkbox", checked: this.props.todo.completed }),
+                    React.DOM.label({ }, this.props.todo.title ),
+                    React.DOM.button({ className: "destroy"})
+                )
+            );
+        }
+    });
 
 
+Now we define a list component that displays one Todo-Component for every item in our todo-array-store. All nothing special right now.
 
+    export var TodoList = React.createClass({
+
+        render: function() {
+            return React.DOM.ul({ id: "todo-list" },
+                this.props.todos.map(function(todo, index) {
+                    return Todo({ todo: todo, key: index })
+                })
+            )
+        }
+    });
+
+## Displaying the list
+
+Import our new component module
+
+    import TodoList = require("./ui/todoList");
+
+In our `application.ts` let's define on last function to get everything going
+
+    function init() {
+        var container = document.getElementById("todoapp");
+        var app = createApplication();
+
+        Actions.addTodo("Learn some fluss");
+
+        React["renderComponent"](
+            React.DOM.header({id: "header"},
+                React.DOM.h1({}, "todos"),
+                React.DOM.section({ id: "main"},
+
+                    TodoList.TodoList({ todos: app.todos.immutable })
+
+                )), container);
+    }
+
+    init();
+
+We get our container from the DOM and initialize the application object. Then for testing purposes we call our new action
+to create todos. Then we render our todoList together with some html using React.
+
+Notice how we do not pass the applications todos-store directly but it's immutable proxy. It's always good practice for UI to only
+work on immutable application data to not disrupt the data flow flux defines.
+
+After building our app it will display the one todo we created. It cannot do much right now, but we're going to change that. The
+boilerplate is done. Now we can add new UIs and new functionality.
+
+## Creating new Todos from the UI
+
+The spec requires us to have an input field for creating a new todo. The new todo shall be created upon enter. Create a new file
+`ui/newTodo.ts`
+
+    import Actions = require("../actions");
+
+    export var NewTodo = React.createClass({
+
+        handleInput: function(event) {
+            this.setState({ value: event.currentTarget.value })
+        },
+
+        handleKeyDown: function(event) {
+            if (event.keyCode === 13) {
+                Actions.addTodo(this.state.value);
+                this.setState({ value: "" });
+            }
+        },
+
+        getInitialState: function() {
+            return { value: ""}
+        },
+
+        render: function() {
+            return React.DOM.input({ id: "new-todo", placeholder: "What needs to be done?", autofocus: "autofocus",
+                onChange: this.handleInput, onKeyDown: this.handleKeyDown,
+                value: this.state.value })
+        }
+    });
+
+If you're familiar with React this should all be straight forward. We render a [controlled input component}(http://facebook.github.io/react/docs/forms.html#controlled-components)
+to keep track of the user input. Then when the user hits ENTER we simply call our action in `handleKeyDown` and clear the input.
+
+After adding this to the React render call in `application.ts` you can try it out.
+
+    function init() {
+        var container = document.getElementById("todoapp");
+        var app = createApplication();
+
+        Actions.addTodo("Learn some fluss");
+
+        React["renderComponent"](
+            React.DOM.header({id: "header"},
+                React.DOM.h1({}, "todos"),
+
+                NewTodo.NewTodo({}),
+
+                React.DOM.section({ id: "main"},
+                    TodoList.TodoList({ todos: app.todos.immutable })
+                )), container);
+    }
+
+You see no change in the UI entering a new todo. If you're using chrome and have the React-Addon installed you can see that the new todo was created.
+So it seems we need to update our UI to reflect the new state.
+
+Lets add code in `ui/todoList.ts` to update the UI when a new todo is created.
+
+    export var TodoList = React.createClass({
+
+        componentDidMount: function() {
+            var that = this;
+            this.props.todos.newItems()
+                .forEach(function() {
+                    that.forceUpdate();
+                })
+        },
+
+        // (...)
+
+In `componentDidMount` we simply observe the `newItems` stream of our todos-array and tell the component to re-render.
+
+Now, when you enter a new todo it will be displayed in the list.

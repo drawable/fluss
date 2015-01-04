@@ -19,7 +19,7 @@ import BaseActions = require("../src/baseActions")
 class App extends Plugins.PluginContainer {
 
     constructor() {
-        super("App");
+        super();
 
     }
 }

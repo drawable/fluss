@@ -7,6 +7,7 @@
 import Dispatcher = require("./dispatcher");
 import EventChannel = require("./eventChannel");
 import BaseActions = require("./baseActions");
+import Tools = require("./tools");
 
 export interface FDoneCallback {
     (abort?:boolean);
@@ -188,7 +189,7 @@ export class PluginContainer extends EventChannel.ChanneledEmitter implements IP
     private _mementos;
 
     constructor(emitterId?:string) {
-        super(emitterId);
+        super(emitterId || "Container" + Tools.oid(this));
         this._plugins = {};
         this._anyPlugins = [];
         this._protocols = {};
