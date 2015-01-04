@@ -325,7 +325,50 @@ Lets add code in `ui/todoList.ts` to update the UI when a new todo is created.
 
 In `componentDidMount` we simply observe the `newItems` stream of our todos-array and tell the component to re-render.
 
-Now, when you enter a new todo it will be displayed in the list.
+Now, when you enter a new todo it will be displayed in the list. In reactive programming it is good practice to dispose
+a stream when it is not needed anymore. It is the same as unregistering an event handler. So let's improve our solution.
+
+    import Stream = require("fluss/src/stream");
+
+    var componentLifecylcle = {
+
+        _willUnmount:null,
+
+        componentDidMount: function() {
+            this._willUnmount = Stream.createStream("component-unmount");
+        },
+
+        componentWillUnmount: function() {
+            this._willUnmount.push(true);
+            this._willUnmount.dispose();
+        }
+    };
+
+We create a new React mixin that provides a stream that will process whenever the component will unmount. Let's use it in our list.
+
+    export var TodoList = React.createClass({
+
+        mixins: [componentLifecylcle],              // <-- use the mixin
+
+        componentDidMount: function() {
+            var that = this;
+            this.props.todos.newItems()
+                .forEach(function() {
+                    that.forceUpdate();
+                }).until(this._willUnmount);        // <-- dispose on unmount
+        },
+
+        render: function() {
+            return React.DOM.ul({ id: "todo-list" },
+                this.props.todos.map(function(todo, index) {
+                    return React.createElement(Todo, { todo: todo, key: index })
+                })
+            )
+        }
+    });
+
+We simply apply our mixin and add `until(this._willUnmount)` to our stream subscription for newItems. `until` tells the stream
+it is called on, that that stream should automatically close/dispose itself when another stream processes an item.
 
 
 ## Completing todos
@@ -341,7 +384,7 @@ Define the new action in `actions.ts`
 
 
     export function completeTodo(todo) {
-        Dispatcher.dispatch(ACTIONS.ADD_TODO, todo);
+        Dispatcher.dispatch(ACTIONS.COMPLETE_TODO, todo);
     }
 
 Implement the plugin for the action in `plugins/todos.ts`
@@ -373,3 +416,41 @@ After adding the plugin to our application container, the action can be executed
         return app;
     }
 
+Now let's add the required functionality to our UI to use that new action. In `ui/todoList.ts`
+
+    var Todo = React.createClass({
+
+        mixins: [componentLifecylcle],      // <-- Use our mixin
+
+        handleToggle: function() {          // <-- Handle the click
+            if (!this.props.todo.completed) {
+                Actions.completeTodo(this.props.todo);
+            }
+        },
+
+        componentDidMount: function() {
+            var that = this;
+            this.props.todo.updates()       // <-- Watch for updates on the todo...
+                .forEach(function() {
+                    that.forceUpdate();     // <-- and redraw
+                }).until(this._willUnmount);
+        },
+
+        render: function() {
+            return React.DOM.li({ className: this.props.todo.completed ? "completed" : ""},
+                React.DOM.div({ className: "view" },
+                    React.DOM.input({ className: "toggle",
+                                      type: "checkbox",
+                                      checked: this.props.todo.completed,
+                                      onChange: this.handleToggle
+                                    }),
+                    React.DOM.label({ }, this.props.todo.title ),
+                    React.DOM.button({ className: "destroy"})
+                )
+            );
+        }
+    });
+
+We handle the change event on the checkbox and call our action to complete the todo when it is still active. To get UI
+to update we subscribe to the updates of the todo and force a redraw on the component. Again we're using the `componentLifecylce`-mixin
+we created earlier.
