@@ -523,6 +523,24 @@ describe("Data stores", function () {
             expect(store.indexOf(sub)).to.equal(3);
             expect(store.indexOf(imm)).to.equal(3);
         });
+
+        it("can give you the mutable version of a substore if it itself is mutable using item", function() {
+            var store = Store.array([1, 2, 3]);
+            var sub = Store.record({ a: "b" });
+            store.push(sub);
+
+            var imm = sub.immutable;
+
+            var m = store.item(sub);
+
+            expect(imm.isImmutable).to.be.ok();
+            expect(m.isImmutable).not.to.be.ok();
+            expect(m["a"]).to.equal(imm["a"]);
+
+            m.a = 10;
+            expect(m["a"]).to.equal(10);
+            expect(m["a"]).to.equal(imm["a"]);
+        })
     });
 
     describe("using streams they all", function() {

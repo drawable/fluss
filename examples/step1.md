@@ -192,7 +192,9 @@ in TodoMVC.
         render: function() {
             return React.DOM.li({ className: this.props.todo.completed ? "completed" : ""},
                 React.DOM.div({ className: "view" },
-                    React.DOM.input({ className: "toggle", type: "checkbox", checked: this.props.todo.completed }),
+                    React.DOM.input({ className: "toggle",
+                                      type: "checkbox",
+                                      checked: this.props.todo.completed }),
                     React.DOM.label({ }, this.props.todo.title ),
                     React.DOM.button({ className: "destroy"})
                 )
@@ -274,14 +276,16 @@ The spec requires us to have an input field for creating a new todo. The new tod
         },
 
         render: function() {
-            return React.DOM.input({ id: "new-todo", placeholder: "What needs to be done?", autofocus: "autofocus",
+            return React.DOM.input({ id: "new-todo",
+                                     placeholder: "What needs to be done?",
+                                     autofocus: "autofocus",
                 onChange: this.handleInput, onKeyDown: this.handleKeyDown,
                 value: this.state.value })
         }
     });
 
-If you're familiar with React this should all be straight forward. We render a [controlled input component}(http://facebook.github.io/react/docs/forms.html#controlled-components)
-to keep track of the user input. Then when the user hits ENTER we simply call our action in `handleKeyDown` and clear the input.
+If you're familiar with React this should all be straight forward. We render a [controlled input component](http://facebook.github.io/react/docs/forms.html#controlled-components)
+to keep track of the user input. Then when the user hits ENTER we simply call our `addTodo`-action in `handleKeyDown` and clear the input.
 
 After adding this to the React render call in `application.ts` you can try it out.
 
@@ -322,3 +326,31 @@ Lets add code in `ui/todoList.ts` to update the UI when a new todo is created.
 In `componentDidMount` we simply observe the `newItems` stream of our todos-array and tell the component to re-render.
 
 Now, when you enter a new todo it will be displayed in the list.
+
+
+## Completing todos
+
+Let's add functionality to complete a todo.
+
+Define the new action in `actions.ts`
+
+    export enum ACTIONS {
+        ADD_TODO,
+        COMPLETE_TODO       // the new action
+    }
+
+
+    export function completeTodo(todo) {
+        Dispatcher.dispatch(ACTIONS.ADD_TODO, todo);
+    }
+
+Implement the plugin for the action in `plugins/todos.ts`
+
+    export class CompleteTodo extends Plugins.BasePlugin {
+        run(container:Application.Application, action:number, todo:any) {
+            var i = container.todos.indexOf(todo);
+            container[i].complete = true;
+        }
+    }
+
+

@@ -35,6 +35,8 @@ function createUpdateInfo<T>(item:T, value:any, store:IStore, path?:string):OUpd
 }
 
 export interface IStore {
+    item(value:any):any;
+
     newItems():Stream.IStream;
     removedItems():Stream.IStream;
     updates():Stream.IStream;
@@ -141,6 +143,10 @@ class Store implements IStore {
         this.disposeStreams(this._updateStreams);
         this.disposeStreams(this._addItemsStreams);
         this.disposeStreams(this._removeItemsStreams);
+    }
+
+    item(value:any):any {
+        return value;
     }
 }
 
@@ -797,6 +803,15 @@ class ArrayStore extends Store implements IArrayStore {
         }
 
         return this._immutable;
+    }
+
+    item(value:any):any {
+        var i = this.indexOf(value);
+        if (i !== -1) {
+            return this[i];
+        }
+
+        return null;
     }
 }
 
