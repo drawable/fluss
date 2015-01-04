@@ -2,6 +2,8 @@
 
 The [TodoMVC specification](https://github.com/tastejs/todomvc/blob/master/app-spec.md) tells us everything we need.
 
+If you're just interested in the result you can see the final solution here (link will follow).
+
 ## Data
 
 Of course we'll need a todo. It has the following fields
@@ -454,3 +456,5 @@ Now let's add the required functionality to our UI to use that new action. In `u
 We handle the change event on the checkbox and call our action to complete the todo when it is still active. To get UI
 to update we subscribe to the updates of the todo and force a redraw on the component. Again we're using the `componentLifecylce`-mixin
 we created earlier.
+
+"Uncompleting" a todo should be an easy exercise now. Try it yourself. When you're having problems you can look at the final solution here (link will follow).

@@ -10,6 +10,6 @@ The first step will recreate the app with all functionality described in the
 then add further functionality to demonstrate different aspects of fluss that are not covered by the original specification.
 
 * [Todos - Step 1. The standard application](step1.md)
-* Todos - Step 2. Undo and error handling (to be developed)
-* Todos - Step 3. Server side fluss - storage (to be developed)
-* Todos - Step 4. Collaborative todos (to be developed)
+* Todos - Step 2. Undo and error handling (coming soon)
+* Todos - Step 3. Server side fluss - storage (coming soon)
+* Todos - Step 4. Collaborative todos (to be coming soon)
