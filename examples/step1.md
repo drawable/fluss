@@ -348,9 +348,28 @@ Implement the plugin for the action in `plugins/todos.ts`
 
     export class CompleteTodo extends Plugins.BasePlugin {
         run(container:Application.Application, action:number, todo:any) {
-            var i = container.todos.indexOf(todo);
-            container[i].complete = true;
+            // the given todo may be immutable
+            container.todos.item(todo).complete = true;
         }
     }
 
+The action may be invoke from anywhere including the UI. Remeber that the UI should only use immutable stores. So when passing
+a store from the UI to an action, that will be immutable (substores of immutable stores are immutable too). The container.todos
+on the other hand is the mutable array store holding our todos. The `item`-method returns the mutable item for the given one.
+If the value given to `item` is already mutable then you get that value back. So it's safe to call `item` whithout knowing what
+kind of item you have.
+
+So we retrieve the mutable version of the item and set it's `completed` flag to true.
+
+After adding the plugin to our application container, the action can be executed from anywhere.
+
+    function createApplication() {
+        var app = new Application();
+
+        app.wrap(Actions.ACTIONS.ADD_TODO, new TodoPlugins.AddTodo());
+        // Add the new plugin
+        app.wrap(Actions.ACTIONS.COMPLETE_TODO, new TodoPlugins.CompleteTodo());
+
+        return app;
+    }
 

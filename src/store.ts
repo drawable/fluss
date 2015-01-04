@@ -960,3 +960,5 @@ export function array(initial?:any[]):IArrayStore {
         return new ArrayStore()
     }
 }
+
+//TEst
