@@ -46,6 +46,12 @@ We need
 * A combined trigger/indicator for toggling all todos and displaying if all are completed
 * Buttons for filtering all, only active, only completed todos
 
+### Preparation
+
+Create a new project like you use to do. Install fluss
+
+    npm install fluss
+
 ### The application object
 
 We start by creating an application object. This will hold the stores and will be the container for the plugins. Plugins are
@@ -89,8 +95,8 @@ We define all our actions in an an enum. Enums will become numbers eventually (a
 when compiled to Javascipt. So you should define your actions in one place and one enum only to avoid clashes. Using
 initializers on the enums is possible but in real life hard to keep track of.
 
-The function addTodo is not necessary but good practice as it gives us the opportunity to provide a well defined signature
-for all our actions.
+The function `addTodo` is not necessary but good practice as it gives us the opportunity to provide a well defined signature
+for our action.
 
 
 Next we implement a plugin for that action. We'll create a new file `plugins/todos.ts` for that.
@@ -105,10 +111,8 @@ Next we implement a plugin for that action. We'll create a new file `plugins/tod
         }
     }
 
-At the moment the `run` method is all we need. The container (our application), the action and an arbitrary number of
-additional parameters are passed to that method. The actual implementation can declare proper parameters. For our
-addTodo-Action we'll expect the text of the todo to be passed. When the action is executed we simply create
-a new record store and push it to the list of todos.
+At the moment the `run` method is all we need. Besides the container (our application) and the action we expect the text
+of the todo to be passed. When the action is executed we simply create a new record store and push it to the list of todos.
 
 #### Adding the plugin to the application
 
@@ -135,8 +139,8 @@ for that action beginning with the last plugin that was wrapped for that action.
 
 ### UI
 
-Now we're god to go for adding a todo. But we need a UI first. We'll use React-js for building the UI. I won't go into details
-on how React works. It's not too sophisticated but you should be familiar with the basic principles of React in order to follow.
+Now we're good to go for adding a todo. But we need a UI first. We'll use React-js for building the UI. I won't go into details
+on how React works. What we'll do is not too sophisticated but you should be familiar with the basic principles of React in order to follow.
 
 #### Basic html
 
