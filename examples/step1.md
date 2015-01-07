@@ -332,7 +332,7 @@ a stream when it is not needed anymore. It is the same as unregistering an event
 
     import Stream = require("fluss/src/stream");
 
-    var componentLifecylcle = {
+    var componentLifecycle = {
 
         _willUnmount:null,
 
@@ -350,7 +350,7 @@ We create a new React mixin that provides a stream that will process whenever th
 
     export var TodoList = React.createClass({
 
-        mixins: [componentLifecylcle],              // <-- use the mixin
+        mixins: [componentLifecycle],              // <-- use the mixin
 
         componentDidMount: function() {
             var that = this;
@@ -422,7 +422,7 @@ Now let's add the required functionality to our UI to use that new action. In `u
 
     var Todo = React.createClass({
 
-        mixins: [componentLifecylcle],      // <-- Use our mixin
+        mixins: [componentLifecycle],      // <-- Use our mixin
 
         handleToggle: function() {          // <-- Handle the click
             if (!this.props.todo.completed) {
@@ -454,7 +454,192 @@ Now let's add the required functionality to our UI to use that new action. In `u
     });
 
 We handle the change event on the checkbox and call our action to complete the todo when it is still active. To get UI
-to update we subscribe to the updates of the todo and force a redraw on the component. Again we're using the `componentLifecylce`-mixin
+to update we subscribe to the updates of the todo and force a redraw on the component. Again we're using the `componentLifecyce`-mixin
 we created earlier.
 
 "Uncompleting" a todo should be an easy exercise now. Try it yourself. When you're having problems you can look at the final solution here (link will follow).
+
+The process will look similar from now on. New action, new plugin, integrate trigger, setup streams to update the ui.
+
+## Removing a todo
+
+Declare the new action in `actions.ts`
+
+    export enum ACTIONS {
+        ADD_TODO,
+        COMPLETE_TODO,
+        UNCOMPLETE_TODO,
+        REMOVE_TODO
+    }
+
+    export function removeTodo(todo) {
+        Dispatcher.dispatch(ACTIONS.REMOVE_TODO, todo);
+    }
+
+Add the trigger to the UI
+
+    var Todo = React.createClass({
+
+        //(...)
+
+        // Handle the click on the destroy button
+        handleDestroy: function() {
+            Actions.removeTodo(this.props.todo);
+        },
+
+        //(...)
+        render: function() {
+            return React.DOM.li({ className: this.props.todo.completed ? "completed" : ""},
+                    //(...)
+                    React.DOM.button({ className: "destroy",
+                                       onClick: this.handleDestroy })       // new onClick handler
+                )
+            );
+        }
+    });
+
+Implement the plugin in `plugins/todos.ts`
+
+    export class RemoveTodo extends Plugins.BasePlugin {
+        run(container:Application.Application, action:number, todo:any) {
+            container.todos.splice(container.todos.indexOf(todo), 1);
+        }
+    }
+
+We don't need the `item()` method because indexOf works on immutable proxies too.
+
+Register the plugin in `application.ts`
+
+    app.wrap(Actions.ACTIONS.REMOVE_TODO, new TodoPlugins.RemoveTodo());
+
+And make the UI update when todos are removed
+
+    export var TodoList = React.createClass({
+
+        mixins: [componentLifecycle],
+
+        componentDidMount: function() {
+            var that = this;
+            this.props.todos.newItems()
+                .forEach(function() {
+                    that.forceUpdate();
+                }).until(this._willUnmount);
+
+            // New stream subscription for removed items
+            this.props.todos.removedItems()
+                .forEach(function() {
+                    that.forceUpdate();
+                }).until(this._willUnmount);
+        },
+
+        (...)
+    });
+
+## (Un-)Complete all and reflect the state of all todos in the checkbox
+
+The spec requires us to provide a checkbox that
+
+* Let's us complete all todos
+* Let's us uncomplete all todos
+* Reflect if all todos are completed (checkbox checked)
+
+So we need two actions and the plugins. That's all familiar to us now.
+
+`actions.ts`
+
+    export enum ACTIONS {
+        ADD_TODO,
+        COMPLETE_TODO,
+        UNCOMPLETE_TODO,
+        REMOVE_TODO,
+        COMPLETE_ALL,
+        UNCOMPLETE_ALL
+    }
+
+    export function completeAll() {
+        Dispatcher.dispatch(ACTIONS.COMPLETE_ALL);
+    }
+
+    export function uncompleteAll() {
+        Dispatcher.dispatch(ACTIONS.UNCOMPLETE_ALL);
+    }
+
+`plugins/todos.ts`
+
+    export class CompleteAll extends Plugins.BasePlugin {
+        run(container:Application.Application, action:number, todo:any) {
+            container.todos.forEach(function(todo) {
+                todo.completed = true;
+            })
+        }
+    }
+
+    export class UncompleteAll extends Plugins.BasePlugin {
+        run(container:Application.Application, action:number, todo:any) {
+            container.todos.forEach(function(todo) {
+                todo.completed = false;
+            })
+        }
+    }
+
+`application.ts`
+
+    function createApplication() {
+        var app = new Application();
+
+        //(...)
+        app.wrap(Actions.ACTIONS.COMPLETE_ALL, new TodoPlugins.CompleteAll());
+        app.wrap(Actions.ACTIONS.UNCOMPLETE_ALL, new TodoPlugins.UncompleteAll());
+
+        return app;
+    }
+
+The interesting part is the UI component.
+
+    export var CheckAll = React.createClass({
+
+        mixins: [componentLifecycle],
+
+        calculateAllComplete: function() {
+            return this.props.todos.every(function(todo) {
+                return todo.completed === true;
+            })
+        },
+
+        handleChange: function(event) {
+            if (event.target.checked) {
+                Actions.completeAll();
+            } else {
+                Actions.uncompleteAll();
+            }
+        },
+
+        componentDidMount: function() {
+            var that = this;
+            this.props.todos.newItems()
+                .combine(this.props.todos.removedItems())
+                .forEach(function() {
+                    that.forceUpdate();
+                }).until(this._willUnmount);
+
+            this.props.todos.updates().filter(function(update) {
+                return update.item === "completed";
+            }).forEach(function() {
+                that.forceUpdate();
+            }).until(this._willUnmount);
+        },
+
+        render: function() {
+            return React.DOM.input({ id: "toggle-all",
+                                     type: "checkbox",
+                                     checked: this.calculateAllComplete(),
+                                     onChange: this.handleChange})
+        }
+    });
+
+It renders a checkbox as it's supposed to. The checked-state is calculated by checking if all todos are completed.
+
+As usual we subscribe some streams to force the update on our component. The first is a combination of newItems() and
+removedItems(). The second on is an update-stream on the todos-array that filters those that are updates on the completed
+flag of a single todo. Remember that updates of substores "bubble" up through the stores and we'll take advantage of that.
+
