@@ -15,12 +15,12 @@ export function isStore(thing):boolean {
 export interface OUpdateInfo<T> {
     path?:string;
     item:T;
+    rootItem?:T;
     value:any;
     store:IStore
-    old?:any
 }
 
-function createUpdateInfo<T>(item:T, value:any, store:IStore, path?:string, old?:any):OUpdateInfo<T> {
+function createUpdateInfo<T>(item:T, value:any, store:IStore, path?:string, rootItem?:T):OUpdateInfo<T> {
 
     var r = {
         item:item,
@@ -32,8 +32,10 @@ function createUpdateInfo<T>(item:T, value:any, store:IStore, path?:string, old?
         r["path"] = path;
     }
 
-    if (old) {
-        r["old"] = old;
+    if (rootItem != null) {
+        r["rootItem"] = rootItem;
+    } else {
+        r["rootItem"] = item;
     }
 
     return r;
@@ -195,7 +197,11 @@ class RecordStore extends Store implements IRecordStore {
             var that = this;
             subStream = value.updates();
             subStream.forEach(function(update) {
-                var info = createUpdateInfo<string>(update.item, update.value, update.store, update.path ? name + "." + update.path : name + "." + update.item);
+                var info = createUpdateInfo<string>(update.item,
+                                                    update.value,
+                                                    update.store,
+                                                    update.path ? name + "." + update.path : name + "." + update.item,
+                                                    name);
                 that._updateStreams.forEach(function(stream) {
                     stream.push(info);
                 })
@@ -505,10 +511,10 @@ class ArrayStore extends Store implements IArrayStore {
 
     constructor(initial?:any[], adder?:Stream.IStream, remover?:Stream.IStream, updater?:Stream.IStream) {
         super();
+        this._substreams = {};
         this._data = initial || [];
         this._maxProps = 0;
         this.updateProperties();
-        this._substreams = {};
         this._synced = true;
 
         var that = this;
@@ -578,17 +584,16 @@ class ArrayStore extends Store implements IArrayStore {
         var that = this;
 
         this.updates().forEach(function(update) {
-            updater.push(createUpdateInfo(update.item, callbackfn(update.value, update.item, that._data), update.store));
+            updater.push(createUpdateInfo(update.rootItem, callbackfn(that._data[update.rootItem], update.rootItem, that._data), update.store));
         });
 
         this.newItems().forEach(function(update) {
-            adder.push(createUpdateInfo(update.item, callbackfn(update.value, update.item, that._data), update.store));
+            adder.push(createUpdateInfo(update.rootItem, callbackfn(that._data[update.rootItem], update.rootItem, that._data), update.store));
         });
 
         this.removedItems().forEach(function(update) {
-            remover.push(createUpdateInfo(update.item, update.value, update.store));        // Tha value does not matter here, save the call to the callback
+            remover.push(createUpdateInfo(update.rootItem, update.value, update.store));        // The value does not matter here, save the call to the callback
         });
-
 
         return mappedStore;
     }
@@ -640,35 +645,35 @@ class ArrayStore extends Store implements IArrayStore {
         var filteredStore = new ArrayStore(filtered, adder, remover, updater);
 
         this.newItems().forEach(function(update) {
-            if (callbackfn(update.value, update.item, that._data)) {
-                if (mapIndex(update.item) != null) {
-                    adder.push(createUpdateInfo(mapIndex(update.item), update.value, update.store));
+            if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
+                if (mapIndex(update.rootItem) != null) {
+                    adder.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
                 } else {
-                    adder.push(createUpdateInfo(getClosestLeftMap(update.item) + 1, update.value, update.store));
+                    adder.push(createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
                 }
-                addMap(update.item, filteredStore.indexOf(update.value));
+                addMap(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
             }
         });
 
         this.removedItems().forEach(function(update) {
-            if (mapIndex(update.item) != null) {
-                remover.push(createUpdateInfo(mapIndex(update.item), update.value, update.store));
-                removeMap(update.item);
+            if (mapIndex(update.rootItem) != null) {
+                remover.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
+                removeMap(update.rootItem);
             }
         });
 
         this.updates().forEach(function(update) {
-            if (callbackfn(update.value, update.item, that._data)) {
-                if (mapIndex(update.item) != null) {
-                    updater.push(createUpdateInfo(mapIndex(update.item), update.value, update.store))
+            if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
+                if (mapIndex(update.rootItem) != null) {
+                    updater.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store))
                 } else {
-                    adder.push(createUpdateInfo(getClosestLeftMap(update.item) + 1, update.value, update.store));
-                    addMap(update.item, filteredStore.indexOf(update.value));
+                    adder.push(createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
+                    addMap(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
                 }
             } else {
-                if (typeof indexMap[update.item] !== "undefined") {
-                    remover.push(createUpdateInfo(mapIndex(update.item), update.value, update.store));
-                    removeMap(update.item);
+                if (typeof indexMap[update.rootItem] !== "undefined") {
+                    remover.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
+                    removeMap(update.rootItem);
                 }
             }
         });
@@ -745,7 +750,11 @@ class ArrayStore extends Store implements IArrayStore {
                 updates: value.updates()
             };
             substream.updates.forEach(function(update) {
-                var updateInfo = createUpdateInfo<string>(update.item, update.value, that, update.path ? item + "." + update.path : item + "." + update.item);
+                var updateInfo = createUpdateInfo<string>(update.item,
+                                                          update.value,
+                                                          that,
+                                                          update.path ? item + "." + update.path : item + "." + update.item,
+                                                          item);
                 that._updateStreams.forEach(function(stream) {
                     stream.push(updateInfo);
                 })
@@ -793,7 +802,7 @@ class ArrayStore extends Store implements IArrayStore {
                             that.disposeSubstream(old);
                             that.setupSubStreams(index, value);
                             that._updateStreams.forEach(function(stream) {
-                                stream.push(createUpdateInfo<number>(index, that._data[index], that, null, old));
+                                stream.push(createUpdateInfo<number>(index, that._data[index], that, null));
                             })
                         }
                     }

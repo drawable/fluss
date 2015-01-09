@@ -635,6 +635,28 @@ describe("Data stores", function () {
             expect(array[2]).to.equal(2);
         });
 
+        it("will updated filtered stores when the base store changes and manages nested stores", function() {
+
+            var array = Store.array([]);
+            array.push(Store.record({ a: 1 }));
+            array.push(Store.record({ a: 2 }));
+            array.push(Store.record({ a: 3 }));
+            array.push(Store.record({ a: 4 }));
+            array.push(Store.record({ a: 5 }));
+
+            var evens = array.filter(function(value) {
+                return value.a % 2 === 0;
+            });
+
+            expect(evens.length).to.equal(2);
+
+            array.push(Store.record({ a: 6 }));
+            expect(evens.length).to.equal(3);
+
+            array[0].a = 20;
+            expect(evens.length).to.equal(4);
+        });
+
         it("will updated mixed filter/map stores automatically upon changes of the base store", function() {
             var array = Store.array([1, 2, 3, 4, 5]);
             var evenTwice = array.filter(function(value) { return value % 2 === 0; })
