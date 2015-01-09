@@ -173,6 +173,7 @@ export class Stream implements IStream {
         return this._name;
     }
 
+
     get length():number {
         return this._length;
     }

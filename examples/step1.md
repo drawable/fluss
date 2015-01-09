@@ -643,3 +643,19 @@ As usual we subscribe some streams to force the update on our component. The fir
 removedItems(). The second on is an update-stream on the todos-array that filters those that are updates on the completed
 flag of a single todo. Remember that updates of substores "bubble" up through the stores and we'll take advantage of that.
 
+## Number of open items
+
+In the footer the app should display the number of open todos so let's do that. This step is UI only for a change.
+
+The UI component looks like this:
+
+    export var TodoCount = React.createClass({
+
+        render: function() {
+            var count = this.props.todos.length;
+            return React.DOM.span({ id: "todo-count"}, React.DOM.strong({}, count), count === 1 ? " item left" : " items left");
+        }
+    });
+
+And we utilize in our `application.ts`
+

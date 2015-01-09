@@ -17,9 +17,10 @@ export interface OUpdateInfo<T> {
     item:T;
     value:any;
     store:IStore
+    old?:any
 }
 
-function createUpdateInfo<T>(item:T, value:any, store:IStore, path?:string):OUpdateInfo<T> {
+function createUpdateInfo<T>(item:T, value:any, store:IStore, path?:string, old?:any):OUpdateInfo<T> {
 
     var r = {
         item:item,
@@ -29,6 +30,10 @@ function createUpdateInfo<T>(item:T, value:any, store:IStore, path?:string):OUpd
 
     if (path) {
         r["path"] = path;
+    }
+
+    if (old) {
+        r["old"] = old;
     }
 
     return r;
@@ -494,15 +499,37 @@ class ArrayStore extends Store implements IArrayStore {
     private _maxProps:number;
     private _substreams;
     private _immutable:IImmutableArrayStore;
+    private _synced;
 
     [n:number]:any;
 
-    constructor(initial?:any[]) {
+    constructor(initial?:any[], adder?:Stream.IStream, remover?:Stream.IStream, updater?:Stream.IStream) {
         super();
         this._data = initial || [];
         this._maxProps = 0;
         this.updateProperties();
         this._substreams = {};
+        this._synced = true;
+
+        var that = this;
+
+        if (adder) {
+            adder.forEach(function (update) {
+                that.splice(update.item, 0, update.value);
+            });
+        }
+
+        if (remover) {
+            remover.forEach(function(update) {
+                that.splice(update.item, 1);
+            })
+        }
+
+        if (updater) {
+            updater.forEach(function(update) {
+                that[update.item] = update.value;
+            })
+        }
     }
 
     toString():string {
@@ -543,12 +570,110 @@ class ArrayStore extends Store implements IArrayStore {
 
     map(callbackfn: (value: any, index: number, array: any[]) => any, thisArg?: any):IArrayStore {
         var mapped = this._data.map(callbackfn, thisArg);
-        return new ArrayStore(mapped)
+
+        var adder = Stream.createStream();
+        var remover = Stream.createStream();
+        var updater = Stream.createStream();
+        var mappedStore = new ArrayStore(mapped, adder, remover, updater);
+        var that = this;
+
+        this.updates().forEach(function(update) {
+            updater.push(createUpdateInfo(update.item, callbackfn(update.value, update.item, that._data), update.store));
+        });
+
+        this.newItems().forEach(function(update) {
+            adder.push(createUpdateInfo(update.item, callbackfn(update.value, update.item, that._data), update.store));
+        });
+
+        this.removedItems().forEach(function(update) {
+            remover.push(createUpdateInfo(update.item, update.value, update.store));        // Tha value does not matter here, save the call to the callback
+        });
+
+
+        return mappedStore;
     }
 
     filter(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): IArrayStore {
-        var filtered = this._data.filter(callbackfn, thisArg);
-        return new ArrayStore(filtered);
+        var that = this;
+        var indexMap = [];
+        var filtered = [];
+
+        function addMap(fromIndex, toIndex) {
+            indexMap[fromIndex] = toIndex;
+            for (var i = fromIndex + 1; i < indexMap.length; i++) {
+                indexMap[i]++;
+            }
+        }
+
+        function removeMap(forIndex) {
+            for (var i = forIndex + 1; i < indexMap.length; i++) {
+                indexMap[i]--;
+            }
+
+            delete indexMap[forIndex];
+        }
+
+        function mapIndex(fromIndex):number {
+            return indexMap[fromIndex];
+        }
+
+        function getClosestLeftMap(forIndex):number {
+            var i = forIndex;
+
+            while (indexMap[i] == null && i > -2) {
+                i--;
+            }
+
+            return indexMap[i];
+        }
+
+        this._data.forEach(function(value, index) {
+            if (callbackfn(value, index, that._data)) {
+                addMap(index, filtered.length);
+                filtered.push(value);
+            }
+        });
+
+        var adder = Stream.createStream();
+        var remover = Stream.createStream();
+        var updater = Stream.createStream();
+        var filteredStore = new ArrayStore(filtered, adder, remover, updater);
+
+        this.newItems().forEach(function(update) {
+            if (callbackfn(update.value, update.item, that._data)) {
+                if (mapIndex(update.item) != null) {
+                    adder.push(createUpdateInfo(mapIndex(update.item), update.value, update.store));
+                } else {
+                    adder.push(createUpdateInfo(getClosestLeftMap(update.item) + 1, update.value, update.store));
+                }
+                addMap(update.item, filteredStore.indexOf(update.value));
+            }
+        });
+
+        this.removedItems().forEach(function(update) {
+            if (mapIndex(update.item) != null) {
+                remover.push(createUpdateInfo(mapIndex(update.item), update.value, update.store));
+                removeMap(update.item);
+            }
+        });
+
+        this.updates().forEach(function(update) {
+            if (callbackfn(update.value, update.item, that._data)) {
+                if (mapIndex(update.item) != null) {
+                    updater.push(createUpdateInfo(mapIndex(update.item), update.value, update.store))
+                } else {
+                    adder.push(createUpdateInfo(getClosestLeftMap(update.item) + 1, update.value, update.store));
+                    addMap(update.item, filteredStore.indexOf(update.value));
+                }
+            } else {
+                if (typeof indexMap[update.item] !== "undefined") {
+                    remover.push(createUpdateInfo(mapIndex(update.item), update.value, update.store));
+                    removeMap(update.item);
+                }
+            }
+        });
+
+        return filteredStore;
     }
 
     reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue?: any):any {
@@ -668,7 +793,7 @@ class ArrayStore extends Store implements IArrayStore {
                             that.disposeSubstream(old);
                             that.setupSubStreams(index, value);
                             that._updateStreams.forEach(function(stream) {
-                                stream.push(createUpdateInfo<number>(index, that._data[index], that));
+                                stream.push(createUpdateInfo<number>(index, that._data[index], that, null, old));
                             })
                         }
                     }
@@ -761,6 +886,7 @@ class ArrayStore extends Store implements IArrayStore {
             index++;
         });
 
+        /* Removed. This should not be necessary and it simplifies the reactive array
         // Index is now at the first item after the last inserted value. So if deleteCount != values.length
         // the items after the insert/remove moved around
         if (deleteCount !== values.length) {
@@ -771,7 +897,7 @@ class ArrayStore extends Store implements IArrayStore {
                 })
             }
         }
-
+*/
         this.updateProperties();
         return removed;
     }
@@ -960,5 +1086,3 @@ export function array(initial?:any[]):IArrayStore {
         return new ArrayStore()
     }
 }
-
-//TEst
