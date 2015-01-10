@@ -604,18 +604,22 @@ class ArrayStore extends Store implements IArrayStore {
         var filtered = [];
 
         function addMap(fromIndex, toIndex) {
-            indexMap[fromIndex] = toIndex;
+            indexMap[fromIndex] = parseInt(toIndex);
             for (var i = fromIndex + 1; i < indexMap.length; i++) {
-                indexMap[i]++;
+                if (indexMap[i] >= 0) {
+                    indexMap[i]++;
+                }
             }
         }
 
         function removeMap(forIndex) {
             for (var i = forIndex + 1; i < indexMap.length; i++) {
-                indexMap[i]--;
+                if (indexMap[i] >= 0) {
+                    indexMap[i]--;
+                }
             }
 
-            delete indexMap[forIndex];
+            indexMap[forIndex] = - 1;
         }
 
         function mapIndex(fromIndex):number {
@@ -625,10 +629,11 @@ class ArrayStore extends Store implements IArrayStore {
         function getClosestLeftMap(forIndex):number {
             var i = forIndex;
 
-            while (indexMap[i] == null && i > -2) {
+            while ((indexMap[i] == null || indexMap[i] === -1) && i > -2) {
                 i--;
             }
 
+            if (i < 0) return -1;
             return indexMap[i];
         }
 
@@ -646,7 +651,7 @@ class ArrayStore extends Store implements IArrayStore {
 
         this.newItems().forEach(function(update) {
             if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
-                if (mapIndex(update.rootItem) != null) {
+                if (mapIndex(update.rootItem) >= 0) {
                     adder.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
                 } else {
                     adder.push(createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
@@ -656,7 +661,7 @@ class ArrayStore extends Store implements IArrayStore {
         });
 
         this.removedItems().forEach(function(update) {
-            if (mapIndex(update.rootItem) != null) {
+            if (mapIndex(update.rootItem) >= 0) {
                 remover.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
                 removeMap(update.rootItem);
             }
@@ -664,7 +669,7 @@ class ArrayStore extends Store implements IArrayStore {
 
         this.updates().forEach(function(update) {
             if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
-                if (mapIndex(update.rootItem) != null) {
+                if (mapIndex(update.rootItem) >= 0) {
                     updater.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store))
                 } else {
                     adder.push(createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));

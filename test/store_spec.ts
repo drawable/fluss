@@ -638,23 +638,25 @@ describe("Data stores", function () {
         it("will updated filtered stores when the base store changes and manages nested stores", function() {
 
             var array = Store.array([]);
-            array.push(Store.record({ a: 1 }));
-            array.push(Store.record({ a: 2 }));
-            array.push(Store.record({ a: 3 }));
-            array.push(Store.record({ a: 4 }));
-            array.push(Store.record({ a: 5 }));
+            array.push(Store.record({ a: false }));
+            array.push(Store.record({ a: false }));
 
-            var evens = array.filter(function(value) {
-                return value.a % 2 === 0;
+            var filtered = array.filter(function(value) {
+                return value.a === false;
             });
 
-            expect(evens.length).to.equal(2);
+            expect(filtered.length).to.equal(array.length);
 
-            array.push(Store.record({ a: 6 }));
-            expect(evens.length).to.equal(3);
+            array.forEach(function(item) {
+                item.a = true;
+            });
 
-            array[0].a = 20;
-            expect(evens.length).to.equal(4);
+            expect(filtered.length).to.equal(0);
+
+            array.forEach(function(item) {
+                item.a = false;
+            });
+            expect(filtered.length).to.equal(array.length);
         });
 
         it("will updated mixed filter/map stores automatically upon changes of the base store", function() {
