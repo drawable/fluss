@@ -183,8 +183,7 @@ Since we're using React with typescript we need to install proper typedefinition
 
 ## Todo-List Component
 
-We start by creating a todo list component that display the todos in the array-store. Create a new file `ui/todosList.ts`.
-(This is some old style React atm. Will update to the new API soon).
+We start by creating a todo list component that displays the todos in the array-store. Create a new file `ui/todosList.ts`.
 
 Let's first define a component that display a todo. It will receive on property `todo` and we simply display it's properties according to the styles
 in TodoMVC.
@@ -212,7 +211,7 @@ Now we define a list component that displays one Todo-Component for every item i
         render: function() {
             return React.DOM.ul({ id: "todo-list" },
                 this.props.todos.map(function(todo, index) {
-                    return Todo({ todo: todo, key: index })
+                    return React.createElement(Todo, { todo: todo, key: index })
                 })
             )
         }
@@ -237,7 +236,7 @@ In our `application.ts` let's define on last function to get everything going
                 React.DOM.h1({}, "todos"),
                 React.DOM.section({ id: "main"},
 
-                    TodoList.TodoList({ todos: app.todos.immutable })
+                    React.createElement(TodoList.TodoList, { todos: app.todos.immutable })
 
                 )), container);
     }
@@ -301,10 +300,10 @@ After adding this to the React render call in `application.ts` you can try it ou
             React.DOM.header({id: "header"},
                 React.DOM.h1({}, "todos"),
 
-                NewTodo.NewTodo({}),
+                React.createElement(NewTodo.NewTodo, {}),
 
                 React.DOM.section({ id: "main"},
-                    TodoList.TodoList({ todos: app.todos.immutable })
+                    React.createElement(TodoList.TodoList, { todos: app.todos.immutable })
                 )), container);
     }
 
@@ -330,27 +329,13 @@ In `componentDidMount` we simply observe the `newItems` stream of our todos-arra
 Now, when you enter a new todo it will be displayed in the list. In reactive programming it is good practice to dispose
 a stream when it is not needed anymore. It is the same as unregistering an event handler. So let's improve our solution.
 
-    import Stream = require("fluss/src/stream");
+    import Mixins = require("fluss/src/reactMixins");
 
-    var componentLifecycle = {
-
-        _willUnmount:null,
-
-        componentDidMount: function() {
-            this._willUnmount = Stream.createStream("component-unmount");
-        },
-
-        componentWillUnmount: function() {
-            this._willUnmount.push(true);
-            this._willUnmount.dispose();
-        }
-    };
-
-We create a new React mixin that provides a stream that will process whenever the component will unmount. Let's use it in our list.
+Fluss provides a mixin that creates a stream that will process whenever the component will unmount. Let's use it in our list.
 
     export var TodoList = React.createClass({
 
-        mixins: [componentLifecycle],              // <-- use the mixin
+        mixins: [Mixins.componentLifecycle],              // <-- use the mixin
 
         componentDidMount: function() {
             var that = this;
@@ -398,7 +383,7 @@ Implement the plugin for the action in `plugins/todos.ts`
         }
     }
 
-The action may be invoke from anywhere including the UI. Remeber that the UI should only use immutable stores. So when passing
+The action may be invoked from anywhere including the UI. Remeber that the UI should only use immutable stores. So when passing
 a store from the UI to an action, that will be immutable (substores of immutable stores are immutable too). The container.todos
 on the other hand is the mutable array store holding our todos. The `item`-method returns the mutable item for the given one.
 If the value given to `item` is already mutable then you get that value back. So it's safe to call `item` whithout knowing what
@@ -422,7 +407,7 @@ Now let's add the required functionality to our UI to use that new action. In `u
 
     var Todo = React.createClass({
 
-        mixins: [componentLifecycle],      // <-- Use our mixin
+        mixins: [Mixins.componentLifecycle],      // <-- Use the mixin
 
         handleToggle: function() {          // <-- Handle the click
             if (!this.props.todo.completed) {
@@ -459,7 +444,7 @@ we created earlier.
 
 "Uncompleting" a todo should be an easy exercise now. Try it yourself. When you're having problems you can look at the final solution here (link will follow).
 
-The process will look similar from now on. New action, new plugin, integrate trigger, setup streams to update the ui.
+The process for adding new actions will look similar from now on. New action, new plugin, integrate trigger, setup streams to update the ui.
 
 ## Removing a todo
 
@@ -516,7 +501,7 @@ And make the UI update when todos are removed
 
     export var TodoList = React.createClass({
 
-        mixins: [componentLifecycle],
+        mixins: [Mixins.componentLifecycle],
 
         componentDidMount: function() {
             var that = this;
@@ -598,7 +583,7 @@ The interesting part is the UI component.
 
     export var CheckAll = React.createClass({
 
-        mixins: [componentLifecycle],
+        mixins: [Mixins.componentLifecycle],
 
         calculateAllComplete: function() {
             return this.props.todos.every(function(todo) {
@@ -640,7 +625,7 @@ The interesting part is the UI component.
 It renders a checkbox as it's supposed to. The checked-state is calculated by checking if all todos are completed.
 
 As usual we subscribe some streams to force the update on our component. The first is a combination of newItems() and
-removedItems(). The second on is an update-stream on the todos-array that filters those that are updates on the completed
+removedItems(). The second is an update-stream on the todos-array that filters those that are updates on the completed
 flag of a single todo. Remember that updates of substores "bubble" up through the stores and we'll take advantage of that.
 
 ## Number of open items
@@ -657,5 +642,43 @@ The UI component looks like this:
         }
     });
 
-And we utilize in our `application.ts`
+You may ask youself how `this.props.todos.length` gives the amount of the uncompleted todos only. The secret lies in the way
+we provide the property to the component in `application.ts`
+
+    function init() {
+        var container = document.getElementById("todoapp");
+        var app = createApplication();
+
+        Actions.addTodo("Learn some fluss");
+
+        // Always pass immutable stores to the frontend to prevent disruption of the data flow.
+        React["renderComponent"](
+            React.DOM.header({id: "header"},
+                React.DOM.h1({}, "todos"),
+                React.createElement(NewTodo.NewTodo, {}),
+                React.DOM.section({ id: "main"},
+                    React.createElement(CheckAll.CheckAll, { todos: app.todos.immutable }),
+                    React.createElement(TodoList.TodoList, { todos: app.todos.immutable })
+                ),
+                React.DOM.footer({ id: "footer"},
+                    React.createElement(TodoCount.TodoCount, { todos: app.todos
+                                                                         .filter(function(todo) {
+                                                                            return todo.completed === false
+                                                                         })
+                                                                         .immutable
+                                                             } ))
+            )
+            , container);
+    }
+
+We provide a filtered array-store of all todos only containing the todos that are not completed. That filtered store is
+reactive as well in two ways. It automatically updates whenever the original todos-array updates, i.e. it "looses" a todo when
+one is removed or completed in the original array and it gaines one when a new todo is created or uncompleted in the original array.
+And it of course provides all the streams for updates, newItems and removedItems that process, whenever one of these "losses"
+or "gains" happen.
+
+## Clearing all completed todos
+
+## Routing
+
 

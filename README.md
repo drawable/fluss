@@ -4,14 +4,15 @@ fluss
 fluss is an opinionated application framework for the frontend and the backend. It is an interpretation of the
 [flux architecture](http://facebook.github.io/flux/) that establishes a unidirectional flow of data through the application.
 
-fluss is written in Typescript. It can be used on the frontend and on the backend. Views created with [React](http://facebook.github.io/react/)
-are the target but fluss has no dependencies whatsoever to React. Using other view technologies is possible.
+fluss is written in Typescript but it can be used in JavaScript perfectly. It can be used on the frontend and on the
+backend. Views created with [React](http://facebook.github.io/react/) are the target but fluss has no dependencies
+whatsoever to React. Using other view technologies is possible.
 
 ## Main features
 
 * Streams: A simple stream implementation for reactive programming.
 * Stores: An implementation of record stores and array stores for keeping application state.
-  These provide reactive streams for updates. Stores can be nested. They provide an
+  These provide reactive streams for updates. Stores can be nested. Stores provide an
   immutable proxy.
 * Actions. Really simple. You need to provide the functions yourself or call a generic dispatcher function.
 * A Plugin-System that allows the developer to encapsulate the functionality behind an action in one class. It provides an
@@ -34,12 +35,40 @@ Create stores ...
         console.log(todo.title + " is " + (todo.completed ? "done" : "active"));
     });
 
-... and use streams to observe changes
+Stores are reactive ...
 
-    todos.newItems()
+    todos.newItems
          .forEach(function(update) {
             console.log(update.value.title + " was added");
          ));
+
+Filtered stores are even more reactive ...
+
+    // todos may hold:
+    //  { title: "learn fluss...", completed: true }
+    //  { title: "make coffee...", completed: false }
+
+    completed = todos.filter(function(item) {
+        return item.completed;
+    })
+
+    completed.newItems.forEach(function(update) {
+        console.log(update.value.title + " was completed!");
+    });
+
+    // completed now holds
+    //  { title: "learn fluss...", completed: true }
+
+    todos[1].completed = true;
+
+    // completed now holds automatically:
+    //  { title: "learn fluss...", completed: true }
+    //  { title: "make coffee...", completed: true }
+    //
+    // And the console reads
+    //  make coffee... was completed!
+
+
 
 Create a container for plugins
 
@@ -79,20 +108,15 @@ Please see the [tutorial](examples/tutorial.md).
 
 ## Why reinvent the wheel?
 
-Most importantly it is fun to write.
+Most importantly it is fun to write. It's an exploration of concepts and ideas.
 
 fluss is the result of both an ambitious project as well as a learning experience. Very good implementations for reactive
 programming exist ([BaconJS](https://baconjs.github.io/), [kefir.js](http://pozadi.github.io/kefir/), [RxJS](https://github.com/Reactive-Extensions/RxJS))
-but to completely wrap my head around reactive programming I wanted to implement my own version (which is very lightweight
-and can and will not compete with existing frameworks in regards of feature richness).
-
-I tried to come up with simple implementations for the different modules. The reactive streams are less than 500 sloc
-at the moment, the stores are less than 800 sloc.
-
+but to completely wrap my head around reactive programming I wanted to implement my own thing.
 
 ## Stability
 
-Be careful. This is beta software. APIs may change.
+Be careful. This is beta software. APIs may change. There are bugs!
 
 ## License
 
