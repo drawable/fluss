@@ -38,16 +38,16 @@ describe("Data stores", function () {
             store.addItem("a", 1);
             store.addItem("b", "lkjh");
 
-            var updates = store.updates();
+            var updates = store.updates;
             updates.forEach(function (value) {
                 calls += "(" + value.item + "=" + value.value + ")";
             });
 
-            var newProps = store.newItems().forEach(function (value) {
+            var newProps = store.newItems.forEach(function (value) {
                 calls += "*" + value.item + "=" + value.value + "*"
             });
 
-            var removeProps = store.removedItems().forEach(function (value) {
+            var removeProps = store.removedItems.forEach(function (value) {
                 calls += "!" + value.item + "!";
             });
 
@@ -109,7 +109,7 @@ describe("Data stores", function () {
             expect(Store.isStore(store["sub"][2])).to.be.ok();
 
             var calls = {};
-            var updates:Stream.IStream = store.updates();
+            var updates:Stream.IStream = store.updates;
             updates.forEach(function(update) {
                 calls[update.path] = update.value;
             });
@@ -124,15 +124,15 @@ describe("Data stores", function () {
             var imm:any = store.immutable;
             var calls = {};
 
-            imm.updates().forEach(function(update) {
+            imm.updates.forEach(function(update) {
                 calls[update.item] = update.value;
             });
 
-            imm.newItems().forEach(function(update) {
+            imm.newItems.forEach(function(update) {
                 calls[update.item] = update.value;
             });
 
-            imm.removedItems().forEach(function(update) {
+            imm.removedItems.forEach(function(update) {
                 calls[update.item] = update.value;
             });
 
@@ -167,25 +167,25 @@ describe("Data stores", function () {
         });
 
         it("can be disposed and will delete all data and dispose all streams", function() {
-            var closes = 0;
-            var store:any = Store.record({ a: 1, b: "x"} );
+            var closes = "";
+            var store:Store.IStore = Store.record({ a: 1, b: "x"} );
 
-            store.updates().onClose(function() {
-                closes++;
+            store.updates.onClose(function () {
+                closes += "U";
             });
-            store.newItems().onClose(function() {
-                closes++;
+            store.newItems.onClose(function () {
+                closes += "N";
             });
-            store.removedItems().onClose(function() {
-                closes++;
+            store.removedItems.onClose(function () {
+                closes += "R";
             });
-            store.disposing().onClose(function() {
-                closes++;
+            store.isDisposing.onClose(function () {
+                closes += "D";
             });
 
             store.dispose();
-            expect(closes).to.equal(4);
-            expect(store.a).to.be.undefined();
+            expect(closes).to.equal("RUND");
+            expect(store["a"]).to.be.undefined();
         });
 
         it("will dispose all substores when being disposed");
@@ -248,7 +248,7 @@ describe("Data stores", function () {
             var calls = "";
 
             var store:Store.IArrayStore = Store.array();
-            var s = store.updates();
+            var s = store.updates;
 
             s.forEach(function (update) {
                 calls += "(" + update.item + "=" + update.value + ")";
@@ -273,7 +273,7 @@ describe("Data stores", function () {
 
             store.push(1);
 
-            var s = store.newItems();
+            var s = store.newItems;
             s.forEach(function (update) {
                 calls += "(" + update.item + "=" + update.value + ")";
             });
@@ -298,7 +298,7 @@ describe("Data stores", function () {
             store.push(4);
             store.push(5);
 
-            var s = store.removedItems();
+            var s = store.removedItems;
             s.forEach(function (update) {
                 calls += "(" + update.item + "=" + update.value + ")";
             });
@@ -327,7 +327,7 @@ describe("Data stores", function () {
         it("provide sort with streamed updates", function () {
             var calls = {};
             var store:Store.IArrayStore = Store.array([0, 1, 2, 3, 4]);
-            var up = store.updates();
+            var up = store.updates;
             up.forEach(function (update) {
                 calls[update.item] = update.value;
             });
@@ -353,7 +353,7 @@ describe("Data stores", function () {
         it("provide reverse with streamed updates", function () {
             var calls = {};
             var store:Store.IArrayStore = Store.array([0, 1, 2, 3, 4]);
-            var up = store.updates();
+            var up = store.updates;
             up.forEach(function (update) {
                 calls[update.item] = update.value;
             });
@@ -380,13 +380,13 @@ describe("Data stores", function () {
             var newCalls = {};
             var newCount = 0;
             var store:Store.IArrayStore = Store.array([0, 1, 2, 3, 4]);
-            var up = store.updates();
+            var up = store.updates;
             up.forEach(function (update) {
                 upCalls[update.item] = update.value;
                 upCount++;
             });
 
-            var news = store.newItems();
+            var news = store.newItems;
             news.forEach(function (item) {
                 newCalls[item.item] = item.value;
                 newCount++;
@@ -425,19 +425,19 @@ describe("Data stores", function () {
             var remCalls = {};
             var remCount = 0;
             var store:Store.IArrayStore = Store.array([0, 1, 2, 3, 4]);
-            var up = store.updates();
+            var up = store.updates;
             up.forEach(function (update) {
                 upCalls[update.item] = update.value;
                 upCount++;
             });
 
-            var news = store.newItems();
+            var news = store.newItems;
             news.forEach(function (item) {
                 newCalls[item.item] = item.value;
                 newCount++;
             });
 
-            var rems = store.removedItems();
+            var rems = store.removedItems;
             rems.forEach(function(item) {
                 remCalls[item.item] = item.value;
                 remCount++;
@@ -473,15 +473,15 @@ describe("Data stores", function () {
             var imm:Store.IImmutableArrayStore = <Store.IImmutableArrayStore>store.immutable;
             var calls = {};
 
-            imm.updates().forEach(function(update) {
+            imm.updates.forEach(function(update) {
                 calls[update.item] = update.value;
             });
 
-            imm.newItems().forEach(function(update) {
+            imm.newItems.forEach(function(update) {
                 calls[update.item] = update.value;
             });
 
-            imm.removedItems().forEach(function(update) {
+            imm.removedItems.forEach(function(update) {
                 calls[update.item] = update.value;
             });
 
@@ -576,10 +576,10 @@ describe("Data stores", function () {
             var array = Store.array([1, 2, 3, 4, 5]);
             var evens = array.filter(function(v) { return v % 2 === 0});
 
-            evens.newItems().forEach(function(update) {
+            evens.newItems.forEach(function(update) {
                 calls[update.item] = update.value;
             });
-            evens.removedItems().forEach(function(update) {
+            evens.removedItems.forEach(function(update) {
                 rcalls[update.item] = true;
             });
 
@@ -867,7 +867,7 @@ describe("Data stores", function () {
             var sub:any = Store.record({ a: 1, b: 2})
             store.addItem("substore", sub);
 
-            var updates:Stream.IStream = store.updates();
+            var updates:Stream.IStream = store.updates;
             var calls = {};
             updates.forEach(function(update) {
                 calls[update.path] = update.value;

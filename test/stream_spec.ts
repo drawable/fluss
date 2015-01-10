@@ -1133,6 +1133,28 @@ describe("A stream (used for reactive programming patterns)", function() {
             expect(s2.closed).to.be.ok();
             expect(s3.closed).to.be.ok();
         });
+
+        it("will close automatically when all 'child-streams' close", function() {
+            var calls = 0;
+            var s = Stream.createStream();
+            var f = s.map(1);
+
+            s.onClose(function() { calls++ });
+            s.forEach(function() {});
+            f.close();
+
+            expect(calls).to.equal(1);
+
+            s = Stream.createStream();
+            var c = Stream.createStream();
+            f = s.combine(c).map(1).filter(function() { return true });
+
+            s.onClose(function() { calls++ });
+            s.forEach(function() {});
+            f.close();
+
+            expect(calls).to.equal(2);
+        });
     });
 });
 
@@ -1337,6 +1359,4 @@ describe("Event stream", function() {
         e.a();
         expect(calls).to.equal("AAA");
     });
-
-
 });

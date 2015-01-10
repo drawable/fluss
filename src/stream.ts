@@ -158,6 +158,7 @@ export class Stream implements IStream {
     private _closed:boolean;
     private _length:number;
     private _maxLength:number;
+    private _nextStreams:IStream[];
 
     constructor(private _name:string) {
         this._buffer = [];
@@ -167,6 +168,7 @@ export class Stream implements IStream {
         this._closed = false;
         this._length = 0;
         this._maxLength = 0;
+        this._nextStreams = [];
     }
 
     get name():string {
@@ -269,6 +271,10 @@ export class Stream implements IStream {
         }
     }
 
+    private removeMethod(method:Function) {
+        this._methods.indexOf(method);
+    }
+
     private addErrorMethod(method:Function) {
         this._errorMethods.push(method);
     }
@@ -306,16 +312,38 @@ export class Stream implements IStream {
         return this;
     }
 
+    private registerNextStream(nextStream:IStream) {
+        var that = this;
+        this._nextStreams.push(nextStream);
+        nextStream.onClose(function() {
+            var i = that._nextStreams.indexOf(nextStream);
+            if (i !== -1) {
+                that._nextStreams.splice(i, 1);
+                if (!that._nextStreams.length) {
+                    that.close();
+                }
+            }
+        })
+    }
 
     private addMethodToNextStream(nextStream, method, onClose?) {
         var that = this;
-        this.addMethod(function (value, index) {
+
+        var fn = function (value, index) {
             try {
                 method.call(that, value, index);
             } catch (e) {
                 nextStream.pushError(e);
             }
+        };
+
+        this.addMethod(fn);
+
+        nextStream.onClose(function() {
+            that.removeMethod(fn);
         });
+
+        this.registerNextStream(nextStream);
 
         if (!onClose) {
             this.onClose(function () {
@@ -405,6 +433,8 @@ export class Stream implements IStream {
             nextStream.close();
         }
 
+
+        this.registerNextStream(nextStream);
         return nextStream;
     }
 
@@ -524,6 +554,8 @@ export class Stream implements IStream {
             nextStream.close();
         }
 
+        this.registerNextStream(nextStream);
+
         return nextStream;
     }
 
@@ -554,6 +586,8 @@ export class Stream implements IStream {
         if (this._closed && stream.closed) {
             nextStream.close();
         }
+
+        this.registerNextStream(nextStream);
 
         return nextStream;
     }

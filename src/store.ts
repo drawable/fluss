@@ -44,15 +44,15 @@ function createUpdateInfo<T>(item:T, value:any, store:IStore, path?:string, root
 export interface IStore {
     item(value:any):any;
 
-    newItems():Stream.IStream;
-    removedItems():Stream.IStream;
-    updates():Stream.IStream;
-    disposing():Stream.IStream;
+    newItems:Stream.IStream;
+    removedItems:Stream.IStream;
+    updates:Stream.IStream;
+    allChanges:Stream.IStream;
+    isDisposing:Stream.IStream;
 
     dispose();
 
     immutable:IStore;
-
     isImmutable:boolean;
 }
 
@@ -89,7 +89,7 @@ class Store implements IStore {
         }
     }
 
-    newItems():Stream.IStream {
+    get newItems():Stream.IStream {
         var that = this;
         var s = Stream.createStream("addProperty");
         this._addItemsStreams.push(s);
@@ -100,17 +100,19 @@ class Store implements IStore {
         return s;
     }
 
-    removedItems():Stream.IStream {
+    get removedItems():Stream.IStream {
         var that = this;
         var s = Stream.createStream("removeProperty");
         this._removeItemsStreams.push(s);
         s.onClose(function() {
             that.removeStream(that._removeItemsStreams, s);
         });
+
+        s.until(this.isDisposing);
         return s;
     }
 
-    updates():Stream.IStream {
+    get updates():Stream.IStream {
         var that = this;
         var s = Stream.createStream("updateProperty");
         this._updateStreams.push(s);
@@ -120,18 +122,15 @@ class Store implements IStore {
         return s;
     }
 
-    get immutable():IStore {
-        return null;
+    get allChanges():Stream.IStream {
+        return this.updates.combine(this.newItems).combine(this.removedItems);
     }
 
-    disposing():Stream.IStream {
+
+    get isDisposing():Stream.IStream {
         var that = this;
         var s = Stream.createStream("disposing");
         this._disposingStreams.push(s);
-
-        s.onClose(function() {
-            that.removeStream(that._disposingStreams, s);
-        });
         return s;
     }
 
@@ -139,6 +138,8 @@ class Store implements IStore {
         streamList.forEach(function(stream) {
             stream.dispose();
         });
+
+        streamList = [];
     }
 
     dispose() {
@@ -146,10 +147,14 @@ class Store implements IStore {
             stream.push(true);
         });
 
-        this.disposeStreams(this._disposingStreams);
+        this.disposeStreams(this._removeItemsStreams);
         this.disposeStreams(this._updateStreams);
         this.disposeStreams(this._addItemsStreams);
-        this.disposeStreams(this._removeItemsStreams);
+        this.disposeStreams(this._disposingStreams);
+    }
+
+    get immutable():IStore {
+        return null;
     }
 
     item(value:any):any {
@@ -195,7 +200,7 @@ class RecordStore extends Store implements IRecordStore {
         if (isStore(value)) {
             var subStream;
             var that = this;
-            subStream = value.updates();
+            subStream = value.updates;
             subStream.forEach(function(update) {
                 var info = createUpdateInfo<string>(update.item,
                                                     update.value,
@@ -318,13 +323,13 @@ class ImmutableRecord extends ImmutableStore implements IImmutableRecordStore {
             that.addItem(key);
         });
 
-        _parent.newItems().forEach(function(update) {
+        _parent.newItems.forEach(function(update) {
             that.addItem(update.item);
-        }).until(_parent.disposing());
+        }).until(_parent.isDisposing);
 
-        _parent.removedItems().forEach(function(update) {
+        _parent.removedItems.forEach(function(update) {
             that.removeItem(update.item);
-        }).until(_parent.disposing());
+        }).until(_parent.isDisposing);
     }
 
     get isImmutable():boolean {
@@ -364,7 +369,7 @@ class ImmutableRecord extends ImmutableStore implements IImmutableRecordStore {
 
         parentStream.forEach(function(update) {
             stream.push(update);
-        }).until(this._parent.disposing());
+        }).until(this._parent.isDisposing);
 
         var that = this;
         this._updateStreams.push(stream);
@@ -375,20 +380,20 @@ class ImmutableRecord extends ImmutableStore implements IImmutableRecordStore {
         return stream;
     }
 
-    updates():Stream.IStream {
-        return this.subscribeParentStream(this._parent.updates());
+    get updates():Stream.IStream {
+        return this.subscribeParentStream(this._parent.updates);
     }
 
-    newItems():Stream.IStream {
-        return this.subscribeParentStream(this._parent.newItems());
+    get newItems():Stream.IStream {
+        return this.subscribeParentStream(this._parent.newItems);
     }
 
-    removedItems():Stream.IStream {
-        return this.subscribeParentStream(this._parent.removedItems());
+    get removedItems():Stream.IStream {
+        return this.subscribeParentStream(this._parent.removedItems);
     }
 
-    disposing():Stream.IStream {
-        return this.subscribeParentStream(this._parent.disposing());
+    get isDisposing():Stream.IStream {
+        return this.subscribeParentStream(this._parent.isDisposing);
     }
 }
 
@@ -522,19 +527,19 @@ class ArrayStore extends Store implements IArrayStore {
         if (adder) {
             adder.forEach(function (update) {
                 that.splice(update.item, 0, update.value);
-            });
+            }).until(this.isDisposing);
         }
 
         if (remover) {
             remover.forEach(function(update) {
                 that.splice(update.item, 1);
-            })
+            }).until(this.isDisposing);
         }
 
         if (updater) {
             updater.forEach(function(update) {
                 that[update.item] = update.value;
-            })
+            }).until(this.isDisposing);
         }
     }
 
@@ -583,15 +588,15 @@ class ArrayStore extends Store implements IArrayStore {
         var mappedStore = new ArrayStore(mapped, adder, remover, updater);
         var that = this;
 
-        this.updates().forEach(function(update) {
+        this.updates.forEach(function(update) {
             updater.push(createUpdateInfo(update.rootItem, callbackfn(that._data[update.rootItem], update.rootItem, that._data), update.store));
         });
 
-        this.newItems().forEach(function(update) {
+        this.newItems.forEach(function(update) {
             adder.push(createUpdateInfo(update.rootItem, callbackfn(that._data[update.rootItem], update.rootItem, that._data), update.store));
         });
 
-        this.removedItems().forEach(function(update) {
+        this.removedItems.forEach(function(update) {
             remover.push(createUpdateInfo(update.rootItem, update.value, update.store));        // The value does not matter here, save the call to the callback
         });
 
@@ -686,7 +691,7 @@ class ArrayStore extends Store implements IArrayStore {
         var updater = Stream.createStream();
         var filteredStore = new ArrayStore(filtered, adder, remover, updater);
 
-        this.newItems().forEach(function(update) {
+        this.newItems.forEach(function(update) {
             if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
                 if (isMapped(update.rootItem)) {
                     adder.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
@@ -699,14 +704,14 @@ class ArrayStore extends Store implements IArrayStore {
             }
         });
 
-        this.removedItems().forEach(function(update) {
+        this.removedItems.forEach(function(update) {
             if (isMapped(update.rootItem)) {
                 remover.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
             }
             removeMap(update.rootItem);
         });
 
-        this.updates().forEach(function(update) {
+        this.updates.forEach(function(update) {
             if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
                 if (isMapped(update.rootItem)) {
                     updater.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store))
@@ -793,7 +798,7 @@ class ArrayStore extends Store implements IArrayStore {
             }
 
             substream = {
-                updates: value.updates()
+                updates: value.updates
             };
             substream.updates.forEach(function(update) {
                 var updateInfo = createUpdateInfo<string>(update.item,
@@ -1005,9 +1010,9 @@ class ImmutableArray extends ImmutableStore implements IImmutableArrayStore {
         super();
 
         var that = this;
-        _parent.newItems().forEach(function(update) {
+        _parent.newItems.forEach(function(update) {
             that.updateProperties();
-        }).until(_parent.disposing());
+        }).until(_parent.isDisposing);
 
         // We do nothing when removing items. The getter will return undefined.
         /*
@@ -1101,7 +1106,7 @@ class ImmutableArray extends ImmutableStore implements IImmutableArrayStore {
 
         parentStream.forEach(function(update) {
             stream.push(update);
-        }).until(this._parent.disposing());
+        }).until(this._parent.isDisposing);
 
         var that = this;
         this._updateStreams.push(stream);
@@ -1112,27 +1117,26 @@ class ImmutableArray extends ImmutableStore implements IImmutableArrayStore {
         return stream;
     }
 
-    updates():Stream.IStream {
-        return this.subscribeParentStream(this._parent.updates());
+    get updates():Stream.IStream {
+        return this.subscribeParentStream(this._parent.updates);
     }
 
-    newItems():Stream.IStream {
-        return this.subscribeParentStream(this._parent.newItems());
+    get newItems():Stream.IStream {
+        return this.subscribeParentStream(this._parent.newItems);
     }
 
-    removedItems():Stream.IStream {
-        return this.subscribeParentStream(this._parent.removedItems());
+    get removedItems():Stream.IStream {
+        return this.subscribeParentStream(this._parent.removedItems);
     }
 
-    disposing():Stream.IStream {
-        return this.subscribeParentStream(this._parent.disposing());
+    get disposing():Stream.IStream {
+        return this.subscribeParentStream(this._parent.isDisposing);
     }
 
     get immutable():IStore {
         return this;
     }
 }
-
 
 export function array(initial?:any[]):IArrayStore {
     if (initial) {
