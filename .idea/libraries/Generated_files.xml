@@ -5,6 +5,8 @@
         <item url="file://$PROJECT_DIR$/src/store.js" />
         <item url="file://$PROJECT_DIR$/test/store_spec.js" />
         <item url="file://$PROJECT_DIR$/test/stream_spec.js" />
+        <item url="file://$PROJECT_DIR$/src/recordStore.js" />
+        <item url="file://$PROJECT_DIR$/src/baseStore.js" />
         <item url="file://$PROJECT_DIR$/src/stream.js" />
       </sourceFilesUrls>
     </properties>
@@ -16,6 +18,8 @@
       <root url="file://$PROJECT_DIR$/src/store.js" />
       <root url="file://$PROJECT_DIR$/test/store_spec.js" />
       <root url="file://$PROJECT_DIR$/test/stream_spec.js" />
+      <root url="file://$PROJECT_DIR$/src/recordStore.js" />
+      <root url="file://$PROJECT_DIR$/src/baseStore.js" />
       <root url="file://$PROJECT_DIR$/src/stream.js" />
     </CLASSES>
     <SOURCES />
