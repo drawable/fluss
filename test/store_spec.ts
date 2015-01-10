@@ -711,6 +711,66 @@ describe("Data stores", function () {
             expect(filtered.length).to.equal(array.length);
         });
 
+        it("will updated filtered stores when the base store changes and manages nested stores - 4", function() {
+           var array = Store.array([]);
+            array.push(Store.record({ a: false }));
+
+            var filtered = array.filter(function(item) {
+                return !item.a;
+            });
+
+            expect(filtered.length).to.equal(1);
+
+            array.push(Store.record({ a: false }));
+
+            expect(filtered.length).to.equal(2);
+
+            array[0].a = true;
+            expect(filtered.length).to.equal(1);
+
+            array[0].a = false;
+            expect(filtered.length).to.equal(2);
+
+            array[0].a = true;
+            expect(filtered.length).to.equal(1);
+
+            array.splice(0, 1);
+            expect(filtered.length).to.equal(1);
+
+            array.pop();
+            expect(filtered.length).to.equal(0);
+        });
+
+        it("will updated filtered stores when the base store changes and manages nested stores - 5", function() {
+           var array = Store.array([]);
+            array.push(Store.record({ a: false }));
+
+            var filtered = array.filter(function(item) {
+                return !item.a;
+            });
+
+            expect(filtered.length).to.equal(1);
+
+            array.push(Store.record({ a: false }));
+
+            expect(filtered.length).to.equal(2);
+
+            array[0].a = true;
+            expect(filtered.length).to.equal(1);
+
+            array[0].a = false;
+            expect(filtered.length).to.equal(2);
+
+            array[0].a = true;
+            expect(filtered.length).to.equal(1);
+
+            array.pop();
+            expect(filtered.length).to.equal(0);
+
+            array.pop();
+            expect(filtered.length).to.equal(0);
+        });
+
         it("will updated mixed filter/map stores automatically upon changes of the base store", function() {
             var array = Store.array([1, 2, 3, 4, 5]);
             var evenTwice = array.filter(function(value) { return value % 2 === 0; })

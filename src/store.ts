@@ -605,9 +605,12 @@ class ArrayStore extends Store implements IArrayStore {
 
         function map(forIndex, toIndex) {
             indexMap[forIndex] = toIndex;
-            for (var i = forIndex + 1; i < indexMap.length; i++) {
-                if (indexMap[i] !== -1) {
-                    indexMap[i] += 1;
+
+            if (toIndex !== -1) {
+                for (var i = forIndex + 1; i < indexMap.length; i++) {
+                    if (indexMap[i] !== -1) {
+                        indexMap[i] += 1;
+                    }
                 }
             }
         }
@@ -615,27 +618,36 @@ class ArrayStore extends Store implements IArrayStore {
         function addMap(fromIndex, toIndex) {
             indexMap.splice(fromIndex, 0, toIndex);
 
-            for (var i = fromIndex + 1; i < indexMap.length; i++) {
-                if (indexMap[i] !== -1) {
-                    indexMap[i] += 1;
+            if (toIndex !== -1) {
+                for (var i = fromIndex + 1; i < indexMap.length; i++) {
+                    if (indexMap[i] !== -1) {
+                        indexMap[i] += 1;
+                    }
                 }
             }
         }
 
         function unmap(forIndex) {
+            var downshift = isMapped(forIndex);
             indexMap[forIndex] = -1;
-            for (var i = forIndex + 1; i < indexMap.length; i++) {
-                if (indexMap[i] !== -1) {
-                    indexMap[i] -= 1;
+            if (downshift) {
+                for (var i = forIndex + 1; i < indexMap.length; i++) {
+                    if (indexMap[i] !== -1) {
+                        indexMap[i] -= 1;
+                    }
                 }
             }
         }
 
         function removeMap(forIndex) {
+            var downshift = isMapped(forIndex);
             indexMap.splice(forIndex, 1);
-            for (var i = forIndex + 1; i < indexMap.length; i++) {
-                if (indexMap[i] !== -1) {
-                    indexMap[i] -= 1;
+
+            if (downshift) {
+                for (var i = forIndex + 1; i < indexMap.length; i++) {
+                    if (indexMap[i] !== -1) {
+                        indexMap[i] -= 1;
+                    }
                 }
             }
         }
@@ -690,8 +702,8 @@ class ArrayStore extends Store implements IArrayStore {
         this.removedItems().forEach(function(update) {
             if (isMapped(update.rootItem)) {
                 remover.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
-                removeMap(update.rootItem);
             }
+            removeMap(update.rootItem);
         });
 
         this.updates().forEach(function(update) {
