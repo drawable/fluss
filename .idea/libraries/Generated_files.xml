@@ -4,6 +4,7 @@
       <sourceFilesUrls>
         <item url="file://$PROJECT_DIR$/src/store.js" />
         <item url="file://$PROJECT_DIR$/test/store_spec.js" />
+        <item url="file://$PROJECT_DIR$/src/reactMixins.js" />
         <item url="file://$PROJECT_DIR$/test/stream_spec.js" />
         <item url="file://$PROJECT_DIR$/src/recordStore.js" />
         <item url="file://$PROJECT_DIR$/src/baseStore.js" />
@@ -15,7 +16,10 @@
       <root url="file://$PROJECT_DIR$/examples/Todos_1/ui.js" />
       <root url="file://$PROJECT_DIR$/examples/Todos_1/actions.js" />
       <root url="file://$PROJECT_DIR$/examples/Todos_1/plugins/todos.js" />
+      <root url="file://$PROJECT_DIR$/src/recordStore.js" />
+      <root url="file://$PROJECT_DIR$/src/baseStore.js" />
       <root url="file://$PROJECT_DIR$/src/store.js" />
+      <root url="file://$PROJECT_DIR$/src/reactMixins.js" />
       <root url="file://$PROJECT_DIR$/test/store_spec.js" />
       <root url="file://$PROJECT_DIR$/test/stream_spec.js" />
       <root url="file://$PROJECT_DIR$/src/recordStore.js" />
