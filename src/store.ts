@@ -719,7 +719,7 @@ class ArrayStore extends Store implements IArrayStore {
                     remover.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
                     unmap(update.rootItem);
                 } else {
-                    addMap(update.rootItem, -1);
+                    map(update.rootItem, -1);
                 }
             }
         });
