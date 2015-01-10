@@ -603,44 +603,69 @@ class ArrayStore extends Store implements IArrayStore {
         var indexMap = [];
         var filtered = [];
 
+        function map(forIndex, toIndex) {
+            indexMap[forIndex] = toIndex;
+            for (var i = forIndex + 1; i < indexMap.length; i++) {
+                if (indexMap[i] !== -1) {
+                    indexMap[i] += 1;
+                }
+            }
+        }
+
         function addMap(fromIndex, toIndex) {
-            indexMap[fromIndex] = parseInt(toIndex);
+            indexMap.splice(fromIndex, 0, toIndex);
+
             for (var i = fromIndex + 1; i < indexMap.length; i++) {
-                if (indexMap[i] >= 0) {
-                    indexMap[i]++;
+                if (indexMap[i] !== -1) {
+                    indexMap[i] += 1;
+                }
+            }
+        }
+
+        function unmap(forIndex) {
+            indexMap[forIndex] = -1;
+            for (var i = forIndex + 1; i < indexMap.length; i++) {
+                if (indexMap[i] !== -1) {
+                    indexMap[i] -= 1;
                 }
             }
         }
 
         function removeMap(forIndex) {
+            indexMap.splice(forIndex, 1);
             for (var i = forIndex + 1; i < indexMap.length; i++) {
-                if (indexMap[i] >= 0) {
-                    indexMap[i]--;
+                if (indexMap[i] !== -1) {
+                    indexMap[i] -= 1;
                 }
             }
-
-            indexMap[forIndex] = - 1;
         }
 
         function mapIndex(fromIndex):number {
             return indexMap[fromIndex];
         }
 
+        function isMapped(index):boolean {
+            return index < indexMap.length && indexMap[index] !== -1;
+        }
+
         function getClosestLeftMap(forIndex):number {
+
             var i = forIndex;
 
-            while ((indexMap[i] == null || indexMap[i] === -1) && i > -2) {
+            while ((i >= indexMap.length || indexMap[i] === -1) && i > -2) {
                 i--;
             }
 
             if (i < 0) return -1;
-            return indexMap[i];
+            return mapIndex(i);
         }
 
         this._data.forEach(function(value, index) {
             if (callbackfn(value, index, that._data)) {
                 addMap(index, filtered.length);
                 filtered.push(value);
+            } else {
+                addMap(index, -1);
             }
         });
 
@@ -651,17 +676,19 @@ class ArrayStore extends Store implements IArrayStore {
 
         this.newItems().forEach(function(update) {
             if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
-                if (mapIndex(update.rootItem) >= 0) {
+                if (isMapped(update.rootItem)) {
                     adder.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
                 } else {
                     adder.push(createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
                 }
                 addMap(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
+            } else {
+                addMap(update.rootItem, -1);
             }
         });
 
         this.removedItems().forEach(function(update) {
-            if (mapIndex(update.rootItem) >= 0) {
+            if (isMapped(update.rootItem)) {
                 remover.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
                 removeMap(update.rootItem);
             }
@@ -669,16 +696,18 @@ class ArrayStore extends Store implements IArrayStore {
 
         this.updates().forEach(function(update) {
             if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
-                if (mapIndex(update.rootItem) >= 0) {
+                if (isMapped(update.rootItem)) {
                     updater.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store))
                 } else {
                     adder.push(createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
-                    addMap(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
+                    map(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
                 }
             } else {
-                if (typeof indexMap[update.rootItem] !== "undefined") {
+                if (isMapped(update.rootItem)) {
                     remover.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
-                    removeMap(update.rootItem);
+                    unmap(update.rootItem);
+                } else {
+                    addMap(update.rootItem, -1);
                 }
             }
         });

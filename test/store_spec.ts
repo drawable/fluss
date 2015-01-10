@@ -659,6 +659,58 @@ describe("Data stores", function () {
             expect(filtered.length).to.equal(array.length);
         });
 
+        it("will updated filtered stores when the base store changes and manages nested stores - 2", function() {
+
+            var array = Store.array([]);
+            array.push(Store.record({a: false}));
+            array.push(Store.record({a: false}));
+            array.push(Store.record({a: false}));
+            array.push(Store.record({a: false}));
+            array.push(Store.record({a: false}));
+            array.push(Store.record({a: false}));
+            array.push(Store.record({a: false}));
+
+            var filtered = array.filter(function (value) {
+                return value.a === false;
+            });
+
+            expect(filtered.length).to.equal(array.length);
+
+            array.splice(1, 0, Store.record({a: false}));
+            expect(filtered.length).to.equal(array.length);
+            array.splice(1, 0, Store.record({a: false}));
+            expect(filtered.length).to.equal(array.length);
+            array.splice(1, 0, Store.record({a: false}));
+            expect(filtered.length).to.equal(array.length);
+            array.splice(1, 0, Store.record({a: false}));
+            expect(filtered.length).to.equal(array.length);
+        });
+
+        it("will updated filtered stores when the base store changes and manages nested stores - 3", function() {
+
+            var array = Store.array([]);
+            array.push(Store.record({a: false}));
+            array.push(Store.record({a: false}));
+            array.push(Store.record({a: false}));
+            array.push(Store.record({a: false}));
+            array.push(Store.record({a: false}));
+            array.push(Store.record({a: false}));
+            array.push(Store.record({a: false}));
+
+            var filtered = array.filter(function (value) {
+                return value.a === false;
+            });
+
+            expect(filtered.length).to.equal(array.length);
+
+            array.splice(1, 1);
+            expect(filtered.length).to.equal(array.length);
+            array.splice(1, 1);
+            expect(filtered.length).to.equal(array.length);
+            array.splice(1, 1);
+            expect(filtered.length).to.equal(array.length);
+        });
+
         it("will updated mixed filter/map stores automatically upon changes of the base store", function() {
             var array = Store.array([1, 2, 3, 4, 5]);
             var evenTwice = array.filter(function(value) { return value % 2 === 0; })
