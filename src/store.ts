@@ -644,7 +644,7 @@ class ArrayStore extends Store implements IArrayStore {
             indexMap.splice(forIndex, 1);
 
             if (downshift) {
-                for (var i = forIndex + 1; i < indexMap.length; i++) {
+                for (var i = forIndex; i < indexMap.length; i++) {
                     if (indexMap[i] !== -1) {
                         indexMap[i] -= 1;
                     }
