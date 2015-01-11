@@ -174,7 +174,7 @@ Extend your plugin to support UNDO/REDO
     Dispatcher.dispatch(NEW_TODO, "Never do unit tests again");
 
     // Reconsider... and undo your last action
-    Dispatcher.dispatch(BaseActions.ACTIONS.UNDO);
+    BaseActions.undo();
 
 ## A full example
 
