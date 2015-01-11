@@ -1,11 +1,13 @@
 fluss
 =====
 
-fluss is an opinionated application framework for the frontend and the backend. It is an interpretation of the
+*fluss* is an opinionated application framework for the frontend and the backend. It is an interpretation of the
 [flux architecture](http://facebook.github.io/flux/) that establishes a unidirectional flow of data through the application.
 
-fluss is written in Typescript but it can be used in JavaScript as well. It can be used on the frontend and on the
-backend. Views created with [React](http://facebook.github.io/react/) are the target but fluss has no dependencies
+It can be used on the frontend and on the backend.
+
+*fluss* is written in Typescript but it can be used in JavaScript as well. Views created with
+[React](http://facebook.github.io/react/) are the target but *fluss* has no dependencies
 whatsoever to React. Using other view technologies is possible.
 
 ## Main features
@@ -21,7 +23,7 @@ whatsoever to React. Using other view technologies is possible.
 
 ## Modules
 
-fluss can be compiled to create either amd or commonjs modules.
+*fluss* can be compiled to create either amd or commonjs modules.
 
 ## Stability
 
@@ -29,19 +31,19 @@ Be careful. This is beta software. APIs may change. There are bugs!
 
 ## Browser compatibility
 
-This uses ES5 features so you need a modern browser. It is tested on the latest Firefox (33+), Chrome (37+) and
-IE 10. This should work for ChromeApps, in NodeWebkit, Atomshell and the likes.
+*fluss* uses ES5 features so you need a modern browser. It is tested on the latest Firefox (33+), Chrome (37+) and
+IE 10. It should work for ChromeApps, in NodeWebkit, Atomshell and the likes.
 
 ## Installation
 
-    npm install fluss
+    npm install *fluss*
 
 ## Getting started
 
 Create stores ...
 
     var todos = Store.array();
-    todos.push(Store.record( { title: "learn fluss...", completed: false } );
+    todos.push(Store.record( { title: "learn *fluss*...", completed: false } );
     todos[0].complete = true;
 
     todos.forEach(function(todo) {
@@ -63,7 +65,7 @@ Stores are reactive ...
 Filtered (and mapped) stores are even more reactive (within limits)...
 
     // todos may hold:
-    //  { title: "learn fluss...", completed: true }
+    //  { title: "learn *fluss*...", completed: true }
     //  { title: "make coffee...", completed: false }
 
     completed = todos.filter(function(item) {
@@ -75,19 +77,23 @@ Filtered (and mapped) stores are even more reactive (within limits)...
     });
 
     // completed now holds
-    //  { title: "learn fluss...", completed: true }
+    //  { title: "learn *fluss*...", completed: true }
 
     todos[1].completed = true;
 
     // completed now holds:
-    //  { title: "learn fluss...", completed: true }
+    //  { title: "learn *fluss*...", completed: true }
     //  { title: "make coffee...", completed: true }
     //
     // And the console reads
     //  make coffee... was completed!
+(This is only guranteed to work when the filter-callback only uses the value for calculations and ignores the index
+    or array parameters. If these are used, the result is likely to be undefined and wrong. For these cases the behaviour
+    can be disabled).
 
 Create a container for plugins
 
+    // In Typescript
     class Application extends Plugins.PluginContainer {
 
         todos:Store.IArrayStore;
@@ -97,7 +103,7 @@ Create a container for plugins
             this._todos = Store.array();
     }
 
-    // Or in JavaScript
+    // In JavaScript
     var Application = Plugins.createContainer({
         todos: Store.array()
     })
@@ -106,6 +112,7 @@ Create a container for plugins
 
 Create a plugin...
 
+    // In Typescript
     class AddTodo extends Plugins.BasePlugin {
 
         run(container:Application.Application, action:number, title:string) {
@@ -114,7 +121,7 @@ Create a plugin...
     }
 
 
-    // Or in Javascript
+    // In Javascript
     var AddTodo = Plugins.createPlugin({
         run(container, action, title) {
             container.todos.push(Store.record({ title: title, completed: false }));
@@ -123,7 +130,7 @@ Create a plugin...
 
 ... add it to your container...
 
-    var NEW_TODO:number = 1000;
+    var NEW_TODO:number = 1000;                     // Better use enums ;-)
     application.wrap(NEW_TODO, new AddTodo());
 
 ... and execute the action
@@ -161,7 +168,7 @@ or
 
 Most importantly it is fun to write. It's an exploration of concepts and ideas.
 
-fluss is the result of both an ambitious project as well as a learning experience. Very good implementations for reactive
+*fluss* is the result of both an ambitious project as well as a learning experience. Very good implementations for reactive
 programming exist ([BaconJS](https://baconjs.github.io/), [kefir.js](http://pozadi.github.io/kefir/), [RxJS](https://github.com/Reactive-Extensions/RxJS))
 but to completely wrap my head around reactive programming I wanted to implement my own thing.
 
