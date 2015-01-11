@@ -36,7 +36,7 @@ IE 10. It should work for ChromeApps, in NodeWebkit, Atomshell and the likes.
 
 ## Installation
 
-    npm install **fluss**
+    npm install fluss
 
 See [fluss-npm-module-usage](https://github.com/drawable/fluss-npm-module-usage) on how to setup your project in various ways.
 
