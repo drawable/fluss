@@ -260,3 +260,5 @@ but to completely wrap my head around reactive programming I wanted to implement
 ## License
 
 [MIT](LICENSE)
+
+Copyright &copy; 2014 Stephan Smola
