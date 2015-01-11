@@ -23,43 +23,39 @@ gulp.task("compile-tsc", function() {
         .pipe(gulp.dest("./"));
 });
 
-gulp.task("compile-tsc-amd", function() {
-    gulp.src(["./src/**/*.ts"])
+gulp.task("build-amd", function() {
+    return gulp.src(["./src/**/*.ts"])
+        .pipe(gulp.dest("./build/amd/fluss"))
         .pipe(typescript({ module: "amd",
             target: "ES5",
             sourcemap: true,
             outDir: "./"
         }))
-        .pipe(gulp.dest("./amd/fluss"));
+        .pipe(gulp.dest("./build/amd/fluss"));
 });
 
-gulp.task("bundle-todos1", function() {
-    return browserify("./examples/Todos_1/application.js")
-        .bundle()
-        .pipe(source("todo1bundle.js"))
-        .pipe(gulp.dest("./examples/Todos_1"))
+gulp.task("build-commonjs", function() {
+    return gulp.src(["./src/**/*.ts"])
+        .pipe(gulp.dest("./build/commonjs/fluss"))
+        .pipe(typescript({ module: "commonjs",
+            target: "ES5",
+            sourcemap: true,
+            outDir: "./"
+        }))
+        .pipe(gulp.dest("./build/commonjs/fluss"));
 });
 
-gulp.task("bundle", function() {
-    var files = fs.readdirSync("src")
-        .filter(function(file) {
-            return file.match(/.*\.js$/)
-        })
-        .map(function(file) {
-            return "./src/" + file;
-        });
+gulp.task("build", ["build-amd", "build-commonjs"], function() {
+    gulp.src(["./src/**/*.ts"])
+        .pipe(gulp.dest("./build/lib"));
 
-   return browserify(files)
-       .bundle()
-       .pipe(source("fluss.js"))
-       .pipe(gulp.dest("./dist"));
+    gulp.src("README.md")
+        .pipe(gulp.dest("./build"));
+
+    gulp.src("LICENSE")
+        .pipe(gulp.dest("./build"));
 });
 
-gulp.task("minify", ["bundle"], function() {
-   return gulp.src("./dist/fluss.js")
-       .pipe(uglify())
-       .pipe(rename({
-           suffix: ".min"
-       }))
-       .pipe(gulp.dest("./dist"))
+gulp.task("testbeds", ["build-amd", "build-commonjs"], function() {
+
 });

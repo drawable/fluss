@@ -1,7 +1,7 @@
 {
   "name": "fluss",
-  "version": "0.2.10",
-  "description": "An opinionated JavaScript application framework for the frontend and the backend",
+  "version": "0.3.0",
+  "description": "An opinionated Typescript/JavaScript application framework for the frontend and the backend",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
