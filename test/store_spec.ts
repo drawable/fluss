@@ -187,8 +187,6 @@ describe("Data stores", function () {
             expect(closes).to.equal("RUND");
             expect(store["a"]).to.be.undefined();
         });
-
-        it("will dispose all substores when being disposed");
     });
 
     describe("and array stores. They", function () {
@@ -835,6 +833,26 @@ describe("Data stores", function () {
             expect(filtered.length).to.equal(0);
         });
 
+        it("will update filtered stores incorrectly with complex filter callbacks", function() {
+            var array = Store.array("A B C D E".split(" "));
+            var filtered = array.filter(function(item, index) {
+               return index % 2 === 1;
+            });
+
+            // A,B,C,D,E -> B,D
+            expect(filtered.length).to.equal(2);
+            expect(filtered[0]).to.equal("B");
+            expect(filtered[1]).to.equal("D");
+
+            array.splice(1, 0, "X");
+            // A,X,B,C,D,E -> X,C,E
+            expect(array[1]).to.equal("X");
+            expect(array[2]).to.equal("B");
+
+            expect(filtered.length).to.equal(3);
+            expect(filtered[1]).not.to.equal("C");
+        });
+
 
         it("will updated mixed filter/map stores automatically upon changes of the base store", function() {
             var array = Store.array([1, 2, 3, 4, 5]);
@@ -918,8 +936,8 @@ describe("Data stores", function () {
             expect(updateCount).to.equal(10);
         });
 
-        it("will propagate added items up in nested stores"
-            /*, function() {
+        /*it("will propagate added items up in nested stores"
+            , function() {
             return;
             var store:any = Store.record();
             var sub:any = Store.record({ a: 1, b: 2});
@@ -932,8 +950,8 @@ describe("Data stores", function () {
             news.forEach(function(update) {
                 calls[update.item] = update.value;
             });
-        }*/
-        );
+        }
+        );*/
     });
 
 });

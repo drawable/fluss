@@ -178,6 +178,16 @@ export class BasePlugin implements IActionPlugin {
 
 
 /**
+ * Create a Plugin. Use this when you're using plain JavaScript.
+ * @param spec
+ * @returns {any}
+ */
+export function createPlugin(spec:any):any {
+    return Tools.subclass(spec, BasePlugin);
+}
+
+
+/**
  * Base implementation for a plugin container.
  */
 export class PluginContainer extends EventChannel.ChanneledEmitter implements IPluginContainer {
@@ -569,8 +579,9 @@ export class PluginContainer extends EventChannel.ChanneledEmitter implements IP
                 this._plugins[action].splice(this._plugins[action].indexOf(handler), 1);
             }
         }
-
-        //TODO: Do we need to unsubscribe when no plugins are there anymore? Think not.
     }
+}
 
+export function createContainer(spec:any):any {
+    return Tools.subclass(spec, PluginContainer);
 }

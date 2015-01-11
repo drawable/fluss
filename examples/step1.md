@@ -677,6 +677,15 @@ one is removed or completed in the original array and it gaines one when a new t
 And it of course provides all the streams for updates, newItems and removedItems that process, whenever one of these "losses"
 or "gains" happen.
 
+This magic has its limits of course. If the filter-callback works on the whole array-information by using the index parameter
+or the array parameter you can easily construct cases where this will not work.
+
+## Hide the Footer
+
+When there are no todos we need to hide the footer.
+
+## Editing todos
+
 ## Clearing all completed todos
 
 ## Routing

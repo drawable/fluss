@@ -7,16 +7,58 @@
 import Tools = require("./tools");
 import Stream = require("./stream")
 
+
+/**
+ * Test if something is a store.
+ * @param thing
+ * @returns {boolean}
+ */
 export function isStore(thing):boolean {
     return thing instanceof RecordStore || thing instanceof ArrayStore || thing instanceof ImmutableRecord || thing instanceof ImmutableArray;
 }
 
 
+/**
+ * The update information that will be provided by the reactive stream on the store
+ * for new items, removed items and changed items.
+ */
 export interface OUpdateInfo<T> {
+
+    /**
+     * In nested stores this is the path to the item.
+     * Every index/name along the way is separated by a .
+     */
     path?:string;
+
+    /**
+     * Identifier of the item. It is either a string for record stores
+     * or a number for array stores
+     */
     item:T;
+
+    /**
+     * In nested stores this will be the actual item that triggered
+     * the change. So if you have a store
+     *
+     *   s = {
+     *     a: [ { x: 1 } ]
+     *   }
+     *
+     * and you change x the rootItem will be 'x' for a stream at a or s.
+     */
     rootItem?:T;
+
+    /**
+     * The value of that item. This is either the new value when the item was updated,
+     * or the initial value when the item was newly created. If the item was removed this
+     * is null. Do not try to deduct that the item was removed just because value is null, though.
+     * Subscribe to removedItems of a store explicitly, instead.
+     */
     value:any;
+
+    /**
+     * The store of the item that triggered the change
+     */
     store:IStore
 }
 
@@ -41,24 +83,84 @@ function createUpdateInfo<T>(item:T, value:any, store:IStore, path?:string, root
     return r;
 }
 
+/**
+ * A store is an object that holds data and provides reactive streams to
+ * observe updates, new items, removed items and the disposal of that store.
+ * A store can be immutable, i.e. you cannot add, remove or change items.
+ */
 export interface IStore {
     item(value:any):any;
 
+    /**
+     * Reactive stream that processes whenever an item is added to the store.
+     * Every get access creates a new stream.
+     */
     newItems:Stream.IStream;
+
+    /**
+     * Reactive stream that processes whenever an item is removed to the store.
+     * Every get access creates a new stream.
+     */
     removedItems:Stream.IStream;
+
+    /**
+     * Reactive stream that processes whenever an items value is changed.
+     * Every get access creates a new stream.
+     */
     updates:Stream.IStream;
+
+    /**
+     * Reactive stream that processes whenever an item is added, removed or changed.
+     * Every get access creates a new stream.
+     */
     allChanges:Stream.IStream;
+
+    /**
+     * Reactive stream that processes when the store is disposed.
+     * Every get access creates a new stream.
+     */
     isDisposing:Stream.IStream;
 
+    /**
+     * Dispose the store. That frees all the data and closes all streams that where
+     * created for that store. Before all that the isDisposing-streams will process.
+     */
     dispose();
 
+    /**
+     * Get the immutable proxy for that store. This will return the same instance for every
+     * get access. This instance is created on the first get access.
+     */
     immutable:IStore;
+
+    /**
+     * Tell whether the store is immutable
+     */
     isImmutable:boolean;
 }
 
+/**
+ * A record store holds values like a plain JavaScript object. Adding new properties using the index accessor []
+ * will break it's behaviour. Use the provided methods instead.
+ */
 export interface IRecordStore extends IStore {
+
+    /**
+     * Add a new property
+     * @param name
+     * @param initial
+     */
     addItem(name:string, initial?:any);
+
+    /**
+     * Remove a property
+     * @param name
+     */
     removeItem(name:string);
+
+    /**
+     * All property names
+     */
     keys:string[];
 
     [n:string]:any;
@@ -163,6 +265,9 @@ class Store implements IStore {
 }
 
 
+/**
+ * Base class for immutable stores.
+ */
 class ImmutableStore extends Store {
 
 }
@@ -305,8 +410,12 @@ class RecordStore extends Store implements IRecordStore {
     }
 }
 
+
+/**
+ * The immutable type of the record store. It prevents
+ * all changes to the record.
+ */
 export interface IImmutableRecordStore extends IStore {
-    keys:string[];
     [n:string]:any;
 }
 
@@ -397,6 +506,11 @@ class ImmutableRecord extends ImmutableStore implements IImmutableRecordStore {
     }
 }
 
+/**
+ * Recursively build a nested store.
+ * @param value
+ * @returns {*}
+ */
 function buildDeep(value:any):any {
     function getItem(value) {
         var v;
@@ -418,7 +532,7 @@ function buildDeep(value:any):any {
 
         value.forEach(function(item) {
             store.push(getItem(item));
-        })
+        });
 
         return store;
     }
@@ -445,6 +559,12 @@ function buildDeep(value:any):any {
     }
 }
 
+/**
+ * Create a new record. If an initial value is given it will have the enumerable properties of that value. You can
+ * create nested stores by providing a complex object as an initial value.
+ * @param initial
+ * @returns {*}
+ */
 export function record(initial?:any):IRecordStore {
     if (initial) {
         return buildDeep(initial);
@@ -453,40 +573,203 @@ export function record(initial?:any):IRecordStore {
     }
 }
 
+
+/**
+ * An Array store holds data in an array. It behaves much like a regular JavaScript array but provides streams for
+ * updates, newItems, removedItems and when it's disposed. Functions that return a new array in JavaScript return an
+ * array store.
+ */
 export interface IArrayStore extends IStore {
+
+    /**
+     * Returns the standard string representation of an array.
+     */
     toString():string;
     toLocaleString():string;
+
+    /**
+     * Performs the specified action for each element in an array.
+     * @param callbackfn  A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.
+     * @param thisArg  An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+     */
     forEach(callbackfn: (value: any, index: number, array: any[]) => void, thisArg?: any);
+
+    /**
+     * Determines whether all the members of an array satisfy the specified test.
+     * @param callbackfn A function that accepts up to three arguments. The every method calls the callbackfn function for each element in array1 until the callbackfn returns false, or until the end of the array.
+     * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+     */
     every(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): boolean;
+
+    /**
+     * Determines whether the specified callback function returns true for any element of an array.
+     * @param callbackfn A function that accepts up to three arguments. The some method calls the callbackfn function for each element in array1 until the callbackfn returns true, or until the end of the array.
+     * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+     */
     some(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): boolean;
-    indexOf(value:any):number;
+
+    /**
+     * Returns the index of the first occurrence of a value in an array. If this is used with an immutable proxy of a substore
+     * it will return the index of the actual substore.
+     *
+     * @param searchElement The value to locate in the array.
+     * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
+     */
+    indexOf(value:any, fromIndex?:number):number;
+
+    /**
+     * Returns the index of the last occurrence of a specified value in an array. f this is used with an immutable proxy of a substore
+     * it will return the index of the actual substore.
+     *
+     * @param searchElement The value to locate in the array.
+     * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array.
+     */
     lastIndexOf(searchElement: any, fromIndex?: number): number;
+
+    /**
+     * Adds all the elements of an array separated by the specified separator string.
+     * @param separator A string used to separate one element of an array from the next in the resulting String. If omitted, the array elements are separated with a comma.
+     */
     join(separator?: string):string;
+
+    /**
+     * Calls a defined callback function on each element of an array, and returns an array that contains the results.
+     * @param callbackfn A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
+     * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+     */
     map(callbackfn: (value: any, index: number, array: any[]) => any, thisArg?: any):IArrayStore;
-    filter(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): IArrayStore;
+
+    /**
+     * Returns the elements of an array that meet the condition specified in a callback function.
+     * The returned ArrayStore will update automatically when the base ArrayStore updates. This is guaranteed to work correctly when
+     * callbackfn only uses the value to determine whether to keep it or not. Using index or even the array, filter functions can be
+     * created that will lead to undefined results. In these cases or when you don't need that behaviour you can disable it by
+     * setting noUpdates.
+     *
+     * @param callbackfn A function that accepts up to three arguments. The filter method calls the callbackfn function one time for each element in the array.
+     * @param noUpdates Disable the automatic update of the filtered store
+     * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+     */
+    filter(callbackfn: (value: any, index: number, array: any[]) => boolean, noUpdates?:boolean, thisArg?: any): IArrayStore;
+
+    /**
+     * Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+     * @param callbackfn A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array.
+     * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
+     */
     reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue?: any):any;
+
+    /**
+     * Sorts an array.
+     * @param compareFn The name of the function used to determine the order of the elements. If omitted, the elements are sorted in ascending, ASCII character order.
+     */
     sort(compareFn?: (a: any, b: any) => number);
+
+    /**
+     * Reverses the elements in an Array.
+     */
     reverse();
+
+    /**
+     * Combines two arrays.
+     * @param array The array to concat
+     */
     concat(array:IArrayStore):IArrayStore;
+
+    /**
+     * Combines two arrays.
+     * @param array The array to concat
+     */
     concat(array:any[]):IArrayStore;
+
+    /**
+     * Combines two arrays.
+     * @param array The array to concat
+     */
     concat(array:any):IArrayStore;
+
+    /**
+     * Combines two arrays. This does not create a new array store. It appends the values of the given array to the
+     * array store
+     * @param array The array to concat
+     */
     concatInplace(array:IArrayStore);
+
+    /**
+     * Combines two arrays. This does not create a new array store. It appends the values of the given array to the
+     * array store
+     * @param array The array to concat
+     */
     concatInplace(array:any[]);
+
+    /**
+     * Combines two arrays. This does not create a new array store. It appends the values of the given array to the
+     * array store
+     * @param array The array to concat
+     */
     concatInplace(array:any);
+
+    /**
+     * Add one or more values to the end of the array.
+     * @param values
+     */
     push(...values:any[]);
+
+    /**
+     * Insert one or more items to the beginning of the array. The first velue will be the first in the array, the second
+     * the second and so on.
+     * @param values
+     */
     unshift(...values:any[]);
+
+    /**
+     * Remove the last item from the array
+     */
     pop():any;
+
+    /**
+     * Remove the first item of the array. The second item will become the first.
+     */
     shift():any;
+
+    /**
+     * Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
+     * @param start The zero-based location in the array from which to start removing elements.
+     * @param deleteCount The number of elements to remove.
+     * @param items Elements to insert into the array in place of the deleted elements.
+     */
     splice(start:number, deleteCount:number, ...values:any[]):any[];
+
+    /**
+     * Insert a new item at the specified position.
+     * @param atIndex
+     * @param values
+     */
     insert(atIndex:number, ...values:any[]);
+
+    /**
+     * Remove and return an item from the specified position.
+     * @param atIndex
+     * @param count
+     */
     remove(atIndex:number, count:number):any[];
 
+    /**
+     * Gets the length of the array. This is a number one higher than the highest element defined in an array.
+     */
     length:number;
 
     [n:number]:any;
 }
 
+/**
+ * The immutable array store. It behaves much like a regular JavaScript array but provides streams for
+ * updates, newItems, removedItems and when it's disposed, that are just pass throughs of the respective
+ * streams of the original mutable store. Functions that return a new array in JavaScript return an
+ * array here, not an array store as in the mutable version.
+ */
 export interface IImmutableArrayStore extends IStore {
+
     toString():string;
     toLocaleString():string;
     forEach(callbackfn: (value: any, index: number, array: any[]) => void, thisArg?: any);
@@ -563,11 +846,11 @@ class ArrayStore extends Store implements IArrayStore {
         return this._data.some(callbackfn, thisArg);
     }
 
-    indexOf(value:any):number {
+    indexOf(value:any, fromIndex?:number):number {
         if (isStore(value) && value.isImmutable) {
-            return this._data.indexOf(value["_parent"]);
+            return this._data.indexOf(value["_parent"], fromIndex);
         } else {
-            return this._data.indexOf(value);
+            return this._data.indexOf(value, fromIndex);
         }
     }
 
@@ -603,8 +886,13 @@ class ArrayStore extends Store implements IArrayStore {
         return mappedStore;
     }
 
-    filter(callbackfn: (value: any, index: number, array: any[]) => boolean, thisArg?: any): IArrayStore {
+    filter(callbackfn: (value: any, index: number, array: any[]) => boolean, noUpdates:boolean, thisArg?: any): IArrayStore {
         var that = this;
+        var adder:Stream.IStream;
+        var remover:Stream.IStream;
+        var updater:Stream.IStream;
+        var filteredStore:IArrayStore;
+
         var indexMap = [];
         var filtered = [];
 
@@ -686,48 +974,52 @@ class ArrayStore extends Store implements IArrayStore {
             }
         });
 
-        var adder = Stream.createStream();
-        var remover = Stream.createStream();
-        var updater = Stream.createStream();
-        var filteredStore = new ArrayStore(filtered, adder, remover, updater);
 
-        this.newItems.forEach(function(update) {
-            if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
-                if (isMapped(update.rootItem)) {
-                    adder.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
+        if (!noUpdates) {
+            adder = Stream.createStream();
+            remover = Stream.createStream();
+            updater = Stream.createStream();
+
+            this.newItems.forEach(function(update) {
+                if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
+                    if (isMapped(update.rootItem)) {
+                        adder.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
+                    } else {
+                        adder.push(createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
+                    }
+                    addMap(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
                 } else {
-                    adder.push(createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
+                    addMap(update.rootItem, -1);
                 }
-                addMap(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
-            } else {
-                addMap(update.rootItem, -1);
-            }
-        });
+            });
 
-        this.removedItems.forEach(function(update) {
-            if (isMapped(update.rootItem)) {
-                remover.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
-            }
-            removeMap(update.rootItem);
-        });
-
-        this.updates.forEach(function(update) {
-            if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
-                if (isMapped(update.rootItem)) {
-                    updater.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store))
-                } else {
-                    adder.push(createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
-                    map(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
-                }
-            } else {
+            this.removedItems.forEach(function(update) {
                 if (isMapped(update.rootItem)) {
                     remover.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
-                    unmap(update.rootItem);
-                } else {
-                    map(update.rootItem, -1);
                 }
-            }
-        });
+                removeMap(update.rootItem);
+            });
+
+            this.updates.forEach(function(update) {
+                if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
+                    if (isMapped(update.rootItem)) {
+                        updater.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store))
+                    } else {
+                        adder.push(createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
+                        map(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
+                    }
+                } else {
+                    if (isMapped(update.rootItem)) {
+                        remover.push(createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
+                        unmap(update.rootItem);
+                    } else {
+                        map(update.rootItem, -1);
+                    }
+                }
+            });
+        }
+
+        filteredStore = new ArrayStore(filtered, adder, remover, updater);
 
         return filteredStore;
     }
@@ -1138,6 +1430,14 @@ class ImmutableArray extends ImmutableStore implements IImmutableArrayStore {
     }
 }
 
+
+/**
+ * Create an array store. If an initial value is provided it will initialize the array
+ * with it. The initial value can be a JavaScript array of either simple values or plain objects.
+ * It the array has plain objects a nested store will be created.
+ * @param initial
+ * @returns {*}
+ */
 export function array(initial?:any[]):IArrayStore {
     if (initial) {
         return buildDeep(initial);

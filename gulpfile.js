@@ -23,6 +23,16 @@ gulp.task("compile-tsc", function() {
         .pipe(gulp.dest("./"));
 });
 
+gulp.task("compile-tsc-amd", function() {
+    gulp.src(["./src/**/*.ts"])
+        .pipe(typescript({ module: "amd",
+            target: "ES5",
+            sourcemap: true,
+            outDir: "./"
+        }))
+        .pipe(gulp.dest("./amd/fluss"));
+});
+
 gulp.task("bundle-todos1", function() {
     return browserify("./examples/Todos_1/application.js")
         .bundle()

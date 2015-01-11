@@ -4,7 +4,7 @@ fluss
 fluss is an opinionated application framework for the frontend and the backend. It is an interpretation of the
 [flux architecture](http://facebook.github.io/flux/) that establishes a unidirectional flow of data through the application.
 
-fluss is written in Typescript but it can be used in JavaScript perfectly. It can be used on the frontend and on the
+fluss is written in Typescript but it can be used in JavaScript as well. It can be used on the frontend and on the
 backend. Views created with [React](http://facebook.github.io/react/) are the target but fluss has no dependencies
 whatsoever to React. Using other view technologies is possible.
 
@@ -21,7 +21,20 @@ whatsoever to React. Using other view technologies is possible.
 
 ## Modules
 
-fluss uses CommonJS modules to ease the transition from the frontend to the backend.
+fluss can be compiled to create either amd or commonjs modules.
+
+## Stability
+
+Be careful. This is beta software. APIs may change. There are bugs!
+
+## Browser compatibility
+
+This uses ES5 features so you need a modern browser. It is tested on the latest Firefox (33+), Chrome (37+) and
+IE 10. This should work for ChromeApps, in NodeWebkit, Atomshell and the likes.
+
+## Installation
+
+    npm install fluss
 
 ## Getting started
 
@@ -42,7 +55,12 @@ Stores are reactive ...
             console.log(update.value.title + " was added");
          ));
 
-Filtered stores are even more reactive ...
+    todos.push(Store.record( { title: "make coffee...", completed: false } ));
+
+    // The console now reads
+    //  make coffee... was added
+
+Filtered (and mapped) stores are even more reactive (within limits)...
 
     // todos may hold:
     //  { title: "learn fluss...", completed: true }
@@ -61,14 +79,12 @@ Filtered stores are even more reactive ...
 
     todos[1].completed = true;
 
-    // completed now holds automatically:
+    // completed now holds:
     //  { title: "learn fluss...", completed: true }
     //  { title: "make coffee...", completed: true }
     //
     // And the console reads
     //  make coffee... was completed!
-
-
 
 Create a container for plugins
 
@@ -77,9 +93,14 @@ Create a container for plugins
         todos:Store.IArrayStore;
 
         constructor() {
-            super("Application");
+            super();
             this._todos = Store.array();
     }
+
+    // Or in JavaScript
+    var Application = Plugins.createContainer({
+        todos: Store.array()
+    })
 
     var application = new Application();
 
@@ -91,6 +112,14 @@ Create a plugin...
             container.todos.push(Store.record({ title: title, completed: false }));
         }
     }
+
+
+    // Or in Javascript
+    var AddTodo = Plugins.createPlugin({
+        run(container, action, title) {
+            container.todos.push(Store.record({ title: title, completed: false }));
+        }
+    });
 
 ... add it to your container...
 
@@ -106,6 +135,28 @@ Create a plugin...
 
 Please see the [tutorial](examples/tutorial.md).
 
+## Building
+
+You need [node](http://nodejs.org/), [NPM](https://www.npmjs.com), [Typescript](http://www.typescriptlang.org/)
+[Gulp](http://gulpjs.com/) and [Mocha](http://mochajs.org/) installed globally.
+
+Checkout the whole thing from github. Go to the directory and do an
+
+    npm install
+
+Now you should be able to compile the typescript with
+
+    gulp compile-tsc
+
+and run the tests with
+
+    npm test
+
+or
+
+    mocha
+
+
 ## Why reinvent the wheel?
 
 Most importantly it is fun to write. It's an exploration of concepts and ideas.
@@ -114,14 +165,6 @@ fluss is the result of both an ambitious project as well as a learning experienc
 programming exist ([BaconJS](https://baconjs.github.io/), [kefir.js](http://pozadi.github.io/kefir/), [RxJS](https://github.com/Reactive-Extensions/RxJS))
 but to completely wrap my head around reactive programming I wanted to implement my own thing.
 
-## Stability
-
-Be careful. This is beta software. APIs may change. There are bugs!
-
 ## License
 
 [MIT](LICENSE)
-
-
-
-

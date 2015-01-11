@@ -603,6 +603,12 @@ export class Stream implements IStream {
     }
 }
 
+
+/**
+ * Create a new stream. The name is mostly for debugging purposes and can be omitted. It defaults to 'stream' then.
+ * @param name
+ * @returns {Stream}
+ */
 export function createStream(name?:string):IStream {
     return new Stream(name || "stream");
 }

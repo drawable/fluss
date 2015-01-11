@@ -139,7 +139,58 @@ class DispatchingPlugin extends SimplePlugin {
 }
 
 
-describe("Plugins (IOC)", function() {
+var JSApp = Plugins.createContainer({
+    info: 10
+});
+
+var PureJSPlugin = Plugins.createPlugin({
+
+    _name: "JS",
+
+    constructor: function(name) {
+        if (name) {
+            this._name = name;
+        }
+    },
+
+    run: function(container:any, action:number, text:string) {
+        addCall(action, "r" + "-" + this._name + "-" + text);
+    },
+
+    afterFinish: function(container:any, action:number) {
+        addCall(action, "f" + "-" + this._name);
+    },
+
+    afterAbort: function(containter:any, action:number) {
+        addCall(action, "a" + "-" + this._name);
+    }
+});
+
+var PureJSPlugin2 = Plugins.createPlugin({
+
+    _name: "JS",
+
+    constructor: function(name) {
+        if (name) {
+            this._name = name;
+        }
+    },
+
+    run: function(container:any, action:number, text:string) {
+        addCall(action, "r" + "-" + this._name + container.info + "-" + text);
+    },
+
+    afterFinish: function(container:any, action:number) {
+        addCall(action, "f" + "-" + this._name + container.info);
+    },
+
+    afterAbort: function(containter:any, action:number) {
+        addCall(action, "a" + "-" + this._name + containter.info);
+    }
+});
+
+
+describe("Plugins", function() {
 
     var app:App;
 
@@ -164,6 +215,33 @@ describe("Plugins (IOC)", function() {
         var cs = getCallSignature();
 
         expect(cs).to.equal("(1:r-A-Y)(1:f-A)");
+    });
+
+    it("can be created easily in plain JavaScript - 1", function() {
+        var plgA = new PureJSPlugin();
+
+        app.wrap(1, plgA);
+
+        Dispatcher.getDispatcher().dispatchAction(1, "Y");
+
+        var cs = getCallSignature();
+
+        expect(cs).to.equal("(1:r-JS-Y)(1:f-JS)");
+    });
+
+    it("can be created easily in plain JavaScript - 2", function() {
+        var plgA = new PureJSPlugin2("XY");
+        var jsApp:any = new JSApp();
+
+        jsApp.wrap(1, plgA);
+
+        Dispatcher.getDispatcher().dispatchAction(1, "Y");
+
+        var cs = getCallSignature();
+
+        expect(cs).to.equal("(1:r-XY10-Y)(1:f-XY10)");
+
+        jsApp.destroy();
     });
 
     it("can be wrapped so that several plugins handle the same action", function() {
