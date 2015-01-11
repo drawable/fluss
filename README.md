@@ -139,6 +139,29 @@ Create a plugin...
 
     Dispatcher.dispatch(NEW_TODO, "... and make an awesome app with it");
 
+Extend your plugin to support UNDO/REDO
+
+        class AddTodo extends Plugins.BasePlugin {
+            run(container:Application.Application, action:number, title:string) {
+                container.todos.push(Store.record({id: todoIds++, title: title, completed: false}));
+            }
+
+            getMemento(container:Application.Application, action:number, title:string):Dispatcher.IMemento {
+                return Dispatcher.createMemento(null, { index: container.todos.length })
+            }
+
+            restoreFromMemento(container:Application.Application, memento:Dispatcher.IMemento) {
+                container.todos.remove(memento.data.index, 1);
+            }
+        }
+
+... and now you can undo actions
+
+    // Create a new Todo
+    Dispatcher.dispatch(NEW_TODO, "Never do unit tests again");
+
+    // Reconsider... and undo your last action
+    Dispatcher.dispatch(BaseActions.ACTIONS.UNDO);
 
 ## A full example
 
