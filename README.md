@@ -1,7 +1,7 @@
 fluss
 =====
 
-*fluss* is an opinionated application framework for the frontend and the backend. It is an interpretation of the
+**fluss** is an opinionated application framework for the frontend and the backend. It is an interpretation of the
 [flux architecture](http://facebook.github.io/flux/) that establishes a unidirectional flow of data through the application.
 
 It can be used on the frontend and on the backend.
