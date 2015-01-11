@@ -6,7 +6,7 @@ fluss
 
 It can be used on the frontend and on the backend.
 
-*fluss* is written in Typescript but it can be used in JavaScript as well. Views created with
+**fluss** is written in Typescript but it can be used in JavaScript as well. Views created with
 [React](http://facebook.github.io/react/) are the target but *fluss* has no dependencies
 whatsoever to React. Using other view technologies is possible.
 
