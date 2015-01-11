@@ -107,7 +107,11 @@ Create a container for plugins
 
     // In JavaScript
     var Application = Plugins.createContainer({
-        todos: Store.array()
+        todos: null,
+
+        constructor: function() {
+            this.todos = Store.array();
+        }
     })
 
     var application = new Application();
