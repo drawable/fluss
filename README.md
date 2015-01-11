@@ -143,14 +143,16 @@ Extend your plugin to support UNDO/REDO
 
         class AddTodo extends Plugins.BasePlugin {
             run(container:Application.Application, action:number, title:string) {
-                container.todos.push(Store.record({id: todoIds++, title: title, completed: false}));
+                container.todos.push(Store.record({ title: title, completed: false}));
             }
 
-            getMemento(container:Application.Application, action:number, title:string):Dispatcher.IMemento {
+            getMemento(container:Application.Application,
+                       action:number, title:string):Dispatcher.IMemento {
                 return Dispatcher.createMemento(null, { index: container.todos.length })
             }
 
-            restoreFromMemento(container:Application.Application, memento:Dispatcher.IMemento) {
+            restoreFromMemento(container:Application.Application,
+                               memento:Dispatcher.IMemento) {
                 container.todos.remove(memento.data.index, 1);
             }
         }
