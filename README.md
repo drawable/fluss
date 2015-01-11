@@ -23,7 +23,7 @@ whatsoever to React. Using other view technologies is possible.
 
 ## Modules
 
-**fluss** can be compiled to create either amd or commonjs modules.
+**fluss** can be compiled to create either amd or commonjs modules. The npm module provides both.
 
 ## Stability
 
