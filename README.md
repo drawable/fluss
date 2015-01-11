@@ -21,13 +21,14 @@ whatsoever to React. Using other view technologies is possible.
   implementation of the memento pattern for full undo/redo support, the use of multiple plugins for the same action and
   the use of plugins to run on every action.
 
+
 ## Modules
 
-**fluss** can be compiled to create either amd or commonjs modules. The npm module provides both.
+**fluss** can be compiled to create either amd or commonjs modules. The npm package provides both.
 
 ## Stability
 
-Be careful. This is beta software. APIs may change. There are bugs!
+This is beta software. APIs may change. Bugs are likely although there are [tests](test).
 
 ## Browser compatibility
 

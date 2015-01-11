@@ -2,7 +2,7 @@
 
 The [TodoMVC specification](https://github.com/tastejs/todomvc/blob/master/app-spec.md) tells us everything we need.
 
-If you're just interested in the result you can see the final solution here (link will follow).
+If you're just interested in the result you can [see the implementation here](https://github.com/drawable/fluss-todomvc-step1).
 
 ## Data
 
