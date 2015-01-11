@@ -214,7 +214,7 @@ the heart of flux.
 
 ### The store does not know the actions
 
-The store just stores data - nothing else. Handling the actions is done in the plugin. Tha plugin manipulates the data in the store. The plugin even
+The store just stores data - nothing else. Handling the actions is done in the plugin. The plugin manipulates the data in the store. The plugin even
 knows how to undo the action, i.e. what data changes to apply to get to an earlier state.
 
 
