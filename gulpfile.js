@@ -6,56 +6,89 @@
 
 var fs = require('fs')
 var gulp = require('gulp');
-var typescript = require('gulp-tsc');
-var browserify = require('browserify');
+var typescript = require('gulp-typescript');
+var sourcemaps = require('gulp-sourcemaps');
 var source = require('vinyl-source-stream');
-var uglify = require("gulp-uglify");
-var rename = require("gulp-rename");
+var del = require("del");
 
 
 gulp.task("compile-tsc", function() {
-    gulp.src(["./src/**/*.ts", "./test/**/*.ts"])
-        .pipe(typescript({ module: "commonjs",
-            target: "ES5",
-            sourcemap: true,
-            outDir: "./"
-        }))
+    var tsResult = gulp.src(["./src/**/*.ts", "./test/**/*.ts"])
+        .pipe(sourcemaps.init())
+        .pipe(typescript({
+            module: "commonjs",
+            target: "ES5"
+        }));
+
+    return tsResult.js
+        .pipe(sourcemaps.write("."))
         .pipe(gulp.dest("./"));
 });
 
-gulp.task("build-amd", function() {
-    return gulp.src(["./src/**/*.ts"])
+gulp.task("copy-dist", function() {
+   return gulp.src("./dist/**/*")
+       .pipe(gulp.dest("./build"));
+});
+
+gulp.task("build-amd", ["copy-dist"], function() {
+    var tsResult = gulp.src(["./src/**/*.ts"])
         .pipe(gulp.dest("./build/amd/fluss"))
-        .pipe(typescript({ module: "amd",
-            target: "ES5",
-            sourcemap: true,
-            outDir: "./"
-        }))
+        .pipe(sourcemaps.init())
+        .pipe(typescript({
+            module: "amd",
+            target: "ES5"
+        }));
+
+    return tsResult.js
+        .pipe(sourcemaps.write("."))
         .pipe(gulp.dest("./build/amd/fluss"));
 });
 
-gulp.task("build-commonjs", function() {
+gulp.task("build-lib", function() {
     return gulp.src(["./src/**/*.ts"])
-        .pipe(gulp.dest("./build/commonjs/fluss"))
-        .pipe(typescript({ module: "commonjs",
-            target: "ES5",
-            sourcemap: true,
-            outDir: "./"
-        }))
-        .pipe(gulp.dest("./build/commonjs/fluss"));
-});
-
-gulp.task("build", ["build-amd", "build-commonjs"], function() {
-    gulp.src(["./src/**/*.ts"])
         .pipe(gulp.dest("./build/lib"));
+});
 
-    gulp.src("README.md")
-        .pipe(gulp.dest("./build"));
+gulp.task("build-commonjs", function() {
+    var tsResult = gulp.src(["./src/**/*.ts"])
+        .pipe(sourcemaps.init())
+        .pipe(typescript({
+            module: "commonjs",
+            target: "ES5"
+        }));
 
-    gulp.src("LICENSE")
+    return tsResult.js
+        .pipe(sourcemaps.write("."))
+        .pipe(gulp.dest("./build/lib"));
+});
+
+
+gulp.task("build-index-commonjs", ["build-commonjs"], function() {
+    var tsResult = gulp.src(["./build/index.ts"])
+        .pipe(typescript({
+            module: "commonjs",
+            target: "ES5"
+        }));
+
+    return tsResult.js
         .pipe(gulp.dest("./build"));
 });
 
-gulp.task("testbeds", ["build-amd", "build-commonjs"], function() {
+gulp.task("build-index-amd", ["build-amd"], function() {
+    var tsResult = gulp.src(["./build/amd/fluss.ts"])
+        .pipe(typescript({
+            module: "amd",
+            target: "ES5"
+        }));
 
+    return tsResult.js
+        .pipe(gulp.dest("./build/amd"));
+});
+
+
+gulp.task("clean", function(cb) {
+    del(["./build/**/*"], cb);
+});
+
+gulp.task("build", ["copy-dist", "build-lib", "build-amd", "build-commonjs", "build-index-commonjs", "build-index-amd"], function() {
 });
