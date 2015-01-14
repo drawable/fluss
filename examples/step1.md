@@ -4,6 +4,8 @@ The [TodoMVC specification](https://github.com/tastejs/todomvc/blob/master/app-s
 
 If you're just interested in the result you can [see the implementation here](https://github.com/drawable/fluss-todomvc-step1).
 
+See a running example [here](http://www.drawable.de/todomvc/App/).
+
 ## Data
 
 Of course we'll need a todo. It has the following fields

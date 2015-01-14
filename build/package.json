@@ -1,6 +1,6 @@
 {
   "name": "fluss",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "An opinionated Typescript/JavaScript application framework for the frontend and the backend",
   "main": "index.js",
   "scripts": {
