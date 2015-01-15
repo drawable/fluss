@@ -2,17 +2,11 @@
  * Created by Stephan on 13.01.2015.
  */
 "use strict";
-var mtools = require('./lib/tools');
-var mdispatcher = require('./lib/dispatcher');
-var mplugins = require('./lib/plugins');
-var mreactMixins = require('./lib/reactMixins');
-var mstore = require('./lib/store');
-var mstream = require('./lib/stream');
-var mbaseActions = require('./lib/baseActions');
-exports.Tools = mtools;
-exports.BaseActions = mbaseActions;
-exports.Dispatcher = mdispatcher;
-exports.Plugins = mplugins;
-exports.Store = mstore;
-exports.Stream = mstream;
-exports.ReactMixins = mreactMixins;
+exports.Tools = require('./src/tools');
+exports.Dispatcher = require('./src/dispatcher');
+exports.Errors = require('./src/errors');
+exports.Plugins = require('./src/plugins');
+exports.ReactMixins = require('./src/reactMixins');
+exports.Store = require('./src/store');
+exports.Stream = require('./src/stream');
+exports.BaseActions = require('./src/baseActions');

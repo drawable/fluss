@@ -14,7 +14,7 @@ Of course we'll need a todo. It has the following fields
 * Title
 * Completed flag
 
-We need a list of todos. That will be an array.
+We need a list of todos. That will be an array of todos.
 
 The data we'll create needs to be stored in local storage.
 

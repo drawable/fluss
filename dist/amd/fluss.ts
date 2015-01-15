@@ -4,19 +4,12 @@
 
 "use strict";
 
-import mtools = require('fluss/tools');
-import mdispatcher = require('fluss/dispatcher');
-import merrors = require('fluss/errors');
-import mplugins = require('fluss/plugins');
-import mreactMixins = require('fluss/reactMixins');
-import mstore = require('fluss/store');
-import mstream = require('fluss/stream');
-import mbaseActions = require('fluss/baseActions');
 
-export var Tools = mtools;
-export var BaseActions = mbaseActions;
-export var Dispatcher = mdispatcher;
-export var Plugins = mplugins;
-export var Store = mstore;
-export var Stream = mstream;
-export var ReactMixins = mreactMixins;
+export import Tools = require('./fluss/tools');
+export import Dispatcher = require('./fluss/dispatcher');
+export import Errors = require('./fluss/errors');
+export import Plugins = require('./fluss/plugins');
+export import ReactMixins = require('./fluss/reactMixins');
+export import Store = require('./fluss/store');
+export import Stream = require('./fluss/stream');
+export import BaseActions = require('./fluss/baseActions');

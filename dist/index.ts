@@ -4,19 +4,11 @@
 
 "use strict";
 
-import mtools = require('./lib/tools');
-import mdispatcher = require('./lib/dispatcher');
-import merrors = require('./lib/errors');
-import mplugins = require('./lib/plugins');
-import mreactMixins = require('./lib/reactMixins');
-import mstore = require('./lib/store');
-import mstream = require('./lib/stream');
-import mbaseActions = require('./lib/baseActions');
-
-export var Tools = mtools;
-export var BaseActions = mbaseActions;
-export var Dispatcher = mdispatcher;
-export var Plugins = mplugins;
-export var Store = mstore;
-export var Stream = mstream;
-export var ReactMixins = mreactMixins;
+export import Tools = require('./src/tools');
+export import Dispatcher = require('./src/dispatcher');
+export import Errors = require('./src/errors');
+export import Plugins = require('./src/plugins');
+export import ReactMixins = require('./src/reactMixins');
+export import Store = require('./src/store');
+export import Stream = require('./src/stream');
+export import BaseActions = require('./src/baseActions');

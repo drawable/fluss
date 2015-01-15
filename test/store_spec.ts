@@ -936,6 +936,26 @@ describe("Data stores", function () {
             expect(updateCount).to.equal(10);
         });
 
+        it("will propagate updates of nested stores up to the immutable", function() {
+            var array = Store.array();
+            array.push(Store.record({ a: 1, b: 2 }));
+
+            var imm = array.immutable;
+            var calls = "";
+            imm.updates.filter(function(update) {
+                return update.item === "a";
+            }).forEach(function(update) {
+                calls += "(" + update.item + "=" + update.value + ")";
+            });
+
+            var item = imm[0];
+
+            array.item(item).a = 2;
+            array.item(item).b = 1;
+
+            expect(calls).to.equal("(a=2)");
+        });
+
         /*it("will propagate added items up in nested stores"
             , function() {
             return;

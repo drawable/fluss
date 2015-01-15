@@ -10,6 +10,10 @@ It can be used on the frontend and on the backend.
 [React](http://facebook.github.io/react/) are the target but **fluss** has no dependencies
 whatsoever to React. Using other view technologies is possible.
 
+## Contact
+
+Reach me on Twitter [@drawableIO](https://twitter.com/drawableio)
+
 ## Main features
 
 * Streams: A simple stream implementation for reactive programming.
