@@ -1,7 +1,7 @@
 fluss
 =====
 
-**fluss** is an opinionated application framework for the frontend and the backend. It is an interpretation of the
+**fluss** is a application framework for the frontend and the backend. It is an interpretation of the
 [flux architecture](http://facebook.github.io/flux/) that establishes a unidirectional flow of data through the application.
 
 It can be used on the frontend and on the backend.
@@ -28,7 +28,7 @@ Reach me on Twitter [@drawableIO](https://twitter.com/drawableio)
 
 ## Modules
 
-**fluss** can be compiled to create either amd or commonjs modules. The npm package provides both.
+**fluss** can be compiled to create either AMD or CommonJS modules. The npm package provides both.
 
 ## Stability
 
@@ -50,7 +50,7 @@ See [fluss-npm-module-usage](https://github.com/drawable/fluss-npm-module-usage)
 Create stores ...
 
     var todos = Store.array();
-    todos.push(Store.record( { title: "learn **fluss**...", completed: false } );
+    todos.push(Store.record( { title: "learn fluss...", completed: false } );
     todos[0].complete = true;
 
     todos.forEach(function(todo) {
@@ -261,6 +261,13 @@ Most importantly it is fun to write. It's an exploration of concepts and ideas.
 **fluss** is the result of both an ambitious project as well as a learning experience. Very good implementations for reactive
 programming exist ([BaconJS](https://baconjs.github.io/), [kefir.js](http://pozadi.github.io/kefir/), [RxJS](https://github.com/Reactive-Extensions/RxJS))
 but to completely wrap my head around reactive programming I wanted to implement my own thing.
+
+
+## Changelog
+
+### 0.3.3
+
+* Proper library bindings for Typescript enabling development in AMD and CommonJS
 
 ## License
 

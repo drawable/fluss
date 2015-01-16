@@ -1,21 +1,35 @@
+/// <reference path="./stream.ts" />
 /**
  * Created by Stephan on 10.01.2015.
  */
 
 "use strict";
 
-import Stream = require("./stream");
+module Fluss {
 
-export var componentLifecycle = {
+    export module ReactMixins {
+        export var componentLifecycle = {
 
-    _willUnmount:null,
+            _willUnmount:null,
 
-    componentDidMount: function() {
-        this._willUnmount = Stream.createStream("component-unmount");
-    },
+            componentDidMount: function() {
+                this._willUnmount = Stream.createStream("component-unmount");
+            },
 
-    componentWillUnmount: function() {
-        this._willUnmount.push(true);
-        this._willUnmount.dispose();
+            componentWillUnmount: function() {
+                this._willUnmount.push(true);
+                this._willUnmount.dispose();
+            }
+        };
     }
-};
+}
+
+declare var exports: any;
+if (typeof exports !== "undefined") {
+    exports.ReactMixins = Fluss.ReactMixins;
+}
+if (typeof this["define"] === "function") {
+    this["define"]([], function () {
+        return Fluss.ReactMixins;
+    });
+}

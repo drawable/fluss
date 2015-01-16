@@ -1,6 +1,7 @@
 /// <reference path="../types/mocha.d.ts" />
 /// <reference path="../types/chai.d.ts" />
 /// <reference path="../types/sinon.d.ts" />
+/// <reference path="../build/fluss.d.ts" />
 /**
  * Created by Stephan on 02.01.2015.
  */
@@ -11,12 +12,12 @@ import chai = require("chai");
 import sinon = require("sinon");
 var expect = chai.expect;
 
-import Plugins = require("../src/plugins")
-import Dispatcher = require("../src/dispatcher")
-import BaseActions = require("../src/baseActions")
+
+declare function require(module:string):any;
+var Fluss:any = require("../build/index");
 
 
-class App extends Plugins.PluginContainer {
+class App extends Fluss.Plugins.PluginContainer {
 
     constructor() {
         super();
@@ -40,7 +41,7 @@ function getCallSignature() {
 }
 
 
-class SimplePlugin extends Plugins.BasePlugin {
+class SimplePlugin extends Fluss.Plugins.BasePlugin {
 
     constructor(public _name) {
         super();
@@ -127,7 +128,7 @@ class DispatchingPlugin extends SimplePlugin {
             this.firsAction = action;
             var that = this;
             setTimeout(function() {
-                Dispatcher.dispatch(that.callingAction, text);
+                Fluss.Dispatcher.dispatch(that.callingAction, text);
 
             }, 500);
             this.hold();
@@ -139,11 +140,11 @@ class DispatchingPlugin extends SimplePlugin {
 }
 
 
-var JSApp = Plugins.createContainer({
+var JSApp = Fluss.Plugins.createContainer({
     info: 10
 });
 
-var PureJSPlugin = Plugins.createPlugin({
+var PureJSPlugin = Fluss.Plugins.createPlugin({
 
     _name: "JS",
 
@@ -166,7 +167,7 @@ var PureJSPlugin = Plugins.createPlugin({
     }
 });
 
-var PureJSPlugin2 = Plugins.createPlugin({
+var PureJSPlugin2 = Fluss.Plugins.createPlugin({
 
     _name: "JS",
 
@@ -210,7 +211,7 @@ describe("Plugins", function() {
 
         app.wrap(1, plgA);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "Y");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "Y");
 
         var cs = getCallSignature();
 
@@ -222,7 +223,7 @@ describe("Plugins", function() {
 
         app.wrap(1, plgA);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "Y");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "Y");
 
         var cs = getCallSignature();
 
@@ -235,7 +236,7 @@ describe("Plugins", function() {
 
         jsApp.wrap(1, plgA);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "Y");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "Y");
 
         var cs = getCallSignature();
 
@@ -252,7 +253,7 @@ describe("Plugins", function() {
         app.wrap(1, plgB);
         app.wrap(1, plgA);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "X");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "X");
 
         var cs = getCallSignature();
 
@@ -270,7 +271,7 @@ describe("Plugins", function() {
         app.wrap(1, plgD);
         app.wrap(1, plgE);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "X");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "X");
 
         var cs = getCallSignature();
 
@@ -287,7 +288,7 @@ describe("Plugins", function() {
         app.wrap(1, plgD);
         app.wrap(1, plgE);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "X");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "X");
 
         var cs = getCallSignature();
 
@@ -304,7 +305,7 @@ describe("Plugins", function() {
         app.wrap(1, plgD);
         app.wrap(1, plgE);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "X");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "X");
 
         var cs = getCallSignature();
 
@@ -324,7 +325,7 @@ describe("Plugins", function() {
         app.wrap(1, plgD);
         app.wrap(1, plgE);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "X");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "X");
 
         clock.tick(1000);
         var cs = getCallSignature();
@@ -346,7 +347,7 @@ describe("Plugins", function() {
         app.wrap(1, plgD);
         app.wrap(1, plgE);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "X");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "X");
 
         clock.tick(1000);
         var cs = getCallSignature();
@@ -361,7 +362,7 @@ describe("Plugins", function() {
 
         app.wrap(1, plgA);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "Y");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "Y");
 
         var cs = getCallSignature();
 
@@ -378,7 +379,7 @@ describe("Plugins", function() {
         app.wrap(1, plgD);
         app.wrap(1, plgC);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "X");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "X");
 
         var cs = getCallSignature();
 
@@ -396,7 +397,7 @@ describe("Plugins", function() {
         app.wrap(1, plgD);
         app.wrap(1, plgE);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "X");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "X");
 
         var cs = getCallSignature();
 
@@ -413,7 +414,7 @@ describe("Plugins", function() {
         app.wrap(1, plgD);
         app.wrap(1, plgE);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "X");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "X");
 
         var cs = getCallSignature();
         expect(cs).to.equal("(1:r-E-X)(1:r-D-X)(1:a-D)(1:a-E)");
@@ -430,7 +431,7 @@ describe("Plugins", function() {
         app.wrap(1, plgD);
         app.wrap(1, plgE);
 
-        Dispatcher.getDispatcher().dispatchAction(1, "X");
+        Fluss.Dispatcher.getDispatcher().dispatchAction(1, "X");
         app.abort();
         var cs = getCallSignature();
         expect(cs).to.equal("(1:r-E-X)(1:r-D-X)(1:r-C-X)(1:f-C)(1:a-D)(1:a-E)");
@@ -439,9 +440,9 @@ describe("Plugins", function() {
     it("can handle any action", function() {
         var anyA = new SimplePlugin("A");
 
-        app.wrap(BaseActions.ACTIONS.__ANY__, anyA);
+        app.wrap(Fluss.BaseActions.ACTIONS.__ANY__, anyA);
 
-        Dispatcher.dispatch(42, "X");
+        Fluss.Dispatcher.dispatch(42, "X");
         var cs = getCallSignature();
         expect(cs).to.equal("(42:r-A-X)(42:f-A)");
     });
@@ -450,15 +451,15 @@ describe("Plugins", function() {
         var anyA = new SimplePlugin("A");
         var specB = new SimplePlugin("B");
 
-        app.wrap(BaseActions.ACTIONS.__ANY__, anyA);
+        app.wrap(Fluss.BaseActions.ACTIONS.__ANY__, anyA);
         app.wrap(1, specB);
 
-        Dispatcher.dispatch(42, "X");
+        Fluss.Dispatcher.dispatch(42, "X");
         var cs = getCallSignature();
         expect(cs).to.equal("(42:r-A-X)(42:f-A)");
 
         clearCalls();
-        Dispatcher.dispatch(1, "Z");
+        Fluss.Dispatcher.dispatch(1, "Z");
         cs = getCallSignature();
         expect(cs).to.equal("(1:r-B-Z)(1:r-A-Z)(1:f-A)(1:f-B)");
     });
@@ -468,26 +469,26 @@ describe("Plugins", function() {
         var specB = new SimplePlugin("B");
         var anyC = new SimplePlugin("C");
 
-        app.wrap(BaseActions.ACTIONS.__ANY__, anyA);
+        app.wrap(Fluss.BaseActions.ACTIONS.__ANY__, anyA);
         app.wrap(1, specB);
 
-        Dispatcher.dispatch(42, "X");
+        Fluss.Dispatcher.dispatch(42, "X");
         var cs = getCallSignature();
         expect(cs).to.equal("(42:r-A-X)(42:f-A)");
 
         clearCalls();
-        Dispatcher.dispatch(1, "Z");
+        Fluss.Dispatcher.dispatch(1, "Z");
         cs = getCallSignature();
         expect(cs).to.equal("(1:r-B-Z)(1:r-A-Z)(1:f-A)(1:f-B)");
 
-        app.wrap(BaseActions.ACTIONS.__ANY__, anyC);
+        app.wrap(Fluss.BaseActions.ACTIONS.__ANY__, anyC);
         clearCalls();
-        Dispatcher.dispatch(42, "X");
+        Fluss.Dispatcher.dispatch(42, "X");
         cs = getCallSignature();
         expect(cs).to.equal("(42:r-C-X)(42:r-A-X)(42:f-A)(42:f-C)");
 
         clearCalls();
-        Dispatcher.dispatch(1, "Z");
+        Fluss.Dispatcher.dispatch(1, "Z");
         cs = getCallSignature();
         expect(cs).to.equal("(1:r-C-Z)(1:r-B-Z)(1:r-A-Z)(1:f-A)(1:f-B)(1:f-C)");
     });
@@ -502,7 +503,7 @@ describe("Plugins", function() {
         app.wrap(1, simpleB);   // Index 0
         app.wrap(2, callA);
 
-        Dispatcher.dispatch(1, "W");
+        Fluss.Dispatcher.dispatch(1, "W");
 
         clock.tick(5000);
 
@@ -523,10 +524,10 @@ describe("Plugins", function() {
         app.wrap(1, simpleB);   // Index 0
         app.wrap(2, waitA);
 
-        Dispatcher.dispatch(1, "W");
-        Dispatcher.dispatch(2, "X");
+        Fluss.Dispatcher.dispatch(1, "W");
+        Fluss.Dispatcher.dispatch(2, "X");
         app.abort(1);
-        Dispatcher.dispatch(2, "X");
+        Fluss.Dispatcher.dispatch(2, "X");
 
         var cs = getCallSignature();
 

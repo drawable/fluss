@@ -1,5 +1,6 @@
 /// <reference path="../types/mocha.d.ts" />
 /// <reference path="../types/chai.d.ts" />
+/// <reference path="../build/fluss.d.ts" />
 /**
  * Created by Stephan on 02.01.2015.
  */
@@ -9,19 +10,20 @@
 import chai = require("chai");
 var expect = chai.expect;
 
-import Stream = require("../src/stream");
-import EventChannel = require("../src/eventChannel");
+declare function require(module:string):any;
+var Fluss:any = require("../build/index");
+
 
 describe("A stream (used for reactive programming patterns)", function() {
     it("can be created", function() {
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
 
         expect(s).not.to.be.undefined();
         expect(s.name).to.equal("myStream");
     });
 
     it("can have values pushed to it", function() {
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
 
         expect(function() {
             s.push("A");
@@ -30,7 +32,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     });
 
     it("provides 'forEach' to define a function to be called for every value pushed to it", function() {
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var calls = [];
 
         s.forEach(function(value) {
@@ -47,7 +49,7 @@ describe("A stream (used for reactive programming patterns)", function() {
 
     it("passes the index of the processed value to forEach", function() {
         var calls = "";
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
 
         s.forEach(function(value, index) {
             calls += index;
@@ -62,7 +64,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     });
 
     it("can be preloaded with values before the first method is defined", function() {
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var calls = [];
 
         s.push("A");
@@ -79,7 +81,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     });
 
     it("can tell you how many values where processed", function() {
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
 
         expect(s.length).to.equal(0);
         s.push(1);
@@ -96,7 +98,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     });
 
     it("can be closed - no more methods are called, pushing has no effect", function() {
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var calls = [];
 
         s.forEach(function(value) {
@@ -116,7 +118,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     });
 
     it("can use multiple 'forEach'", function() {
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var calls1 = [];
         var calls2 = [];
 
@@ -142,7 +144,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     it("provides 'map', that returns a new stream of values that are first processed by the map predicate", function() {
         var calls = [];
 
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var m = s.map(function(value) {
             return typeof value;
         });
@@ -162,7 +164,7 @@ describe("A stream (used for reactive programming patterns)", function() {
 
     it("passes the index of the processed value to map", function() {
         var calls = "";
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
 
         var m = s.map(function(value, index) {
             return index;
@@ -184,7 +186,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     it("can 'map' to a constant", function() {
         var calls = [];
 
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var m = s.map("Hello!");
 
         m.forEach(function(value) {
@@ -204,7 +206,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     it("provides 'filter', that returns a new stream of values that meet a specific criterium", function() {
         var calls = [];
 
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var f = s.filter(function(value) {
             return !(value % 2);
         });
@@ -232,7 +234,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     it("passes the index of the processed value to filter", function() {
         var calls = [];
 
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var f = s.filter(function(value, index) {
             return index % 2;
         });
@@ -260,7 +262,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     it("can filter using a constant, that checks whether the processed value equals this constant", function() {
         var calls = [];
 
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var f = s.filter(2);
 
         f.forEach(function(value) {
@@ -285,7 +287,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     "current value. The initial seed of the scan is the first value to be processed", function() {
         var calls = [];
 
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var sc = s.scan(function(prev, current) {
             return prev + current;
         }, 0);
@@ -314,7 +316,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     it("provides 'reduce', that returns a new stream that gives the accumulated result of a predicate over all values when the original stream is closed", function() {
         var calls = [];
 
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var re = s.reduce(function(prev, current) {
             return prev + current;
         }, 0);
@@ -345,8 +347,8 @@ describe("A stream (used for reactive programming patterns)", function() {
     it("provides 'concat', that returns a new stream that processes all values of the original stream and all of another given stream, when the original stream is closed", function() {
         var calls = [];
 
-        var s1 = Stream.createStream("One");
-        var s2 = Stream.createStream("Two");
+        var s1 = Fluss.Stream.createStream("One");
+        var s2 = Fluss.Stream.createStream("Two");
         var co = s1.concat(s2);
 
         expect(co).not.to.equal(s1);
@@ -383,8 +385,8 @@ describe("A stream (used for reactive programming patterns)", function() {
 
     it("that is closed and then concated will result in the concat to be the values of the other stream immediately", function() {
         var calls = "";
-        var s1 = Stream.createStream("A");
-        var s2 = Stream.createStream("B");
+        var s1 = Fluss.Stream.createStream("A");
+        var s2 = Fluss.Stream.createStream("B");
 
         s1.close();
 
@@ -406,7 +408,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     "Flattened items are in sequence, i.e. one substream at a time is completely processed before the next substream is processed", function() {
         var calls = [];
 
-        var s = Stream.createStream("MyStream");
+        var s = Fluss.Stream.createStream("MyStream");
         var co = s.concatAll();
 
         co.forEach(function(value) {
@@ -416,9 +418,9 @@ describe("A stream (used for reactive programming patterns)", function() {
         expect(co).not.to.equal(s);
 
         // Weird names are given to make it more obvious what's happening
-        var AAAA = Stream.createStream("Sub1");
-        var OOOO = Stream.createStream("Sub2");
-        var XXXX = Stream.createStream("Sub3");
+        var AAAA = Fluss.Stream.createStream("Sub1");
+        var OOOO = Fluss.Stream.createStream("Sub2");
+        var XXXX = Fluss.Stream.createStream("Sub3");
 
         // This defines the sequence of the substreams
         s.push(AAAA);
@@ -468,8 +470,8 @@ describe("A stream (used for reactive programming patterns)", function() {
         expect(calls[8]).to.equal(23);
 
 
-        var PPPP = Stream.createStream("Sub4");
-        var QQQQ = Stream.createStream("Sub5");
+        var PPPP = Fluss.Stream.createStream("Sub4");
+        var QQQQ = Fluss.Stream.createStream("Sub5");
 
         s.push(PPPP);
         s.push(QQQQ);
@@ -508,8 +510,8 @@ describe("A stream (used for reactive programming patterns)", function() {
     it("provides 'combine', that returns a new stream that combines the values of the original and another stream. The " +
     "sequence of the new stream is that of the items irrespected of their original stream", function() {
         var calls = "";
-        var s1 = Stream.createStream("A");
-        var s2 = Stream.createStream("B");
+        var s1 = Fluss.Stream.createStream("A");
+        var s2 = Fluss.Stream.createStream("B");
 
         var c = s1.combine(s2);
 
@@ -535,7 +537,7 @@ describe("A stream (used for reactive programming patterns)", function() {
 
     describe("handles errors", function() {
         it("by providing onError to define an error handling method, that kicks in when an exception is raised", function() {
-            var s = Stream.createStream("myStream");
+            var s = Fluss.Stream.createStream("myStream");
             var calls = [];
             var errors = [];
 
@@ -567,7 +569,7 @@ describe("A stream (used for reactive programming patterns)", function() {
             var calls = [];
             var errors_s = [];
 
-            var s = Stream.createStream("myStream");
+            var s = Fluss.Stream.createStream("myStream");
             var m = s.map(function(value) {
                 var t = typeof value;
 
@@ -605,8 +607,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             var calls = "";
             var errors = 0;
 
-            var s1 = Stream.createStream("A");
-            var s2 = Stream.createStream("B");
+            var s1 = Fluss.Stream.createStream("A");
+            var s2 = Fluss.Stream.createStream("B");
 
             var c = s1.combine(s2);
 
@@ -646,8 +648,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             var calls = "";
             var errors = 0;
 
-            var s1 = Stream.createStream("A");
-            var s2 = Stream.createStream("B");
+            var s1 = Fluss.Stream.createStream("A");
+            var s2 = Fluss.Stream.createStream("B");
 
             var c = s1.combine(s2);
 
@@ -685,7 +687,7 @@ describe("A stream (used for reactive programming patterns)", function() {
 
         it("as late as possible in the stream chain - 1", function() {
             var errors = 0;
-            var s1 = Stream.createStream("A");
+            var s1 = Fluss.Stream.createStream("A");
             var s2 = s1.map(1);
             var s3 = s2.map(1);
             var s4 = s3.map(1);
@@ -708,7 +710,7 @@ describe("A stream (used for reactive programming patterns)", function() {
             var errors_s = [];
             var errors_m = [];
 
-            var s = Stream.createStream("myStream");
+            var s = Fluss.Stream.createStream("myStream");
             var m = s.map(function(value) {
                 var t = typeof value;
 
@@ -764,7 +766,7 @@ describe("A stream (used for reactive programming patterns)", function() {
 
 
     it("provides 'onClose' to react on the fact that a stream was closed", function () {
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var calls = [];
         var closed = 0;
 
@@ -797,7 +799,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         var calls = [];
         var closed = false;
 
-        var s = Stream.createStream("myStream");
+        var s = Fluss.Stream.createStream("myStream");
         var m1 = s.map(function(value) {
             return typeof value;
         });
@@ -831,7 +833,7 @@ describe("A stream (used for reactive programming patterns)", function() {
 
     describe("will close automatically", function() {
         it("when a specific number of values where processed by using 'times'", function() {
-            var s = Stream.createStream("myStream").times(4);
+            var s = Fluss.Stream.createStream("myStream").times(4);
 
             s.push(1);
             s.push(2);
@@ -843,8 +845,8 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when another stream processes by using 'until'", function() {
-            var c = Stream.createStream("closer");
-            var s = Stream.createStream("myStream").until(c);
+            var c = Fluss.Stream.createStream("closer");
+            var s = Fluss.Stream.createStream("myStream").until(c);
 
             s.push(1);
             s.push(2);
@@ -857,7 +859,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a filter and the filtered stream closes", function() {
-            var s = Stream.createStream("A");
+            var s = Fluss.Stream.createStream("A");
             var f = s.filter(function(value) {
                 return true;
             });
@@ -873,7 +875,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a map and the mapped stream closes", function() {
-            var s = Stream.createStream("A");
+            var s = Fluss.Stream.createStream("A");
             var m = s.map(function(value) {
                 return 2 * value;
             });
@@ -889,7 +891,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a scan and the scanned stream closes", function() {
-            var s = Stream.createStream("A");
+            var s = Fluss.Stream.createStream("A");
             var m = s.scan(function(a, b) {
                 return a + b;
             }, 0);
@@ -905,7 +907,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a reduction and the reduced stream closes", function() {
-            var s = Stream.createStream("A");
+            var s = Fluss.Stream.createStream("A");
             var m = s.reduce(function(a, b) {
                 return a + b;
             }, 0);
@@ -921,8 +923,8 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a concat and the second stream closes", function() {
-            var s1 = Stream.createStream("A");
-            var s2 = Stream.createStream("B");
+            var s1 = Fluss.Stream.createStream("A");
+            var s2 = Fluss.Stream.createStream("B");
 
             var co = s1.concat(s2);
 
@@ -948,7 +950,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         it("when it is a concatAll and the concatted stream closes", function() {
             var calls = [];
 
-            var s = Stream.createStream("MyStream");
+            var s = Fluss.Stream.createStream("MyStream");
             var co = s.concatAll();
 
             co.forEach(function(value) {
@@ -958,9 +960,9 @@ describe("A stream (used for reactive programming patterns)", function() {
             expect(co).not.to.equal(s);
 
             // Weird names are given to make it more obvious what's happening
-            var AAAA = Stream.createStream("Sub1");
-            var OOOO = Stream.createStream("Sub2");
-            var XXXX = Stream.createStream("Sub3");
+            var AAAA = Fluss.Stream.createStream("Sub1");
+            var OOOO = Fluss.Stream.createStream("Sub2");
+            var XXXX = Fluss.Stream.createStream("Sub3");
 
             // This defines the sequence of the substreams
             s.push(AAAA);
@@ -987,8 +989,8 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a combination and both of the combined streams close", function() {
-            var s1 = Stream.createStream("A");
-            var s2 = Stream.createStream("B");
+            var s1 = Fluss.Stream.createStream("A");
+            var s2 = Fluss.Stream.createStream("B");
 
             var co = s1.combine(s2);
 
@@ -1015,8 +1017,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             expect(co.closed).to.be.ok();
 
             // Now close s2 first
-            s1 = Stream.createStream("A");
-            s2 = Stream.createStream("B");
+            s1 = Fluss.Stream.createStream("A");
+            s2 = Fluss.Stream.createStream("B");
 
             co = s1.combine(s2);
 
@@ -1049,7 +1051,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     describe("is closed from the start", function() {
         it("and close calls are buffered", function() {
             var s2Closed = false;
-            var s1 = Stream.createStream("A");
+            var s1 = Fluss.Stream.createStream("A");
             s1.close();
             var s2 = s1.filter(function() {
                 return 1;
@@ -1063,7 +1065,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a filter on an already closed stream", function() {
-            var s1 = Stream.createStream("A");
+            var s1 = Fluss.Stream.createStream("A");
             s1.close();
             var s2 = s1.filter(function() {
                 return 1;
@@ -1073,7 +1075,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a map on an already closed stream", function() {
-            var s1 = Stream.createStream("A");
+            var s1 = Fluss.Stream.createStream("A");
             s1.close();
             var s2 = s1.map(function() {
                 return 1;
@@ -1083,7 +1085,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a scan on an already closed stream", function() {
-            var s1 = Stream.createStream("A");
+            var s1 = Fluss.Stream.createStream("A");
             s1.close();
             var s2 = s1.scan(function() {
                 return 1;
@@ -1093,7 +1095,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a reduction on an already closed stream", function() {
-            var s1 = Stream.createStream("A");
+            var s1 = Fluss.Stream.createStream("A");
             s1.close();
             var s2 = s1.reduce(function() {
                 return 1;
@@ -1103,8 +1105,8 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a concat of two already closed streams", function() {
-            var s1 = Stream.createStream("A");
-            var s2 = Stream.createStream("A");
+            var s1 = Fluss.Stream.createStream("A");
+            var s2 = Fluss.Stream.createStream("A");
             s1.close();
             s2.close();
             var s3 = s1.concat(s2);
@@ -1115,7 +1117,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a concatAll on an already closed stream", function() {
-            var s1 = Stream.createStream("A");
+            var s1 = Fluss.Stream.createStream("A");
             s1.close();
             var s2 = s1.concatAll();
             expect(s1.closed).to.be.ok();
@@ -1123,8 +1125,8 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         it("when it is a combination of two already closed streams", function() {
-            var s1 = Stream.createStream("A");
-            var s2 = Stream.createStream("A");
+            var s1 = Fluss.Stream.createStream("A");
+            var s2 = Fluss.Stream.createStream("A");
             s1.close();
             s2.close();
             var s3 = s1.combine(s2);
@@ -1136,7 +1138,7 @@ describe("A stream (used for reactive programming patterns)", function() {
 
         it("will close automatically when all 'child-streams' close", function() {
             var calls = 0;
-            var s = Stream.createStream();
+            var s = Fluss.Stream.createStream();
             var f = s.map(1);
 
             s.onClose(function() { calls++ });
@@ -1145,8 +1147,8 @@ describe("A stream (used for reactive programming patterns)", function() {
 
             expect(calls).to.equal(1);
 
-            s = Stream.createStream();
-            var c = Stream.createStream();
+            s = Fluss.Stream.createStream();
+            var c = Fluss.Stream.createStream();
             f = s.combine(c).map(1).filter(function() { return true });
 
             s.onClose(function() { calls++ });
@@ -1166,6 +1168,7 @@ enum EVENTS {
     D
 }
 
+/*
 class TestEmitter extends EventChannel.ChanneledEmitter {
     constructor() {
         super("Test");
@@ -1360,3 +1363,5 @@ describe("Event stream", function() {
         expect(calls).to.equal("AAA");
     });
 });
+
+    */

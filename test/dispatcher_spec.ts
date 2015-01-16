@@ -1,5 +1,7 @@
 /// <reference path="../types/mocha.d.ts" />
 /// <reference path="../types/chai.d.ts" />
+/// <reference path="../build/fluss.d.ts" />
+
 /**
  * Created by Stephan on 02.01.2015.
  */
@@ -9,7 +11,9 @@
 import chai = require("chai");
 var expect = chai.expect;
 
-import Dispatcher = require("../src/dispatcher");
+declare function require(module:string):any;
+var Fluss:any = require("../build/index");
+
 
 var calledActions = [];
 
@@ -37,14 +41,14 @@ describe("Dispatcher", function() {
 
     beforeEach(function() {
         resetCalls();
-        Dispatcher.reset();
+        Fluss.Dispatcher.reset();
     });
 
     it("provides a means to transport actions through the application", function() {
-        Dispatcher.subscribeAction(1, handler("A", 1));
-        Dispatcher.subscribeAction(1, handler("B", 1));
+        Fluss.Dispatcher.subscribeAction(1, handler("A", 1));
+        Fluss.Dispatcher.subscribeAction(1, handler("B", 1));
 
-        Dispatcher.dispatch(1);
+        Fluss.Dispatcher.dispatch(1);
 
         expect(getCallSignature()).to.equal("A:1-B:1");
     });
@@ -52,58 +56,58 @@ describe("Dispatcher", function() {
     it("lets you stop handling actions", function() {
         var A = handler("A", 1);
         var B = handler("B", 1);
-        Dispatcher.subscribeAction(1, A);
-        Dispatcher.subscribeAction(1, B);
+        Fluss.Dispatcher.subscribeAction(1, A);
+        Fluss.Dispatcher.subscribeAction(1, B);
 
-        Dispatcher.dispatch(1);
+        Fluss.Dispatcher.dispatch(1);
         expect(getCallSignature()).to.equal("A:1-B:1");
 
-        Dispatcher.unsubscribeAction(1, A);
-        Dispatcher.dispatch(1);
+        Fluss.Dispatcher.unsubscribeAction(1, A);
+        Fluss.Dispatcher.dispatch(1);
         expect(getCallSignature()).to.equal("A:1-B:1-B:1");
     });
 
     it("lets you use arbitrary parameters when calling actions", function() {
-        Dispatcher.subscribeAction(1, handler("A", 1));
-        Dispatcher.subscribeAction(1, handler("B", 1));
+        Fluss.Dispatcher.subscribeAction(1, handler("A", 1));
+        Fluss.Dispatcher.subscribeAction(1, handler("B", 1));
 
-        Dispatcher.dispatch(1, "X");
+        Fluss.Dispatcher.dispatch(1, "X");
         expect(getCallSignature()).to.equal("A:1=X-B:1=X");
 
         resetCalls();
-        Dispatcher.dispatch(1, "Y", 1, "Z");
+        Fluss.Dispatcher.dispatch(1, "Y", 1, "Z");
         expect(getCallSignature()).to.equal("A:1=Y,1,Z-B:1=Y,1,Z");
     });
 
     it("can disable actions", function() {
-        Dispatcher.subscribeAction(1, handler("X", 1));
-        Dispatcher.subscribeAction(1, handler("Y", 1));
-        Dispatcher.subscribeAction(2, handler("X", 2));
+        Fluss.Dispatcher.subscribeAction(1, handler("X", 1));
+        Fluss.Dispatcher.subscribeAction(1, handler("Y", 1));
+        Fluss.Dispatcher.subscribeAction(2, handler("X", 2));
 
-        Dispatcher.dispatch(1);
-        Dispatcher.dispatch(2);
+        Fluss.Dispatcher.dispatch(1);
+        Fluss.Dispatcher.dispatch(2);
 
         expect(getCallSignature()).to.equal("X:1-Y:1-X:2");
 
-        Dispatcher.disableAction(1);
-        Dispatcher.dispatch(1);
-        Dispatcher.dispatch(2);
+        Fluss.Dispatcher.disableAction(1);
+        Fluss.Dispatcher.dispatch(1);
+        Fluss.Dispatcher.dispatch(2);
 
         expect(getCallSignature()).to.equal("X:1-Y:1-X:2-X:2");
 
-        Dispatcher.disableAction(2);
-        Dispatcher.dispatch(1);
-        Dispatcher.dispatch(2);
+        Fluss.Dispatcher.disableAction(2);
+        Fluss.Dispatcher.dispatch(1);
+        Fluss.Dispatcher.dispatch(2);
         expect(getCallSignature()).to.equal("X:1-Y:1-X:2-X:2");
 
-        Dispatcher.enableAction(1);
-        Dispatcher.dispatch(1);
-        Dispatcher.dispatch(2);
+        Fluss.Dispatcher.enableAction(1);
+        Fluss.Dispatcher.dispatch(1);
+        Fluss.Dispatcher.dispatch(2);
         expect(getCallSignature()).to.equal("X:1-Y:1-X:2-X:2-X:1-Y:1");
 
-        Dispatcher.enableAction(2);
-        Dispatcher.dispatch(1);
-        Dispatcher.dispatch(2);
+        Fluss.Dispatcher.enableAction(2);
+        Fluss.Dispatcher.dispatch(1);
+        Fluss.Dispatcher.dispatch(2);
         expect(getCallSignature()).to.equal("X:1-Y:1-X:2-X:2-X:1-Y:1-X:1-Y:1-X:2");
     });
 

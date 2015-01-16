@@ -1,5 +1,6 @@
 /// <reference path="../types/mocha.d.ts" />
 /// <reference path="../types/chai.d.ts" />
+/// <reference path="../build/fluss.d.ts" />
 /**
  * Created by Stephan on 02.01.2015.
  */
@@ -10,14 +11,14 @@ import chai = require("chai");
 var expect = chai.expect;
 
 
-import Store = require("../src/store");
-import Stream = require("../src/stream");
+declare function require(module:string):any;
+var Fluss:any = require("../build/index");
 
 
 describe("Data stores", function () {
     describe("come as object stores. They", function () {
         it("can hold values, that can be retrieved and set", function() {
-            var store:any = Store.record();
+            var store:any = Fluss.Store.record();
 
             store.addItem("a", 1);
             store.addItem("b", "lkjh");
@@ -33,7 +34,7 @@ describe("Data stores", function () {
         it("provide streams to keep track of updates and property changes", function () {
             var calls = "";
 
-            var store:any = Store.record();
+            var store:any = Fluss.Store.record();
 
             store.addItem("a", 1);
             store.addItem("b", "lkjh");
@@ -60,7 +61,7 @@ describe("Data stores", function () {
         });
 
         it("can be initialized upon creation", function () {
-            var store:any = Store.record({
+            var store:any = Fluss.Store.record({
                 a: 1,
                 b: "lkjh"
             });
@@ -70,7 +71,7 @@ describe("Data stores", function () {
         });
 
         it("will create nested stores when given a nested object as initial value - 1", function () {
-            var store:any = Store.record({
+            var store:any = Fluss.Store.record({
                 a: 1,
                 b: "lkjh",
                 sub: {
@@ -79,37 +80,37 @@ describe("Data stores", function () {
                 }
             });
 
-            expect(Store.isStore(store)).to.be.ok();
-            expect(Store.isStore(store["sub"])).to.be.ok();
+            expect(Fluss.Store.isStore(store)).to.be.ok();
+            expect(Fluss.Store.isStore(store["sub"])).to.be.ok();
             expect(typeof store["sub"].addItem).to.equal("function");
 
         });
 
         it("will create nested stores when given a nested object as initial value - 2", function () {
-            var store:any = Store.record({
+            var store:any = Fluss.Store.record({
                 a: 1,
                 b: "lkjh",
                 sub: [1, 2, 3]
             });
 
-            expect(Store.isStore(store)).to.be.ok();
-            expect(Store.isStore(store["sub"])).to.be.ok();
+            expect(Fluss.Store.isStore(store)).to.be.ok();
+            expect(Fluss.Store.isStore(store["sub"])).to.be.ok();
             expect(typeof store["sub"].push).to.equal("function");
         });
 
         it("will create nested stores when given a nested object as initial value - 3", function () {
-            var store:any = Store.record({
+            var store:any = Fluss.Store.record({
                 a: 1,
                 b: "lkjh",
                 sub: [1, 2, { x: 10 }]
             });
 
-            expect(Store.isStore(store)).to.be.ok();
-            expect(Store.isStore(store["sub"])).to.be.ok();
-            expect(Store.isStore(store["sub"][2])).to.be.ok();
+            expect(Fluss.Store.isStore(store)).to.be.ok();
+            expect(Fluss.Store.isStore(store["sub"])).to.be.ok();
+            expect(Fluss.Store.isStore(store["sub"][2])).to.be.ok();
 
             var calls = {};
-            var updates:Stream.IStream = store.updates;
+            var updates:Fluss.Stream.IStream = store.updates;
             updates.forEach(function(update) {
                 calls[update.path] = update.value;
             });
@@ -120,7 +121,7 @@ describe("Data stores", function () {
         });
 
         it("provide a immutable proxy that supports all reading methods including the streams for update, new items and removed items", function() {
-            var store:any = Store.record({ a: 1, b: "x"} );
+            var store:any = Fluss.Store.record({ a: 1, b: "x"} );
             var imm:any = store.immutable;
             var calls = {};
 
@@ -156,19 +157,19 @@ describe("Data stores", function () {
         });
 
         it("will return immutable substores by it's immutable proxy", function() {
-            var store = Store.record();
-            var sub = Store.record({ a: 1 });
+            var store = Fluss.Store.record();
+            var sub = Fluss.Store.record({ a: 1 });
             store.addItem("sub", sub);
 
             var imm = store.immutable;
-            expect(Store.isStore(store["sub"])).to.be.ok();
+            expect(Fluss.Store.isStore(store["sub"])).to.be.ok();
             expect(imm.isImmutable).to.be.ok();
             expect(imm["sub"].isImmutable).to.be.ok();
         });
 
         it("can be disposed and will delete all data and dispose all streams", function() {
             var closes = "";
-            var store:Store.IStore = Store.record({ a: 1, b: "x"} );
+            var store:Fluss.Store.IStore = Fluss.Store.record({ a: 1, b: "x"} );
 
             store.updates.onClose(function () {
                 closes += "U";
@@ -191,7 +192,7 @@ describe("Data stores", function () {
 
     describe("and array stores. They", function () {
         it("store values in an enumerated list", function () {
-            var store:Store.IArrayStore = Store.array();
+            var store:Fluss.Store.IArrayStore = Fluss.Store.array();
 
             store.push(1);
             store.push(2);
@@ -222,7 +223,7 @@ describe("Data stores", function () {
         });
 
         it("can be initialized upon creation", function () {
-            var store:Store.IArrayStore = Store.array([0, 1, 2, 3, 4]);
+            var store:Fluss.Store.IArrayStore = Fluss.Store.array([0, 1, 2, 3, 4]);
 
             expect(store[0]).to.equal(0);
             expect(store[1]).to.equal(1);
@@ -245,7 +246,7 @@ describe("Data stores", function () {
         it("provide streams for item updates", function () {
             var calls = "";
 
-            var store:Store.IArrayStore = Store.array();
+            var store:Fluss.Store.IArrayStore = Fluss.Store.array();
             var s = store.updates;
 
             s.forEach(function (update) {
@@ -267,7 +268,7 @@ describe("Data stores", function () {
 
         it("provide streams for new items", function () {
             var calls = "";
-            var store:Store.IArrayStore = Store.array();
+            var store:Fluss.Store.IArrayStore = Fluss.Store.array();
 
             store.push(1);
 
@@ -288,7 +289,7 @@ describe("Data stores", function () {
 
         it("provide streams for removed items", function () {
             var calls = "";
-            var store:Store.IArrayStore = Store.array();
+            var store:Fluss.Store.IArrayStore = Fluss.Store.array();
 
             store.push(1);
             store.push(2);
@@ -324,7 +325,7 @@ describe("Data stores", function () {
 
         it("provide sort with streamed updates", function () {
             var calls = {};
-            var store:Store.IArrayStore = Store.array([0, 1, 2, 3, 4]);
+            var store:Fluss.Store.IArrayStore = Fluss.Store.array([0, 1, 2, 3, 4]);
             var up = store.updates;
             up.forEach(function (update) {
                 calls[update.item] = update.value;
@@ -350,7 +351,7 @@ describe("Data stores", function () {
 
         it("provide reverse with streamed updates", function () {
             var calls = {};
-            var store:Store.IArrayStore = Store.array([0, 1, 2, 3, 4]);
+            var store:Fluss.Store.IArrayStore = Fluss.Store.array([0, 1, 2, 3, 4]);
             var up = store.updates;
             up.forEach(function (update) {
                 calls[update.item] = update.value;
@@ -377,7 +378,7 @@ describe("Data stores", function () {
             var upCount = 0;
             var newCalls = {};
             var newCount = 0;
-            var store:Store.IArrayStore = Store.array([0, 1, 2, 3, 4]);
+            var store:Fluss.Store.IArrayStore = Fluss.Store.array([0, 1, 2, 3, 4]);
             var up = store.updates;
             up.forEach(function (update) {
                 upCalls[update.item] = update.value;
@@ -422,7 +423,7 @@ describe("Data stores", function () {
             var newCount = 0;
             var remCalls = {};
             var remCount = 0;
-            var store:Store.IArrayStore = Store.array([0, 1, 2, 3, 4]);
+            var store:Fluss.Store.IArrayStore = Fluss.Store.array([0, 1, 2, 3, 4]);
             var up = store.updates;
             up.forEach(function (update) {
                 upCalls[update.item] = update.value;
@@ -467,8 +468,8 @@ describe("Data stores", function () {
         });
 
         it("provide an immutable proxy that provides all non changing methods and the streams", function() {
-            var store = Store.array([1, 2, 3, 4]);
-            var imm:Store.IImmutableArrayStore = <Store.IImmutableArrayStore>store.immutable;
+            var store = Fluss.Store.array([1, 2, 3, 4]);
+            var imm:Fluss.Store.IImmutableArrayStore = <Fluss.Store.IImmutableArrayStore>store.immutable;
             var calls = {};
 
             imm.updates.forEach(function(update) {
@@ -513,8 +514,8 @@ describe("Data stores", function () {
         });
 
         it("will find the index of an substores immutable", function() {
-            var store = Store.array([1, 2, 3]);
-            var sub = Store.record({ a: "b" });
+            var store = Fluss.Store.array([1, 2, 3]);
+            var sub = Fluss.Store.record({ a: "b" });
             store.push(sub);
 
             var imm = sub.immutable;
@@ -524,8 +525,8 @@ describe("Data stores", function () {
         });
 
         it("can give you the mutable version of a substore if it itself is mutable using item", function() {
-            var store = Store.array([1, 2, 3]);
-            var sub = Store.record({ a: "b" });
+            var store = Fluss.Store.array([1, 2, 3]);
+            var sub = Fluss.Store.record({ a: "b" });
             store.push(sub);
 
             var imm = sub.immutable;
@@ -542,7 +543,7 @@ describe("Data stores", function () {
         });
 
         it("will update mapped stores when the base store changes", function() {
-            var array = Store.array([1, 2, 3, 4, 5]);
+            var array = Fluss.Store.array([1, 2, 3, 4, 5]);
             var twice = array.map(function(value) {
                 return value * 2;
             });
@@ -571,7 +572,7 @@ describe("Data stores", function () {
         it("will update filtered stores when the base store changes", function() {
             var calls = {};
             var rcalls = {};
-            var array = Store.array([1, 2, 3, 4, 5]);
+            var array = Fluss.Store.array([1, 2, 3, 4, 5]);
             var evens = array.filter(function(v) { return v % 2 === 0});
 
             evens.newItems.forEach(function(update) {
@@ -635,9 +636,9 @@ describe("Data stores", function () {
 
         it("will updated filtered stores when the base store changes and manages nested stores", function() {
 
-            var array = Store.array([]);
-            array.push(Store.record({ a: false }));
-            array.push(Store.record({ a: false }));
+            var array = Fluss.Store.array([]);
+            array.push(Fluss.Store.record({ a: false }));
+            array.push(Fluss.Store.record({ a: false }));
 
             var filtered = array.filter(function(value) {
                 return value.a === false;
@@ -659,14 +660,14 @@ describe("Data stores", function () {
 
         it("will updated filtered stores when the base store changes and manages nested stores - 2", function() {
 
-            var array = Store.array([]);
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
+            var array = Fluss.Store.array([]);
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
 
             var filtered = array.filter(function (value) {
                 return value.a === false;
@@ -674,26 +675,26 @@ describe("Data stores", function () {
 
             expect(filtered.length).to.equal(array.length);
 
-            array.splice(1, 0, Store.record({a: false}));
+            array.splice(1, 0, Fluss.Store.record({a: false}));
             expect(filtered.length).to.equal(array.length);
-            array.splice(1, 0, Store.record({a: false}));
+            array.splice(1, 0, Fluss.Store.record({a: false}));
             expect(filtered.length).to.equal(array.length);
-            array.splice(1, 0, Store.record({a: false}));
+            array.splice(1, 0, Fluss.Store.record({a: false}));
             expect(filtered.length).to.equal(array.length);
-            array.splice(1, 0, Store.record({a: false}));
+            array.splice(1, 0, Fluss.Store.record({a: false}));
             expect(filtered.length).to.equal(array.length);
         });
 
         it("will updated filtered stores when the base store changes and manages nested stores - 3", function() {
 
-            var array = Store.array([]);
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
+            var array = Fluss.Store.array([]);
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
 
             var filtered = array.filter(function (value) {
                 return value.a === false;
@@ -710,8 +711,8 @@ describe("Data stores", function () {
         });
 
         it("will updated filtered stores when the base store changes and manages nested stores - 4", function() {
-           var array = Store.array([]);
-            array.push(Store.record({ a: false }));
+           var array = Fluss.Store.array([]);
+            array.push(Fluss.Store.record({ a: false }));
 
             var filtered = array.filter(function(item) {
                 return !item.a;
@@ -719,7 +720,7 @@ describe("Data stores", function () {
 
             expect(filtered.length).to.equal(1);
 
-            array.push(Store.record({ a: false }));
+            array.push(Fluss.Store.record({ a: false }));
 
             expect(filtered.length).to.equal(2);
 
@@ -740,8 +741,8 @@ describe("Data stores", function () {
         });
 
         it("will updated filtered stores when the base store changes and manages nested stores - 5", function() {
-           var array = Store.array([]);
-            array.push(Store.record({ a: false }));
+           var array = Fluss.Store.array([]);
+            array.push(Fluss.Store.record({ a: false }));
 
             var filtered = array.filter(function(item) {
                 return !item.a;
@@ -749,7 +750,7 @@ describe("Data stores", function () {
 
             expect(filtered.length).to.equal(1);
 
-            array.push(Store.record({ a: false }));
+            array.push(Fluss.Store.record({ a: false }));
 
             expect(filtered.length).to.equal(2);
 
@@ -770,14 +771,14 @@ describe("Data stores", function () {
         });
 
         it("will updated filtered stores when the base store changes and manages nested stores - 6", function() {
-            var array = Store.array([]);
-            array.push(Store.record({a: false}));
+            var array = Fluss.Store.array([]);
+            array.push(Fluss.Store.record({a: false}));
 
             var filtered = array.filter(function(item) {
                 return !item.a;
             });
 
-            array.push(Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
             expect(filtered.length).to.equal(2);
 
             array[0].a = true;
@@ -790,15 +791,15 @@ describe("Data stores", function () {
         });
 
         it("will updated filtered stores when the base store changes and manages nested stores - 7", function() {
-            var array = Store.array([]);
-            array.push(Store.record({a: false}));
+            var array = Fluss.Store.array([]);
+            array.push(Fluss.Store.record({a: false}));
 
             var filtered = array.filter(function(item) {
                 return !item.a;
             });
 
-            array.push(Store.record({a: false}));
-            array.push(Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
+            array.push(Fluss.Store.record({a: false}));
 
             expect(filtered.length).to.equal(3);
 
@@ -811,15 +812,15 @@ describe("Data stores", function () {
         });
 
         it("will updated filtered stores when the base store changes and manages nested stores - 8", function () {
-            var array = Store.array([]);
-            array.push(Store.record({ a: false }));
+            var array = Fluss.Store.array([]);
+            array.push(Fluss.Store.record({ a: false }));
 
             var filtered = array.filter(function (item) {
                 return !item.a;
             });
 
-            array.push(Store.record({ a: false }));
-            array.push(Store.record({ a: false }));
+            array.push(Fluss.Store.record({ a: false }));
+            array.push(Fluss.Store.record({ a: false }));
 
             expect(filtered.length).to.equal(3);
 
@@ -834,7 +835,7 @@ describe("Data stores", function () {
         });
 
         it("will update filtered stores incorrectly with complex filter callbacks", function() {
-            var array = Store.array("A B C D E".split(" "));
+            var array = Fluss.Store.array("A B C D E".split(" "));
             var filtered = array.filter(function(item, index) {
                return index % 2 === 1;
             });
@@ -855,7 +856,7 @@ describe("Data stores", function () {
 
 
         it("will updated mixed filter/map stores automatically upon changes of the base store", function() {
-            var array = Store.array([1, 2, 3, 4, 5]);
+            var array = Fluss.Store.array([1, 2, 3, 4, 5]);
             var evenTwice = array.filter(function(value) { return value % 2 === 0; })
                                  .map(function(value) { return value * 2; });
 
@@ -881,11 +882,11 @@ describe("Data stores", function () {
     describe("using streams they all", function() {
         it("will propagate updates up in nested stores", function() {
             var updateCount = 0;
-            var store:any = Store.record();
-            var sub:any = Store.record({ a: 1, b: 2})
+            var store:any = Fluss.Store.record();
+            var sub:any = Fluss.Store.record({ a: 1, b: 2})
             store.addItem("substore", sub);
 
-            var updates:Stream.IStream = store.updates;
+            var updates:Fluss.Stream.IStream = store.updates;
             var calls = {};
             updates.forEach(function(update) {
                 calls[update.path] = update.value;
@@ -897,7 +898,7 @@ describe("Data stores", function () {
             expect(calls["substore.a"]).to.equal(2);
             expect(updateCount).to.equal(1);
 
-            var sub2:any = Store.array([1, 2, 3]);
+            var sub2:any = Fluss.Store.array([1, 2, 3]);
             store.addItem("subArray", sub2);
 
             sub2[0] = 4;
@@ -920,7 +921,7 @@ describe("Data stores", function () {
             expect(calls["subArray.2"]).to.equal(30);
             expect(updateCount).to.equal(8);
 
-            var sub3 = Store.record({ a: 2 });
+            var sub3 = Fluss.Store.record({ a: 2 });
             sub2.push(sub3);
 
             sub3["a"] = 5;
@@ -937,8 +938,8 @@ describe("Data stores", function () {
         });
 
         it("will propagate updates of nested stores up to the immutable", function() {
-            var array = Store.array();
-            array.push(Store.record({ a: 1, b: 2 }));
+            var array = Fluss.Store.array();
+            array.push(Fluss.Store.record({ a: 1, b: 2 }));
 
             var imm = array.immutable;
             var calls = "";
