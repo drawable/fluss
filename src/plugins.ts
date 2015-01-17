@@ -9,6 +9,80 @@
 "use strict";
 
 module Fluss {
+
+    /**
+     * Plugins are the means to implement the behaviour of an action.
+     *
+     * An action is an ID (number) and a set of arguments specific to the action.
+     *
+     * A plugin implements behaviour for that action. Plugins are managed by a Container. A container can
+     * handle plugins for several actions and several plugins for an action.
+     *
+     * ```js
+     *
+     * //Declare your container
+     * class MyContainer extends Fluss.Plugins.PluginContainer {
+     *      public property:string
+     * }
+     *
+     * // Create a container instance
+     * var cont = new MyContainer();
+     *
+     * // Implement a plugin
+     * class MyPlugin extends Fluss.Plugins.BasePlugin {
+     *
+     *      run(container:MyContainer, action:number, value:string) {
+     *          container.property = value;
+     *      }
+     * }
+     *
+     * // Attach the plugin to the container for action 1000
+     * cont.wrap(1000, new MyPlugin());
+     *
+     * // Dispatch action 1000 with argument
+     * Fluss.Dispatcher.dispatch(1000, "Test");
+     *
+     * //cont.property === "Test"
+     *
+     * ```
+     *
+     * Adding undo functionality is simple. You need to  provide methods to create a memento and to restore state from that
+     * memento into your plugin.
+     *
+     * ```js
+     * class MyPlugin extends Fluss.Plugins.BasePlugin {
+     *
+     *      run(container:MyContainer, action:number, value:string) {
+     *          container.property = value;
+     *      }
+     *
+     *      // getMemento is always called with the exact same arguments as run. getMemento will alway be called before
+     *      // run is called.
+     *      getMemento(container:MyContainer, action:number, value:string):Fluss.Dispatcher.IMemento {
+     *          return Fluss.Dispatcher.createMemento(null, container.property.
+     *      }
+     *
+     *      restoreFromMemento(container:MyContainer, memento:Fluss.Dispatcher.IMemento) {
+     *          container.property = memento.data;
+     *      }
+     * }
+     *
+     * ```
+     *
+     * Now your plugin knows how to preserve and restore state.
+     *
+     * ```js
+     * // Dispatch action 1000 with argument
+     * Fluss.Dispatcher.dispatch(1000, "Test");
+     * //cont.property === "Test"
+     *
+     * Fluss.Dispatcher.dispatch(1000, "Changed");
+     * //cont.property === "Changed"
+     *
+     * Fluss.BaseActions.undo();
+     * //cont.property === "Test"
+     * ```
+     */
     export module Plugins {
         export interface FDoneCallback {
             (abort?:boolean);
@@ -20,11 +94,19 @@ module Fluss {
          * Every plugin defines three methods for control flow:
          *
          *   * run: Start the plugin execution.
-         *   * finish: Clean up after execution has finished
-         *   * abort: Clean up after execution was aborted
+         *   * afterFinish: Clean up after execution has finished
+         *   * afterAbort: Clean up after execution was aborted
          *
-         * The fourth method getMemento is used to provide the undo-manager
-         * with a memento for the executed action.
+         * It defines two additional methods
+         *   * getMeneto
+         *   * restoreFromMemento
+         *
+         * To implement undo functionality.
+         *
+         * During runtime it provides three methods do influence control flow
+         *   * hold: Hold execution of the plugin stack for the action
+         *   * release: Continue execution of the plugin stack for the action
+         *   * abort: Abort execution of the plugin stack
          *
          */
         export interface IActionPlugin {
@@ -64,7 +146,9 @@ module Fluss {
             afterAbort(container:any, action:number, ...args:any[]);
 
             /**
-             * Provide a memento for the action
+             * Provide a memento for the action. If this returns `null` no memento is stored and the action cannote be
+             * undone.
+             *
              * @param container
              * @param type
              * @param args
@@ -76,6 +160,7 @@ module Fluss {
              * @param memento
              */
             restoreFromMemento(container:any, memento:Dispatcher.IMemento);
+
 
             hold();
             release(action?:number);
@@ -301,20 +386,22 @@ module Fluss {
              *
              * That protocol looks like this:
              *
+             *  ```js
              *  {
-     *    i: { done: A function that calls either finish or abort on the i-th plugin,
-     *         abort: did the plugin abort?
-     *
-     *    i+1: ...
-     *  }
-     *
-     * this protocol is initialized by null entries for all plugins. Then the run-methods for all plugins are called, giving them a done
-     * callback, that fills the protocol.
-     *
-     * After every run-method we check if we're at the innermost plugin (A in the example above, the one that first wrapped the action).
-     * If we are, we work through the protocol as long as there are valid entries. Then we wait for the next done-callback to be called.
-     *
-     * @param action
+             *    i: { done: A function that calls either finish or abort on the i-th plugin,
+             *         abort: did the plugin abort?
+             *
+             *    i+1: ...
+             *  }
+             *  ```
+             *
+             * this protocol is initialized by null entries for all plugins. Then the run-methods for all plugins are called, giving them a done
+             * callback, that fills the protocol.
+             *
+             * After every run-method we check if we're at the innermost plugin (A in the example above, the one that first wrapped the action).
+             * If we are, we work through the protocol as long as there are valid entries. Then we wait for the next done-callback to be called.
+             *
+             * @param action
              * @param args
              */
             private doHandleAction(plugins, action:number, args?:any[]) {

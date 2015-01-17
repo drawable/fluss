@@ -25,6 +25,8 @@ Reach me on Twitter [@drawableIO](https://twitter.com/drawableio)
   implementation of the memento pattern for full undo/redo support, the use of multiple plugins for the same action and
   the use of plugins to run on every action.
 
+See the full [API here](http://www.drawable.de/doc/).
+
 
 ## Modules
 
@@ -260,6 +262,10 @@ but to completely wrap my head around reactive programming I wanted to implement
 
 
 ## Changelog
+
+### 0.3.5
+* Added: Stream.throttle, Stream.debounce, Stream.buffer
+* API-Docs using [TypeDoc](http://typedoc.io/)
 
 ### 0.3.4
 * Fixed issues with AMD where multiple usages of the module would lead to multiple module instances

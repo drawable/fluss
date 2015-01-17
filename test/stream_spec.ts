@@ -1,6 +1,8 @@
 /// <reference path="../types/mocha.d.ts" />
 /// <reference path="../types/chai.d.ts" />
 /// <reference path="../build/fluss.d.ts" />
+/// <reference path="../types/sinon.d.ts" />
+
 /**
  * Created by Stephan on 02.01.2015.
  */
@@ -9,6 +11,9 @@
 
 import chai = require("chai");
 var expect = chai.expect;
+
+import sinon = require("sinon");
+
 
 declare function require(module:string):any;
 var Fluss:any = require("../build/index");
@@ -827,6 +832,139 @@ describe("A stream (used for reactive programming patterns)", function() {
         expect(m2.closed).to.be.ok();
         expect(m3.closed).to.be.ok();
         expect(closed).to.be.ok();
+    });
+
+    it("can be throttled", function() {
+       var calls = "";
+
+        var baseStream = Fluss.Stream.createStream();
+        var stream = baseStream.throttle(200);
+        var clock = sinon.useFakeTimers();
+
+        stream.forEach(function(value) {
+            calls += value;
+        });
+
+        baseStream.push("A");
+        baseStream.push("B");
+        expect(calls).to.be.equal("A");
+
+        clock.tick(200);
+        baseStream.push("C");
+        expect(calls).to.be.equal("AC");
+        baseStream.push("D");
+        clock.tick(100);
+        baseStream.push("D");
+        clock.tick(150);
+        baseStream.push("E");
+        expect(calls).to.be.equal("ACE");
+
+        clock.tick(199);
+        baseStream.push("F");
+        clock.tick(1);
+        baseStream.push("G");
+        expect(calls).to.be.equal("ACEG");
+
+        clock.restore();
+    });
+
+    it ("can be debounced", function() {
+        var calls = "";
+
+        var baseStream = Fluss.Stream.createStream();
+        var stream = baseStream.debounce(200);
+        var clock = sinon.useFakeTimers();
+
+        stream.forEach(function(value) {
+            calls += value;
+        });
+
+        baseStream.push("A");
+        expect(calls).to.equal("")
+        clock.tick(199);
+        baseStream.push("B");
+        clock.tick(1);
+        baseStream.push("C");
+        clock.tick(200);
+
+        expect(calls).to.equal("C");
+
+        baseStream.push("D");
+        expect(calls).to.equal("C");
+        clock.tick(800);
+        expect(calls).to.equal("CD");
+
+        clock.restore();
+    });
+
+    it("can be buffered until another stream processes", function() {
+
+        var valve = Fluss.Stream.createStream();
+        var base = Fluss.Stream.createStream();
+        var buffered = base.buffer(valve);
+
+        var calls = "";
+
+        buffered.forEach(function(value ) {
+            calls += "[" + value.join("") + "]";
+        });
+
+        base.push("A");
+        base.push("B");
+        base.push("C");
+        expect(calls).to.equal("");
+
+        valve.push(1);
+        expect(calls).to.equal("[ABC]");
+
+        base.push("D");
+        base.push("E");
+        expect(calls).to.equal("[ABC]");
+        valve.push(1);
+        expect(calls).to.equal("[ABC][DE]");
+    });
+
+    it("can work as a multi-event detector", function() {
+        var clock = sinon.useFakeTimers();
+
+        var base = Fluss.Stream.createStream();
+
+        var multi = base.buffer(base.debounce(250))
+                    .filter(function(list) {
+                        return list.length > 1;
+                    });
+
+        var calls = "";
+
+        multi.forEach(function(list) {
+           calls += list.length;
+        });
+
+        base.push("1");
+        clock.tick(100);
+        base.push("2");
+        clock.tick(300);
+
+        expect(calls).to.equal("2");
+
+        base.push("3");
+        clock.tick(300);
+        expect(calls).to.equal("2");
+
+        base.push("4");
+        clock.tick(100);
+        expect(calls).to.equal("2");
+        base.push("5");
+        clock.tick(100);
+        expect(calls).to.equal("2");
+        base.push("6");
+        clock.tick(100);
+        expect(calls).to.equal("2");
+        base.push("7");
+        clock.tick(400);
+        expect(calls).to.equal("24");
+
+        clock.restore();
     });
 
 

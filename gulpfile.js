@@ -4,17 +4,18 @@
 
 "use strict";
 
-var fs = require('fs');
 var gulp = require('gulp');
 var typescript = require('gulp-typescript');
+var typedoc = require("gulp-typedoc");
 var sourcemaps = require('gulp-sourcemaps');
 var source = require('vinyl-source-stream');
 var del = require("del");
 var concat = require("gulp-concat");
 var modify = require("gulp-modify");
 var path = require("path");
-var rename = require("gulp-rename");
 var requirejs = require("gulp-requirejs");
+var rename = require("gulp-rename");
+var uglify = require("gulp-uglify");
 
 
 var directories = {
@@ -73,10 +74,12 @@ gulp.task("optimize-amd", ["module-amd"], function() {
     })
         .pipe(modify({
             fileModifier: function(flie, content) {
-                //define("plugins", function(){});
                 return content.replace(/(define\("[^"]+",\sfunction\(\)\{\}\);)/g, "//$1")
             }
         }))
+        .pipe(gulp.dest(directories.build + "/amd"))
+        .pipe(uglify())
+        .pipe(rename("index.min.js"))
         .pipe(gulp.dest(directories.build + "/amd"));
 });
 
@@ -113,6 +116,21 @@ gulp.task("commonjs", ["module-commonjs", "index-commonjs"], function() {
 });
 
 /*********************************************************************
+ *                            Docs
+ *********************************************************************/
+
+gulp.task("doc", function() {
+    return gulp.src(directories.sources)
+        .pipe(typedoc({
+            module: "commonjs",
+            out: "./doc",
+            name: "fluss",
+            target: "es5"
+        }))
+});
+
+
+/*********************************************************************
  *                            Build
  *********************************************************************/
 
@@ -123,7 +141,6 @@ gulp.task("clean", function(cb) {
 
 gulp.task("build", ["copy-dist", "amd", "commonjs"], function() {
 });
-
 
 
 

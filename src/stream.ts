@@ -147,6 +147,28 @@ module Fluss {
              * @param method
              */
             onError(method:FErrorPredicate):IStream;
+
+            /**
+             * Returns a new stream that only processes values of the original stream that are at least delay apart. All other
+             * values are discarded.
+             * @param milliseconds
+             */
+            throttle(delay:number):IStream;
+
+            /**
+             * Returns a new stream that only processes values of the original stream after the given time has passed without
+             * a processed value. Only the last processed value is then processed by the debounced stream.
+             * @param milliseconds
+             */
+            debounce(milliseconds:number):IStream;
+
+            /**
+             * Returns a new stream that buffers all values processed by the original stream until a given stream
+             * processes any value. When that happens the stream processes the buffered values as an array and begins
+             * buffering again with an empty buffer.
+             * @param valve
+             */
+            buffer(valve:IStream):IStream;
         }
 
         /**
@@ -603,6 +625,71 @@ module Fluss {
             onError(method:FErrorPredicate):IStream {
                 this.addErrorMethod(method);
                 return this;
+            }
+
+
+            throttle(milliseconds:number):IStream {
+                var nextStream:IStream = new Stream("throttled");
+
+                var go = true;
+                this.forEach(function(value) {
+                    if (go) {
+                        nextStream.push(value);
+                        go = false;
+                        setTimeout(function() {
+                            go = true;
+                        }, milliseconds);
+                    }
+                });
+
+                this.registerNextStream(nextStream);
+
+                return nextStream;
+            }
+
+            debounce(milliseconds:number):IStream {
+                var nextStream:IStream = new Stream("debounced");
+
+                var debouncedValue = null;
+                var timeout;
+
+                function reset() {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(function() {
+                        if (debouncedValue) {
+                            nextStream.push(debouncedValue);
+                            debouncedValue = null;
+                        }
+                    }, milliseconds);
+                }
+
+                this.forEach(function(value) {
+                    debouncedValue = value;
+                    reset();
+                });
+
+                this.registerNextStream(nextStream);
+
+                return nextStream;
+            }
+
+
+            buffer(until:IStream):IStream {
+                var nextStream:IStream = new Stream("buffered");
+
+                var buffer = [];
+
+                this.forEach(function(value) {
+                    buffer.push(value);
+                });
+
+                until.forEach(function() {
+                    nextStream.push(buffer);
+                    buffer = [];
+                });
+
+                this.registerNextStream(nextStream);
+                return nextStream;
             }
         }
 

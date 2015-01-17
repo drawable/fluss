@@ -615,6 +615,54 @@ var Fluss;
                 this.addErrorMethod(method);
                 return this;
             };
+            Stream.prototype.throttle = function (milliseconds) {
+                var nextStream = new Stream("throttled");
+                var go = true;
+                this.forEach(function (value) {
+                    if (go) {
+                        nextStream.push(value);
+                        go = false;
+                        setTimeout(function () {
+                            go = true;
+                        }, milliseconds);
+                    }
+                });
+                this.registerNextStream(nextStream);
+                return nextStream;
+            };
+            Stream.prototype.debounce = function (milliseconds) {
+                var nextStream = new Stream("debounced");
+                var debouncedValue = null;
+                var timeout;
+                function reset() {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(function () {
+                        if (debouncedValue) {
+                            nextStream.push(debouncedValue);
+                            debouncedValue = null;
+                        }
+                    }, milliseconds);
+                }
+                this.forEach(function (value) {
+                    debouncedValue = value;
+                    reset();
+                });
+                this.registerNextStream(nextStream);
+                return nextStream;
+            };
+            Stream.prototype.buffer = function (until) {
+                var nextStream = new Stream("buffered");
+                var buffer = [];
+                this.forEach(function (value) {
+                    buffer.push(value);
+                });
+                until.forEach(function () {
+                    nextStream.push(buffer);
+                    buffer = [];
+                });
+                this.registerNextStream(nextStream);
+                return nextStream;
+            };
             return Stream;
         })();
         _Stream.Stream = Stream;
@@ -2001,6 +2049,38 @@ var __extends = this.__extends || function (d, b) {
 };
 var Fluss;
 (function (Fluss) {
+    /**
+     * The dispatcher provides the means to trigger Actions throughout the system. An action is an ID plus
+     * arbitrary arguments. Actions are basically events.
+     *
+     * If a consumer wants to handle an action it subscribes to it:
+     *
+     * ```js
+     *  Fluss.Dispatcher.subscribeAction(1000, function(actionid, arg1, arg2, arg3) {
+     *          // Do stuff
+     *  });
+     * ```
+     *
+     * Undo is built in right into the system. When subscribing to an action you can provide a second callback
+     * that is used to create a memento.
+     *
+     * ```js
+     *  Fluss.Dispatcher.subscribeAction(1000, function(actionid, arg1, arg2, arg3) {
+     *          // Do stuff
+     *  }, function(actionid, arg1, arg2, arg3) {
+     *          // Create a memento by either using
+     *          return Fluss.Dispatcher.createMemento(null, data);
+     *          // or
+     *          return Fluss.Dispatcher.createUndoAction(undoActionid, undoArg1, undoArg2);
+     *  });
+     * ```
+     *
+     * Dispatcher should be regarded as an internal module. Always use [Plugins](fluss.plugins.html) to implement
+     * action behaviour.
+     *
+     * One dispatcher instance is automatically created on startup. Creating a second instance is not recommended. It most
+     * probably will break things.
+     */
     var Dispatcher;
     (function (_Dispatcher) {
         /**
@@ -2371,6 +2451,79 @@ var __extends = this.__extends || function (d, b) {
 };
 var Fluss;
 (function (Fluss) {
+    /**
+     * Plugins are the means to implement the behaviour of an action.
+     *
+     * An action is an ID (number) and a set of arguments specific to the action.
+     *
+     * A plugin implements behaviour for that action. Plugins are managed by a Container. A container can
+     * handle plugins for several actions and several plugins for an action.
+     *
+     * ```js
+     *
+     * //Declare your container
+     * class MyContainer extends Fluss.Plugins.PluginContainer {
+     *      public property:string
+     * }
+     *
+     * // Create a container instance
+     * var cont = new MyContainer();
+     *
+     * // Implement a plugin
+     * class MyPlugin extends Fluss.Plugins.BasePlugin {
+     *
+     *      run(container:MyContainer, action:number, value:string) {
+     *          container.property = value;
+     *      }
+     * }
+     *
+     * // Attach the plugin to the container for action 1000
+     * cont.wrap(1000, new MyPlugin());
+     *
+     * // Dispatch action 1000 with argument
+     * Fluss.Dispatcher.dispatch(1000, "Test");
+     *
+     * //cont.property === "Test"
+     *
+     * ```
+     *
+     * Adding undo functionality is simple. You need to  provide methods to create a memento and to restore state from that
+     * memento into your plugin.
+     *
+     * ```js
+     * class MyPlugin extends Fluss.Plugins.BasePlugin {
+     *
+     *      run(container:MyContainer, action:number, value:string) {
+     *          container.property = value;
+     *      }
+     *
+     *      // getMemento is always called with the exact same arguments as run. getMemento will alway be called before
+     *      // run is called.
+     *      getMemento(container:MyContainer, action:number, value:string):Fluss.Dispatcher.IMemento {
+     *          return Fluss.Dispatcher.createMemento(null, container.property.
+     *      }
+     *
+     *      restoreFromMemento(container:MyContainer, memento:Fluss.Dispatcher.IMemento) {
+     *          container.property = memento.data;
+     *      }
+     * }
+     *
+     * ```
+     *
+     * Now your plugin knows how to preserve and restore state.
+     *
+     * ```js
+     * // Dispatch action 1000 with argument
+     * Fluss.Dispatcher.dispatch(1000, "Test");
+     * //cont.property === "Test"
+     *
+     * Fluss.Dispatcher.dispatch(1000, "Changed");
+     * //cont.property === "Changed"
+     *
+     * Fluss.BaseActions.undo();
+     * //cont.property === "Test"
+     * ```
+     */
     var Plugins;
     (function (Plugins) {
         /**
@@ -2520,20 +2673,22 @@ var Fluss;
              *
              * That protocol looks like this:
              *
+             *  ```js
              *  {
-     *    i: { done: A function that calls either finish or abort on the i-th plugin,
-     *         abort: did the plugin abort?
-     *
-     *    i+1: ...
-     *  }
-     *
-     * this protocol is initialized by null entries for all plugins. Then the run-methods for all plugins are called, giving them a done
-     * callback, that fills the protocol.
-     *
-     * After every run-method we check if we're at the innermost plugin (A in the example above, the one that first wrapped the action).
-     * If we are, we work through the protocol as long as there are valid entries. Then we wait for the next done-callback to be called.
-     *
-     * @param action
+             *    i: { done: A function that calls either finish or abort on the i-th plugin,
+             *         abort: did the plugin abort?
+             *
+             *    i+1: ...
+             *  }
+             *  ```
+             *
+             * this protocol is initialized by null entries for all plugins. Then the run-methods for all plugins are called, giving them a done
+             * callback, that fills the protocol.
+             *
+             * After every run-method we check if we're at the innermost plugin (A in the example above, the one that first wrapped the action).
+             * If we are, we work through the protocol as long as there are valid entries. Then we wait for the next done-callback to be called.
+             *
+             * @param action
              * @param args
              */
             PluginContainer.prototype.doHandleAction = function (plugins, action, args) {

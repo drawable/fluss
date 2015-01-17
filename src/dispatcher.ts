@@ -9,9 +9,41 @@
 
 module Fluss {
 
+    /**
+     * The dispatcher provides the means to trigger Actions throughout the system. An action is an ID plus
+     * arbitrary arguments. Actions are basically events.
+     *
+     * If a consumer wants to handle an action it subscribes to it:
+     *
+     * ```js
+     *  Fluss.Dispatcher.subscribeAction(1000, function(actionid, arg1, arg2, arg3) {
+     *          // Do stuff
+     *  });
+     * ```
+     *
+     * Undo is built in right into the system. When subscribing to an action you can provide a second callback
+     * that is used to create a memento.
+     *
+     * ```js
+     *  Fluss.Dispatcher.subscribeAction(1000, function(actionid, arg1, arg2, arg3) {
+     *          // Do stuff
+     *  }, function(actionid, arg1, arg2, arg3) {
+     *          // Create a memento by either using
+     *          return Fluss.Dispatcher.createMemento(null, data);
+     *          // or
+     *          return Fluss.Dispatcher.createUndoAction(undoActionid, undoArg1, undoArg2);
+     *  });
+     * ```
+     *
+     * Dispatcher should be regarded as an internal module. Always use [Plugins](fluss.plugins.html) to implement
+     * action behaviour.
+     *
+     * One dispatcher instance is automatically created on startup. Creating a second instance is not recommended. It most
+     * probably will break things.
+     */
     export module Dispatcher {
         /**
-         * Undoable. Base class for objects that can be restored from data.
+         * Undoable. Objects that can be restored from data.
          */
         export interface IUndoable {
             restoreFromMemento(memento:IMemento);
