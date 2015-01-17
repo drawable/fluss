@@ -190,7 +190,7 @@ if (typeof exports !== "undefined") {
     exports.EventChannel = Fluss.EventChannel;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("eventChannel", ["emitter", "stream"], function () {
         return Fluss.EventChannel;
     });
 }

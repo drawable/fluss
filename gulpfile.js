@@ -14,6 +14,7 @@ var concat = require("gulp-concat");
 var modify = require("gulp-modify");
 var path = require("path");
 var rename = require("gulp-rename");
+var requirejs = require("gulp-requirejs");
 
 
 var directories = {
@@ -64,7 +65,22 @@ gulp.task("module-amd", ["copy-dist"], function() {
         .pipe(gulp.dest(directories.build + "/amd"));
 });
 
-gulp.task("amd", ["module-amd"], function() {
+gulp.task("optimize-amd", ["module-amd"], function() {
+    requirejs({
+        baseUrl: directories.build + "/amd/",
+        out: "index.js",
+        name: "fluss"
+    })
+        .pipe(modify({
+            fileModifier: function(flie, content) {
+                //define("plugins", function(){});
+                return content.replace(/(define\("[^"]+",\sfunction\(\)\{\}\);)/g, "//$1")
+            }
+        }))
+        .pipe(gulp.dest(directories.build + "/amd"));
+});
+
+gulp.task("amd", ["module-amd", "optimize-amd"], function() {
 
 });
 

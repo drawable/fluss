@@ -1455,7 +1455,7 @@ if (typeof exports !== "undefined") {
     exports.Store = Fluss.Store;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("store", ["stream", "tools"], function () {
         return Fluss.Store;
     });
 }

@@ -113,7 +113,10 @@ var Fluss;
         function subclass(spec, baseClass) {
             var constructor;
             if (spec.hasOwnProperty("constructor")) {
-                constructor = spec["constructor"];
+                constructor = function () {
+                    baseClass.prototype.constructor.apply(this, arguments);
+                    spec["constructor"].apply(this, arguments);
+                };
             }
             else {
                 constructor = function () {
@@ -131,7 +134,7 @@ if (typeof exports !== "undefined") {
     exports.Tools = Fluss.Tools;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("tools", [], function () {
         return Fluss.Tools;
     });
 }
@@ -205,7 +208,7 @@ if (typeof exports !== "undefined") {
     exports.Emitter = Fluss.Emitter;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("emitter", [], function () {
         return Fluss.Emitter;
     });
 }
@@ -630,7 +633,7 @@ if (typeof exports !== "undefined") {
     exports.Stream = Fluss.Stream;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("stream", [], function () {
         return Fluss.Stream;
     });
 }
@@ -1653,7 +1656,7 @@ if (typeof exports !== "undefined") {
     exports.Store = Fluss.Store;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("store", ["stream", "tools"], function () {
         return Fluss.Store;
     });
 }
@@ -1683,7 +1686,7 @@ if (typeof exports !== "undefined") {
     exports.ReactMixins = Fluss.ReactMixins;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("reactMixins", ["stream"], function () {
         return Fluss.ReactMixins;
     });
 }
@@ -1858,7 +1861,7 @@ if (typeof exports !== "undefined") {
     exports.EventChannel = Fluss.EventChannel;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("eventChannel", ["emitter", "stream"], function () {
         return Fluss.EventChannel;
     });
 }
@@ -1931,7 +1934,7 @@ if (typeof exports !== "undefined") {
     exports.Errors = Fluss.Errors;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("errors", ["eventChannel"], function () {
         return Fluss.Errors;
     });
 }
@@ -1978,7 +1981,7 @@ if (typeof exports !== "undefined") {
     exports.BaseActions = Fluss.BaseActions;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("baseActions", ["dispatcher"], function () {
         return Fluss.BaseActions;
     });
 }
@@ -2347,7 +2350,7 @@ if (typeof exports !== "undefined") {
     exports.Dispatcher = Fluss.Dispatcher;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("dispatcher", ["errors", "eventChannel", "baseActions"], function () {
         return Fluss.Dispatcher;
     });
 }
@@ -2798,7 +2801,7 @@ if (typeof exports !== "undefined") {
     exports.Plugins = Fluss.Plugins;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("plugins", ["dispatcher", "eventChannel", "baseActions", "tools"], function () {
         return Fluss.Plugins;
     });
 }

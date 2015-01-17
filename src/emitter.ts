@@ -82,7 +82,7 @@ if (typeof exports !== "undefined") {
     exports.Emitter = Fluss.Emitter;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("emitter", [], function () {
         return Fluss.Emitter;
     });
 }

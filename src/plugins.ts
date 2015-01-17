@@ -595,7 +595,7 @@ if (typeof exports !== "undefined") {
     exports.Plugins = Fluss.Plugins;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("plugins", ["dispatcher", "eventChannel", "baseActions", "tools"], function () {
         return Fluss.Plugins;
     });
 }

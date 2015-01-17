@@ -625,7 +625,7 @@ if (typeof exports !== "undefined") {
     exports.Stream = Fluss.Stream;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("stream", [], function () {
         return Fluss.Stream;
     });
 }

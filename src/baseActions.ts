@@ -39,7 +39,7 @@ if (typeof exports !== "undefined") {
     exports.BaseActions = Fluss.BaseActions;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("baseActions", ["dispatcher"], function () {
         return Fluss.BaseActions;
     });
 }

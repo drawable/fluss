@@ -118,7 +118,10 @@ module Fluss {
         export function subclass(spec, baseClass):any {
             var constructor;
             if (spec.hasOwnProperty("constructor")) {
-                constructor = spec["constructor"];
+                constructor = function() {
+                    baseClass.prototype.constructor.apply(this, arguments);
+                    spec["constructor"].apply(this, arguments);
+                }
             } else {
                 constructor = function() {
                     baseClass.prototype.constructor.apply(this, arguments);
@@ -141,7 +144,7 @@ if (typeof exports !== "undefined") {
     exports.Tools = Fluss.Tools;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("tools", [], function () {
         return Fluss.Tools;
     });
 }

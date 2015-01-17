@@ -69,7 +69,7 @@ if (typeof exports !== "undefined") {
     exports.Errors = Fluss.Errors;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("errors", ["eventChannel"], function () {
         return Fluss.Errors;
     });
 }

@@ -49,8 +49,8 @@ See [fluss-npm-module-usage](https://github.com/drawable/fluss-npm-module-usage)
 
 Create stores ...
 
-    var todos = Store.array();
-    todos.push(Store.record( { title: "learn fluss...", completed: false } );
+    var todos = Fluss.Store.array();
+    todos.push(Fluss.Store.record( { title: "learn fluss...", completed: false } );
     todos[0].complete = true;
 
     todos.forEach(function(todo) {
@@ -64,7 +64,7 @@ Stores are reactive ...
             console.log(update.value.title + " was added");
          ));
 
-    todos.push(Store.record( { title: "make coffee...", completed: false } ));
+    todos.push(Fluss.Store.record( { title: "make coffee...", completed: false } ));
 
     // The console now reads
     //  make coffee... was added
@@ -101,22 +101,18 @@ Filtered (and mapped) stores are even more reactive (within limits)...
 Create a container for plugins
 
     // In Typescript
-    class Application extends Plugins.PluginContainer {
+    class Application extends Fluss.Plugins.PluginContainer {
 
-        todos:Store.IArrayStore;
+        todos:Fluss.Store.IArrayStore;
 
         constructor() {
             super();
-            this._todos = Store.array();
+            this._todos = Fluss.Store.array();
     }
 
     // In JavaScript
-    var Application = Plugins.createContainer({
-        todos: null,
-
-        constructor: function() {
-            this.todos = Store.array();
-        }
+    var Application = Fluss.Plugins.createContainer({
+        todos: Fluss.Store.array()
     })
 
     var application = new Application();
@@ -124,18 +120,18 @@ Create a container for plugins
 Create a plugin...
 
     // In Typescript
-    class AddTodo extends Plugins.BasePlugin {
+    class AddTodo extends Fluss.Plugins.BasePlugin {
 
         run(container:Application.Application, action:number, title:string) {
-            container.todos.push(Store.record({ title: title, completed: false }));
+            container.todos.push(Fluss.Store.record({ title: title, completed: false }));
         }
     }
 
 
     // In Javascript
-    var AddTodo = Plugins.createPlugin({
+    var AddTodo = Fluss.Plugins.createPlugin({
         run(container, action, title) {
-            container.todos.push(Store.record({ title: title, completed: false }));
+            container.todos.push(Fluss.Store.record({ title: title, completed: false }));
         }
     });
 
@@ -146,28 +142,28 @@ Create a plugin...
 
 ... and execute the action
 
-    Dispatcher.dispatch(NEW_TODO, "... and make an awesome app with it");
+    Fluss.Dispatcher.dispatch(NEW_TODO, "... and make an awesome app with it");
 
 You can create a nicely typed function for that
 
     function newTodo(title:string) {
-        Dispatcher.dispatch(NEW_TODO, "... and make an awesome app with it");
+        Fluss.Dispatcher.dispatch(NEW_TODO, "... and make an awesome app with it");
     }
 
 Extend your plugin to support UNDO/REDO
 
-        class AddTodo extends Plugins.BasePlugin {
+        class AddTodo extends Fluss.Plugins.BasePlugin {
             run(container:Application.Application, action:number, title:string) {
-                container.todos.push(Store.record({ title: title, completed: false}));
+                container.todos.push(Fluss.Store.record({ title: title, completed: false}));
             }
 
             getMemento(container:Application.Application,
-                       action:number, title:string):Dispatcher.IMemento {
-                return Dispatcher.createMemento(null, { index: container.todos.length })
+                       action:number, title:string):Fluss.Dispatcher.IMemento {
+                return Fluss.Dispatcher.createMemento(null, { index: container.todos.length })
             }
 
             restoreFromMemento(container:Application.Application,
-                               memento:Dispatcher.IMemento) {
+                               memento:Fluss.Dispatcher.IMemento) {
                 container.todos.remove(memento.data.index, 1);
             }
         }
@@ -175,10 +171,10 @@ Extend your plugin to support UNDO/REDO
 ... and now you can undo actions
 
     // Create a new Todo
-    Dispatcher.dispatch(NEW_TODO, "Never do unit tests again");
+    Fluss.Dispatcher.dispatch(NEW_TODO, "Never do unit tests again");
 
     // Reconsider... and undo your last action
-    BaseActions.undo();
+    Fluss.BaseActions.undo();
 
 ## A full example
 
@@ -265,8 +261,10 @@ but to completely wrap my head around reactive programming I wanted to implement
 
 ## Changelog
 
-### 0.3.3
+### 0.3.4
+* Fixed issues with AMD where multiple usages of the module would lead to multiple module instances
 
+### 0.3.3
 * Proper library bindings for Typescript enabling development in AMD and CommonJS
 
 ## License

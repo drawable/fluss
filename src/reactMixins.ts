@@ -29,7 +29,7 @@ if (typeof exports !== "undefined") {
     exports.ReactMixins = Fluss.ReactMixins;
 }
 if (typeof this["define"] === "function") {
-    this["define"]([], function () {
+    this["define"]("reactMixins", ["stream"], function () {
         return Fluss.ReactMixins;
     });
 }
