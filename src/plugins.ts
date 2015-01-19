@@ -18,11 +18,10 @@ module Fluss {
      * A plugin implements behaviour for that action. Plugins are managed by a Container. A container can
      * handle plugins for several actions and several plugins for an action.
      *
-     * ```js
-     *
+     * ```
      * //Declare your container
      * class MyContainer extends Fluss.Plugins.PluginContainer {
-     *      public property:string
+     *  public property:string
      * }
      *
      * // Create a container instance

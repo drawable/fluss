@@ -2,14 +2,15 @@
   <library name="Generated files" type="javaScript">
     <properties>
       <sourceFilesUrls>
-        <item url="file://$PROJECT_DIR$/test/plugin_spec.js" />
         <item url="file://$PROJECT_DIR$/src/dispatcher.js" />
+        <item url="file://$PROJECT_DIR$/test/plugin_spec.js" />
         <item url="file://$PROJECT_DIR$/src/reactMixins.js" />
-        <item url="file://$PROJECT_DIR$/src/emitter.js" />
         <item url="file://$PROJECT_DIR$/src/store.js" />
+        <item url="file://$PROJECT_DIR$/src/emitter.js" />
+        <item url="file://$PROJECT_DIR$/test/storeExtension_spec.js" />
         <item url="file://$PROJECT_DIR$/src/plugins.js" />
-        <item url="file://$PROJECT_DIR$/src/errors.js" />
         <item url="file://$PROJECT_DIR$/src/baseActions.js" />
+        <item url="file://$PROJECT_DIR$/src/errors.js" />
         <item url="file://$PROJECT_DIR$/src/tools.js" />
         <item url="file://$PROJECT_DIR$/src/eventChannel.js" />
         <item url="file://$PROJECT_DIR$/test/store_spec.js" />
@@ -73,14 +74,15 @@
       <root url="file://$PROJECT_DIR$/build/amd/fluss/tools.js" />
       <root url="file://$PROJECT_DIR$/build/amd/fluss/baseActions.js" />
       <root url="file://$PROJECT_DIR$/build/amd/fluss/eventChannel.js" />
-      <root url="file://$PROJECT_DIR$/src/dispatcher.js" />
       <root url="file://$PROJECT_DIR$/test/plugin_spec.js" />
+      <root url="file://$PROJECT_DIR$/src/dispatcher.js" />
       <root url="file://$PROJECT_DIR$/src/reactMixins.js" />
-      <root url="file://$PROJECT_DIR$/src/store.js" />
+      <root url="file://$PROJECT_DIR$/test/storeExtension_spec.js" />
       <root url="file://$PROJECT_DIR$/src/emitter.js" />
+      <root url="file://$PROJECT_DIR$/src/store.js" />
       <root url="file://$PROJECT_DIR$/src/plugins.js" />
-      <root url="file://$PROJECT_DIR$/src/baseActions.js" />
       <root url="file://$PROJECT_DIR$/src/errors.js" />
+      <root url="file://$PROJECT_DIR$/src/baseActions.js" />
       <root url="file://$PROJECT_DIR$/src/eventChannel.js" />
       <root url="file://$PROJECT_DIR$/src/tools.js" />
       <root url="file://$PROJECT_DIR$/test/store_spec.js" />

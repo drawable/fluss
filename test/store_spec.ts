@@ -16,7 +16,7 @@ var Fluss:any = require("../build/index");
 
 
 describe("Data stores", function () {
-    describe("come as object stores. They", function () {
+    describe("come as record stores. They", function () {
         it("can hold values, that can be retrieved and set", function() {
             var store:any = Fluss.Store.record();
 
@@ -189,6 +189,7 @@ describe("Data stores", function () {
             expect(store["a"]).to.be.undefined();
         });
     });
+
 
     describe("and array stores. They", function () {
         it("store values in an enumerated list", function () {
@@ -877,6 +878,70 @@ describe("Data stores", function () {
             expect(twiceEven.length).to.equal(6);
             expect(twiceEven[5]).to.equal(12);
         });
+    });
+
+    describe("and Item stores. They", function() {
+       it("can be created", function() {
+            var i = Fluss.Store.item(5);
+
+           expect(i).to.be.ok();
+       });
+
+        it("are reactive", function() {
+            var i = Fluss.Store.item(5);
+            var calls = [];
+            i.updates.forEach(function(update) {
+                calls.push(update.value);
+            });
+
+            i.set(10);
+            i.set(5);
+            i.set("A");
+
+            expect(calls[0]).to.equal(10);
+            expect(calls[1]).to.equal(5);
+            expect(calls[2]).to.equal("A");
+        });
+
+        it("support nested stores", function() {
+            var a = Fluss.Store.array();
+            var i = Fluss.Store.item(a);
+            var calls = {};
+            i.newItems.forEach(function(update) {
+                calls[update.item] = update.value;
+            });
+
+            i.updates.forEach(function(update) {
+                calls[update.item] = update.value;
+            });
+
+            i.get().push(10);
+            i.get().push(5);
+            i.get().push("A");
+
+            expect(calls[0]).to.equal(10);
+            expect(calls[1]).to.equal(5);
+            expect(calls[2]).to.equal("A");
+
+            i.get()[0] = 100;
+            expect(calls[0]).to.equal(100);
+        });
+
+        it("provide an immutable proxy", function() {
+            var a = Fluss.Store.array();
+            var i = Fluss.Store.item(a);
+            var ii = i.immutable;
+
+            ii.set(12);
+
+            expect(i.get()).not.to.equal(12);
+
+            var ia = ii.get();
+
+            expect(ia.isImmutable).to.be.true();
+        });
+
+
     });
 
     describe("using streams they all", function() {

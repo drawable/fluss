@@ -9,6 +9,23 @@
 
 module Fluss {
 
+    /**
+     * Stores provide a means to store application state. Stores are reactive in the way that the provide
+     * streams for updates, new items, removed items and when they are being disposed.
+     *
+     * There are three types of stores
+     *
+     *  * Value: A single value
+     *  * Record: A set of values, comparable to an plain Javascript object
+     *  * Array: A list of values, comparable to a Javascript array.
+     *
+     * Stores can be nested, e.g. an array can hold values or records. Streams will bubble up through the nested hierarchy
+     * so when a record that is contained in an array has an item updated, the update stream of the array will process.
+     *
+     * Every store provides an immutable proxy, that provides the same data and streams but cannot be used to change the
+     * data of the store.
+     *
+     */
     export module Store {
         /**
          * Test if something is a store.
@@ -16,7 +33,8 @@ module Fluss {
          * @returns {boolean}
          */
         export function isStore(thing):boolean {
-            return thing instanceof RecordStore || thing instanceof ArrayStore || thing instanceof ImmutableRecord || thing instanceof ImmutableArray;
+            return thing instanceof RecordStore     || thing instanceof ArrayStore      || thing instanceof Item ||
+                   thing instanceof ImmutableRecord || thing instanceof ImmutableArray  || thing instanceof ImmutableItem;
         }
 
 
@@ -85,6 +103,7 @@ module Fluss {
             return r;
         }
 
+
         /**
          * A store is an object that holds data and provides reactive streams to
          * observe updates, new items, removed items and the disposal of that store.
@@ -140,6 +159,25 @@ module Fluss {
              */
             isImmutable:boolean;
         }
+
+
+        /**
+         * An item is a single value that provides reactive streams to
+         * observe updates.
+         */
+        export interface IItem extends IStore {
+            /**
+             * Get the value
+             */
+            get():any;
+
+            /**
+             * Set the value
+             * @param value
+             */
+            set(value:any);
+        }
+
 
         /**
          * A record store holds values like a plain JavaScript object. Adding new properties using the index accessor []
@@ -271,20 +309,185 @@ module Fluss {
          * Base class for immutable stores.
          */
         class ImmutableStore extends Store {
+            get isImmutable():boolean {
+                return true;
+            }
+        }
 
+
+        class Item extends Store implements IItem {
+
+            private _value:any;
+            private _subStreamU:Fluss.Stream.IStream;
+            private _subStreamN:Fluss.Stream.IStream;
+            private _subStreamR:Fluss.Stream.IStream;
+
+            constructor(initial?:any) {
+                super();
+                if (typeof initial !== "undefined") {
+                    this.set(initial);
+                }
+            }
+
+            private disposeSubStreams() {
+                if (this._subStreamU) {
+                    this._subStreamU.dispose();
+                }
+                if (this._subStreamN) {
+                    this._subStreamN.dispose();
+                }
+                if (this._subStreamR) {
+                    this._subStreamR.dispose();
+                }
+            }
+
+            private setupSubStreams() {
+
+                function createSubInfo(update) {
+                    return createUpdateInfo<string>(update.item,
+                        update.value,
+                        update.store,
+                        update.path ? "(item)" + "." + update.path : "(item)" + "." + update.item,
+                        "(item)");
+                }
+
+                var that = this;
+                this.disposeSubStreams();
+                if (isStore(this._value)) {
+                    this._subStreamU = this._value.updates;
+                    this._value.updates.forEach(function(update) {
+                        var info = createSubInfo(update);
+                        that._updateStreams.forEach(function(stream) {
+                            stream.push(info);
+                        })
+                    });
+                    this._subStreamN = this._value.newItems;
+                    this._value.newItems.forEach(function(update) {
+                        var info = createSubInfo(update);
+                        that._addItemsStreams.forEach(function(stream) {
+                            stream.push(info);
+                        })
+                    });
+                    this._subStreamR = this._value.updates;
+                    this._value.removedItems.forEach(function(update) {
+                        var info = createSubInfo(update);
+                        that._removeItemsStreams.forEach(function(stream) {
+                            stream.push(info);
+                        })
+                    })
+                }
+            }
+
+            set(value:any) {
+                var that = this;
+                this._value = value;
+                if (this._updateStreams) {
+                    var info = createUpdateInfo(null, this._value, this);
+                    that.setupSubStreams();
+                    this._updateStreams.forEach(function(stream) {
+                        stream.push(info);
+                    })
+                }
+            }
+
+            get():any {
+                return this._value;
+            }
+
+            get immutable():IStore {
+                return new ImmutableItem(this);
+            }
+
+            item():any {
+                if (isStore(this._value)) {
+                    return this._value;
+                }
+                return this;
+            }
+        }
+
+        class ImmutableItem extends ImmutableStore implements IItem {
+
+            constructor(private _parent:IItem) {
+                super();
+            }
+
+            set(value:any) {
+
+            }
+
+            get():any {
+                var v = this._parent["_value"];
+                if (isStore(v)) {
+                    return v.immutable;
+                }
+
+                return this._parent.get();
+            }
+
+
+            private subscribeParentStream(parentStream:Stream.IStream):Stream.IStream {
+                var stream = Stream.createStream();
+
+                parentStream.forEach(function(update) {
+                    stream.push(update);
+                }).until(this._parent.isDisposing);
+
+                var that = this;
+                this._updateStreams.push(stream);
+                stream.onClose(function() {
+                    that.removeStream(that._updateStreams, stream);
+                });
+
+                return stream;
+            }
+
+            get updates():Stream.IStream {
+                return this.subscribeParentStream(this._parent.updates);
+            }
+
+            get newItems():Stream.IStream {
+                return this.subscribeParentStream(this._parent.newItems);
+            }
+
+            get removedItems():Stream.IStream {
+                return this.subscribeParentStream(this._parent.removedItems);
+            }
+
+            get isDisposing():Stream.IStream {
+                return this.subscribeParentStream(this._parent.isDisposing);
+            }
+
+            item():any {
+                return this;
+            }
+        }
+
+        /**
+         * Create a new item store. If it is given an object or an array it will create a substore hierarchy.
+         * @param initial
+         * @returns {Fluss.Store.Item}
+         */
+        export function item(initial:any):IItem {
+            if (isStore(initial)) {
+                return new Item(initial);
+            } else {
+                return new Item(buildDeep(initial) || initial);
+            }
         }
 
 
 
-        class RecordStore extends Store implements IRecordStore {
+        export class RecordStore extends Store implements IRecordStore {
 
             private _data;
             private _subStreams:{};
             private _immutable:IStore;
+            private _locked:boolean;
 
-        [n:string]:any;
+            [n:string]:any;
 
-            constructor(initial?:any) {
+            constructor(initial?:any, locked?:boolean) {
                 super();
                 this._data = {};
                 this._subStreams = {};
@@ -296,6 +499,8 @@ module Fluss {
                         }
                     }
                 }
+
+                this._locked = locked || false;
             }
 
             private checkNameAllowed(name:string):boolean {
@@ -330,30 +535,44 @@ module Fluss {
                 }
             }
 
+            _get(name:string) {
+                return this._data[name];
+            }
+
+            _set(name:string, value:any) {
+                this._data[name] = value;
+                var updateInfo = createUpdateInfo(name, value, this);
+
+                this.setupSubStream(name, value);
+
+                this._updateStreams.forEach(function(stream) {
+                    stream.push(updateInfo);
+                });
+            }
+
             addItem(name:string, initial?:any) {
+                if (this._locked) {
+                    throw new Error("This record is locked. Cou cannot add new items to it.")
+                }
                 if (!this.checkNameAllowed(name)) {
                     throw new Error("Name '" + name + "' not allowed for property of object store.");
                 }
 
                 var that = this;
 
-                Object.defineProperty(this, name, {
-                    configurable: true,
-                    get: function():any {
-                        return that._data[name];
-                    },
 
-                    set: function(value:any) {
-                        that._data[name] = value;
-                        var updateInfo = createUpdateInfo(name, value, that);
+                if (!this.hasOwnProperty(name)) {
+                    Object.defineProperty(this, name, {
+                        configurable: true,
+                        get: function():any {
+                            return that._get(name);
+                        },
 
-                        that.setupSubStream(name, value);
-
-                        that._updateStreams.forEach(function(stream) {
-                            stream.push(updateInfo);
-                        });
-                    }
-                });
+                        set: function(value:any) {
+                            return that._set(name, value);
+                        }
+                    });
+                }
 
                 this._data[name] = initial;
 

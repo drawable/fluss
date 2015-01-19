@@ -700,6 +700,23 @@ var __extends = this.__extends || function (d, b) {
 };
 var Fluss;
 (function (Fluss) {
+    /**
+     * Stores provide a means to store application state. Stores are reactive in the way that the provide
+     * streams for updates, new items, removed items and when they are being disposed.
+     *
+     * There are three types of stores
+     *
+     *  * Value: A single value
+     *  * Record: A set of values, comparable to an plain Javascript object
+     *  * Array: A list of values, comparable to a Javascript array.
+     *
+     * Stores can be nested, e.g. an array can hold values or records. Streams will bubble up through the nested hierarchy
+     * so when a record that is contained in an array has an item updated, the update stream of the array will process.
+     *
+     * Every store provides an immutable proxy, that provides the same data and streams but cannot be used to change the
+     * data of the store.
+     *
+     */
     var Store;
     (function (_Store) {
         /**
@@ -708,7 +725,7 @@ var Fluss;
          * @returns {boolean}
          */
         function isStore(thing) {
-            return thing instanceof RecordStore || thing instanceof ArrayStore || thing instanceof ImmutableRecord || thing instanceof ImmutableArray;
+            return thing instanceof RecordStore || thing instanceof ArrayStore || thing instanceof Item || thing instanceof ImmutableRecord || thing instanceof ImmutableArray || thing instanceof ImmutableItem;
         }
         _Store.isStore = isStore;
         function createUpdateInfo(item, value, store, path, rootItem) {
@@ -840,11 +857,170 @@ var Fluss;
             function ImmutableStore() {
                 _super.apply(this, arguments);
             }
+            Object.defineProperty(ImmutableStore.prototype, "isImmutable", {
+                get: function () {
+                    return true;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return ImmutableStore;
         })(Store);
+        var Item = (function (_super) {
+            __extends(Item, _super);
+            function Item(initial) {
+                _super.call(this);
+                if (typeof initial !== "undefined") {
+                    this.set(initial);
+                }
+            }
+            Item.prototype.disposeSubStreams = function () {
+                if (this._subStreamU) {
+                    this._subStreamU.dispose();
+                }
+                if (this._subStreamN) {
+                    this._subStreamN.dispose();
+                }
+                if (this._subStreamR) {
+                    this._subStreamR.dispose();
+                }
+            };
+            Item.prototype.setupSubStreams = function () {
+                function createSubInfo(update) {
+                    return createUpdateInfo(update.item, update.value, update.store, update.path ? "(item)" + "." + update.path : "(item)" + "." + update.item, "(item)");
+                }
+                var that = this;
+                this.disposeSubStreams();
+                if (isStore(this._value)) {
+                    this._subStreamU = this._value.updates;
+                    this._value.updates.forEach(function (update) {
+                        var info = createSubInfo(update);
+                        that._updateStreams.forEach(function (stream) {
+                            stream.push(info);
+                        });
+                    });
+                    this._subStreamN = this._value.newItems;
+                    this._value.newItems.forEach(function (update) {
+                        var info = createSubInfo(update);
+                        that._addItemsStreams.forEach(function (stream) {
+                            stream.push(info);
+                        });
+                    });
+                    this._subStreamR = this._value.updates;
+                    this._value.removedItems.forEach(function (update) {
+                        var info = createSubInfo(update);
+                        that._removeItemsStreams.forEach(function (stream) {
+                            stream.push(info);
+                        });
+                    });
+                }
+            };
+            Item.prototype.set = function (value) {
+                var that = this;
+                this._value = value;
+                if (this._updateStreams) {
+                    var info = createUpdateInfo(null, this._value, this);
+                    that.setupSubStreams();
+                    this._updateStreams.forEach(function (stream) {
+                        stream.push(info);
+                    });
+                }
+            };
+            Item.prototype.get = function () {
+                return this._value;
+            };
+            Object.defineProperty(Item.prototype, "immutable", {
+                get: function () {
+                    return new ImmutableItem(this);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Item.prototype.item = function () {
+                if (isStore(this._value)) {
+                    return this._value;
+                }
+                return this;
+            };
+            return Item;
+        })(Store);
+        var ImmutableItem = (function (_super) {
+            __extends(ImmutableItem, _super);
+            function ImmutableItem(_parent) {
+                _super.call(this);
+                this._parent = _parent;
+            }
+            ImmutableItem.prototype.set = function (value) {
+            };
+            ImmutableItem.prototype.get = function () {
+                var v = this._parent["_value"];
+                if (isStore(v)) {
+                    return v.immutable;
+                }
+                return this._parent.get();
+            };
+            ImmutableItem.prototype.subscribeParentStream = function (parentStream) {
+                var stream = Fluss.Stream.createStream();
+                parentStream.forEach(function (update) {
+                    stream.push(update);
+                }).until(this._parent.isDisposing);
+                var that = this;
+                this._updateStreams.push(stream);
+                stream.onClose(function () {
+                    that.removeStream(that._updateStreams, stream);
+                });
+                return stream;
+            };
+            Object.defineProperty(ImmutableItem.prototype, "updates", {
+                get: function () {
+                    return this.subscribeParentStream(this._parent.updates);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ImmutableItem.prototype, "newItems", {
+                get: function () {
+                    return this.subscribeParentStream(this._parent.newItems);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ImmutableItem.prototype, "removedItems", {
+                get: function () {
+                    return this.subscribeParentStream(this._parent.removedItems);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ImmutableItem.prototype, "isDisposing", {
+                get: function () {
+                    return this.subscribeParentStream(this._parent.isDisposing);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ImmutableItem.prototype.item = function () {
+                return this;
+            };
+            return ImmutableItem;
+        })(ImmutableStore);
+        /**
+         * Create a new item store. If it is given an object or an array it will create a substore hierarchy.
+         * @param initial
+         * @returns {Fluss.Store.Item}
+         */
+        function item(initial) {
+            if (isStore(initial)) {
+                return new Item(initial);
+            }
+            else {
+                return new Item(buildDeep(initial) || initial);
+            }
+        }
+        _Store.item = item;
         var RecordStore = (function (_super) {
             __extends(RecordStore, _super);
-            function RecordStore(initial) {
+            function RecordStore(initial, locked) {
                 _super.call(this);
                 this._data = {};
                 this._subStreams = {};
@@ -855,6 +1031,7 @@ var Fluss;
                         }
                     }
                 }
+                this._locked = locked || false;
             }
             RecordStore.prototype.checkNameAllowed = function (name) {
                 return true;
@@ -880,25 +1057,36 @@ var Fluss;
                     subStream.dispose();
                 }
             };
+            RecordStore.prototype._get = function (name) {
+                return this._data[name];
+            };
+            RecordStore.prototype._set = function (name, value) {
+                this._data[name] = value;
+                var updateInfo = createUpdateInfo(name, value, this);
+                this.setupSubStream(name, value);
+                this._updateStreams.forEach(function (stream) {
+                    stream.push(updateInfo);
+                });
+            };
             RecordStore.prototype.addItem = function (name, initial) {
+                if (this._locked) {
+                    throw new Error("This record is locked. Cou cannot add new items to it.");
+                }
                 if (!this.checkNameAllowed(name)) {
                     throw new Error("Name '" + name + "' not allowed for property of object store.");
                 }
                 var that = this;
-                Object.defineProperty(this, name, {
-                    configurable: true,
-                    get: function () {
-                        return that._data[name];
-                    },
-                    set: function (value) {
-                        that._data[name] = value;
-                        var updateInfo = createUpdateInfo(name, value, that);
-                        that.setupSubStream(name, value);
-                        that._updateStreams.forEach(function (stream) {
-                            stream.push(updateInfo);
-                        });
-                    }
-                });
+                if (!this.hasOwnProperty(name)) {
+                    Object.defineProperty(this, name, {
+                        configurable: true,
+                        get: function () {
+                            return that._get(name);
+                        },
+                        set: function (value) {
+                            return that._set(name, value);
+                        }
+                    });
+                }
                 this._data[name] = initial;
                 this.setupSubStream(name, initial);
                 if (this._addItemsStreams) {
@@ -955,6 +1143,7 @@ var Fluss;
             };
             return RecordStore;
         })(Store);
+        _Store.RecordStore = RecordStore;
         var ImmutableRecord = (function (_super) {
             __extends(ImmutableRecord, _super);
             function ImmutableRecord(_parent) {
@@ -2459,11 +2648,10 @@ var Fluss;
      * A plugin implements behaviour for that action. Plugins are managed by a Container. A container can
      * handle plugins for several actions and several plugins for an action.
      *
-     * ```js
-     *
+     * ```
      * //Declare your container
      * class MyContainer extends Fluss.Plugins.PluginContainer {
-     *      public property:string
+     *  public property:string
      * }
      *
      * // Create a container instance
