@@ -1399,8 +1399,8 @@ module Fluss {
 
                 while(l--) {
                     (function() {
-                        this._data.unshift(values[0]);
-                        this._newItemStreams.forEach(function (stream) {
+                        that._data.unshift(values[0]);
+                        that._addItemsStreams.forEach(function (stream) {
                             stream.push(createUpdateInfo<number>(0, that._data[0], that));
                         })
 

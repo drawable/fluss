@@ -273,8 +273,7 @@ describe("Data stores", function () {
 
             store.push(1);
 
-            var s = store.newItems;
-            s.forEach(function (update) {
+            store.newItems.forEach(function (update) {
                 calls += "(" + update.item + "=" + update.value + ")";
             });
 
@@ -286,6 +285,12 @@ describe("Data stores", function () {
             store.push("l");
             store.push("12");
             expect(calls).to.equal("(1=2)(2=l)(3=12)");
+
+
+            store.unshift("X");
+            expect(calls).to.equal("(1=2)(2=l)(3=12)(0=X)");
+            store.unshift("Y");
+            expect(calls).to.equal("(1=2)(2=l)(3=12)(0=X)(0=Y)");
         });
 
         it("provide streams for removed items", function () {
