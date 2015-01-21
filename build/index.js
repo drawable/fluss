@@ -675,6 +675,38 @@ var Fluss;
             return new Stream(name || "stream");
         }
         _Stream.createStream = createStream;
+        var StreamProvider = (function () {
+            function StreamProvider() {
+                this._streams = {};
+            }
+            StreamProvider.prototype.newStream = function (type) {
+                var s = Fluss.Stream.createStream(type);
+                if (!this._streams[type]) {
+                    this._streams[type] = [];
+                }
+                this._streams[type].push(s);
+                return s;
+            };
+            StreamProvider.prototype.push = function (streamType, value) {
+                if (this._streams[streamType]) {
+                    this._streams[streamType].forEach(function (stream) {
+                        stream.push(value);
+                    });
+                }
+            };
+            StreamProvider.prototype.pushError = function (streamType, value) {
+                if (this._streams[streamType]) {
+                    this._streams[streamType].forEach(function (stream) {
+                        stream.pushError(value);
+                    });
+                }
+            };
+            return StreamProvider;
+        })();
+        function streamProvider() {
+            return new StreamProvider();
+        }
+        _Stream.streamProvider = streamProvider;
     })(Stream = Fluss.Stream || (Fluss.Stream = {}));
 })(Fluss || (Fluss = {}));
 if (typeof exports !== "undefined") {
@@ -745,6 +777,7 @@ var Fluss;
             }
             return r;
         }
+        _Store.createUpdateInfo = createUpdateInfo;
         var Store = (function () {
             function Store() {
                 this._addItemsStreams = [];
@@ -849,6 +882,7 @@ var Fluss;
             };
             return Store;
         })();
+        _Store.Store = Store;
         /**
          * Base class for immutable stores.
          */
@@ -944,6 +978,7 @@ var Fluss;
             };
             return Item;
         })(Store);
+        _Store.Item = Item;
         var ImmutableItem = (function (_super) {
             __extends(ImmutableItem, _super);
             function ImmutableItem(_parent) {
@@ -1742,6 +1777,7 @@ var Fluss;
             };
             return ArrayStore;
         })(Store);
+        _Store.ArrayStore = ArrayStore;
         var ImmutableArray = (function (_super) {
             __extends(ImmutableArray, _super);
             function ImmutableArray(_parent) {

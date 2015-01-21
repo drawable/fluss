@@ -465,7 +465,7 @@ module Fluss {
 
             concat(stream:IStream):IStream {
                 var nextStream = new Stream(this._name + ".concat");
-                var buffer = null;
+                var buffer:any[] = null;
 
                 // When this is already closed, we only care for the other stream
                 if (!this._closed) {
@@ -519,7 +519,7 @@ module Fluss {
             concatAll():IStream {
                 var nextStream = new Stream(this._name + ".concatAll");
                 var queue = [];
-                var cursor = null;
+                var cursor:any = null;
 
                 function nextInQueue() {
                     var l = queue.length;
@@ -701,6 +701,81 @@ module Fluss {
          */
         export function createStream(name?:string):IStream {
             return new Stream(name || "stream");
+        }
+
+
+        /**
+         * Dictionary for managing lists of streams.
+         */
+        interface DStreamList {
+            [index:string]:Fluss.Stream.IStream[];
+        }
+
+        /**
+         * A streamprovider manages multiple streams for different usages. It is a helper for objects
+         * that want to provide streams for different events.
+         */
+        export interface IStreamProvider {
+
+            /**
+             * Create a new stream for an "event"-type
+             * @param type
+             */
+            newStream(type:string):Fluss.Stream.IStream;
+
+            /**
+             * Push a value to all streams of a specific event type
+             * @param streamType
+             * @param value
+             */
+            push(streamType:string, value:any);
+
+            /**
+             * Push an error to all streams of a specific event type
+             * @param streamType
+             * @param value
+             */
+            pushError(streamType:string, value:any);
+        }
+
+        class StreamProvider implements IStreamProvider {
+            private _streams:DStreamList;
+
+            constructor() {
+                this._streams = {};
+            }
+
+            newStream(type:string):Fluss.Stream.IStream {
+                var s = Fluss.Stream.createStream(type);
+
+                if (!this._streams[type]) {
+                    this._streams[type] = [];
+                }
+
+                this._streams[type].push(s);
+
+                return s;
+            }
+
+            push(streamType:string, value:any) {
+                if (this._streams[streamType]) {
+                    this._streams[streamType].forEach(function(stream) {
+                        stream.push(value);
+                    })
+                }
+            }
+
+            pushError(streamType:string, value:any) {
+                if (this._streams[streamType]) {
+                    this._streams[streamType].forEach(function(stream) {
+                        stream.pushError(value);
+                    })
+                }
+            }
+        }
+
+        export function streamProvider():IStreamProvider {
+            return new StreamProvider();
         }
 
     }

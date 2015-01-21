@@ -29,6 +29,7 @@ var directories = {
         "tools.js",
         "emitter.js",
         "stream.js",
+        "streamProvider.js",
         "store.js",
         "reactMixins.js",
         "eventChannel.js",

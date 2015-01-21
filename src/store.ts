@@ -82,7 +82,7 @@ module Fluss {
             store:IStore
         }
 
-        function createUpdateInfo<T>(item:T, value:any, store:IStore, path?:string, rootItem?:T):OUpdateInfo<T> {
+        export function createUpdateInfo<T>(item:T, value:any, store:IStore, path?:string, rootItem?:T):OUpdateInfo<T> {
 
             var r = {
                 item:item,
@@ -207,7 +207,7 @@ module Fluss {
         }
 
 
-        class Store implements IStore {
+        export class Store implements IStore {
             public _addItemsStreams:Stream.IStream[];
             public _removeItemsStreams:Stream.IStream[];
             public _updateStreams:Stream.IStream[];
@@ -315,7 +315,7 @@ module Fluss {
         }
 
 
-        class Item extends Store implements IItem {
+        export class Item extends Store implements IItem {
 
             private _value:any;
             private _subStreamU:Fluss.Stream.IStream;
@@ -1009,7 +1009,7 @@ module Fluss {
         }
 
 
-        class ArrayStore extends Store implements IArrayStore {
+        export class ArrayStore extends Store implements IArrayStore {
             private _data:any[];
             private _maxProps:number;
             private _substreams;

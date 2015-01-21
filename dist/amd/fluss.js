@@ -20,18 +20,3 @@ define(["tools", "emitter", "stream", "store", "reactMixins", "eventChannel", "e
         Plugins: Plugins
     }
 });
-
-/*
-    return {
-        Tools: require("./tools"),
-        Emitter: require("./emitter"),
-        Stream: require("./stream"),
-        Store: require("./store"),
-        ReactMixins: require("./reactMixins"),
-        EventChannel: require("./eventChannel"),
-        Errors: require("./errors"),
-        BaseActions: require("./baseActions"),
-        Dispatcher: require("./dispatcher"),
-        Plugins: require("./plugins")
-    }
-*/
