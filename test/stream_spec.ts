@@ -1300,13 +1300,13 @@ describe("A stream (used for reactive programming patterns)", function() {
 
 describe("A StreamProvider manages different streams for different occasions. It", function() {
     it("can be created", function() {
-        var sp = Fluss.Stream.streamProvider();
+        var sp = Fluss.Stream.createStreamProvider();
 
         expect(sp).to.be.ok();
     });
 
     it("can create streams", function() {
-        var sp:Fluss.Stream.IStreamProvider = Fluss.Stream.streamProvider();
+        var sp:Fluss.Stream.IStreamProvider = Fluss.Stream.createStreamProvider();
 
         var sA1 = sp.newStream("A");
         var sA2 = sp.newStream("A");
@@ -1325,7 +1325,7 @@ describe("A StreamProvider manages different streams for different occasions. It
     });
 
     it("can push values to streams it has created", function() {
-        var sp:Fluss.Stream.IStreamProvider = Fluss.Stream.streamProvider();
+        var sp:Fluss.Stream.IStreamProvider = Fluss.Stream.createStreamProvider();
 
         var calls = "";
 
@@ -1356,6 +1356,29 @@ describe("A StreamProvider manages different streams for different occasions. It
         sp.push("B", "X");
         expect(calls).to.equal("(A1=1)(A2=1)(A3=1)(B1=X)(B2=X)(B3=X)")
     });
+
+    it("it can relay one stream to many", function() {
+        var sp = Fluss.Stream.createStreamProvider();
+        var a = sp.newStream("Demo");
+        var b = sp.newStream("Demo");
+        var calls = {};
+        a.forEach(function(v) {
+            calls["A"] = v;
+        });
+
+        b.forEach(function(v) {
+            calls["B"] = v;
+        });
+
+        var s = Fluss.Stream.createStream();
+
+        sp.relay(s, "Demo");
+
+        s.push("X");
+
+        expect(calls["A"]).to.equal("X");
+        expect(calls["B"]).to.equal("X");
+    })
 
 
 

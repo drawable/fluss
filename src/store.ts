@@ -552,7 +552,7 @@ module Fluss {
 
             addItem(name:string, initial?:any) {
                 if (this._locked) {
-                    throw new Error("This record is locked. Cou cannot add new items to it.")
+                    throw new Error("This record is locked. You cannot add new items to it.")
                 }
                 if (!this.checkNameAllowed(name)) {
                     throw new Error("Name '" + name + "' not allowed for property of object store.");
@@ -561,7 +561,7 @@ module Fluss {
                 var that = this;
 
 
-                if (!this.hasOwnProperty(name)) {
+                if (!Object.getPrototypeOf(this).hasOwnProperty(name)) {
                     Object.defineProperty(this, name, {
                         configurable: true,
                         get: function():any {

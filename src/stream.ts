@@ -736,6 +736,13 @@ module Fluss {
              * @param value
              */
             pushError(streamType:string, value:any);
+
+            /**
+             * Forward all messages from the given stream to all streams of the given ID
+             * @param stream
+             * @param streamType
+             */
+            relay(stream:IStream, streamType:string);
         }
 
         class StreamProvider implements IStreamProvider {
@@ -772,9 +779,16 @@ module Fluss {
                     })
                 }
             }
+
+            relay(stream:IStream, streamType:string) {
+                var that = this;
+                stream.forEach(function(value) {
+                    that.push(streamType, value);
+                });
+            }
         }
 
-        export function streamProvider():IStreamProvider {
+        export function createStreamProvider():IStreamProvider {
             return new StreamProvider();
         }
 

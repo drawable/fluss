@@ -701,12 +701,18 @@ var Fluss;
                     });
                 }
             };
+            StreamProvider.prototype.relay = function (stream, streamType) {
+                var that = this;
+                stream.forEach(function (value) {
+                    that.push(streamType, value);
+                });
+            };
             return StreamProvider;
         })();
-        function streamProvider() {
+        function createStreamProvider() {
             return new StreamProvider();
         }
-        _Stream.streamProvider = streamProvider;
+        _Stream.createStreamProvider = createStreamProvider;
     })(Stream = Fluss.Stream || (Fluss.Stream = {}));
 })(Fluss || (Fluss = {}));
 if (typeof exports !== "undefined") {
@@ -1105,13 +1111,13 @@ var Fluss;
             };
             RecordStore.prototype.addItem = function (name, initial) {
                 if (this._locked) {
-                    throw new Error("This record is locked. Cou cannot add new items to it.");
+                    throw new Error("This record is locked. You cannot add new items to it.");
                 }
                 if (!this.checkNameAllowed(name)) {
                     throw new Error("Name '" + name + "' not allowed for property of object store.");
                 }
                 var that = this;
-                if (!this.hasOwnProperty(name)) {
+                if (!Object.getPrototypeOf(this).hasOwnProperty(name)) {
                     Object.defineProperty(this, name, {
                         configurable: true,
                         get: function () {

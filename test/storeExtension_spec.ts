@@ -18,8 +18,8 @@ class MyRecord extends Fluss.Store.RecordStore {
 
     constructor(a:number, b:number, c:number) {
         super({
-            a: a,
             b: b,
+            a: a,
             c: c
         },
             true);       // Disable adding new items
@@ -61,6 +61,10 @@ describe("The record store", function() {
        expect(calls["a"]).to.equal(2);
        expect(calls["b"]).to.equal(4);
        expect(calls["c"]).to.equal(6);
+
+       // Check that set <prop> override works
+       rec["b"] = 10;
+       expect(rec["b"]).to.equal(4);
    })
 
 });
