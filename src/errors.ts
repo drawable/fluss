@@ -1,4 +1,3 @@
-/// <reference path="./eventChannel.ts" />
 /**
  * Created by Stephan.Smola on 30.10.2014.
  */
@@ -7,60 +6,43 @@
 
 module Fluss {
     export module Errors {
-        export interface IErrorHandler {
-            error(message:string, that?:any);
-            fatal(message:string, that?:any);
-            framework(message:string, exception:any, that?:any);
+
+        var streams = Fluss.Stream.createStreamProvider();
+
+        function errors():Fluss.Stream.IStream {
+            return streams.newStream("errors");
         }
 
-        export enum EVENTS { ERROR, FATAL, FRAMEWORK, CLEAR }
-
-
-        class ErrorHandler extends EventChannel.ChanneledEmitter implements IErrorHandler {
-
-            constructor() {
-                super("ERROR");
-
-                /*
-                 if (window) {
-                 window.onerror = function(error, url, line) {
-                 this.fatal(error + "\nin: " + url + "\nline: " + line, window);
-                 }
-                 }
-                 */
-            }
-
-            public error(message:string, that?:any) {
-                this.emit(EVENTS.ERROR, message, that);
-            }
-
-            public fatal(message:string, that?:any) {
-                this.emit(EVENTS.FATAL, message, that);
-            }
-
-            public framework(message:string, exception:any, that?:any) {
-                throw exception;
-            }
-
+        function fatals():Fluss.Stream.IStream {
+            return streams.newStream("fatals");
         }
 
-
-        var errorHandler:IErrorHandler = new ErrorHandler();
-        export function getErrorHandler():IErrorHandler {
-            return errorHandler;
+        function frameworks():Fluss.Stream.IStream {
+            return streams.newStream("framework");
         }
 
         export function error(message:string, that?:any) {
-            return errorHandler.error(message, that);
+            streams.push("errors", {
+                message: message,
+                that: that
+            })
         }
 
         export function fatal(message:string, that?:any) {
-            return errorHandler.fatal(message, that);
+            streams.push("fatals", {
+                message: message,
+                that: that
+            })
         }
 
-        export function framework(message:string, exceotion:any, that?:any) {
-            return errorHandler.framework(message, exceotion, that);
+        export function framework(message:string, exception:any, that?:any) {
+            streams.push("fatals", {
+                message: message,
+                exception: exception,
+                that: that
+            })
         }
+
     }
 }
 
@@ -69,7 +51,7 @@ if (typeof exports !== "undefined") {
     exports.Errors = Fluss.Errors;
 }
 if (typeof this["define"] === "function") {
-    this["define"]("errors", ["eventChannel"], function () {
+    this["define"]("errors", [], function () {
         return Fluss.Errors;
     });
 }

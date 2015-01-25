@@ -27,12 +27,9 @@ var directories = {
     // Order does matter. Can we automate this? The TS-Files have the reference-paths
     libFiles: [
         "tools.js",
-        "emitter.js",
         "stream.js",
-        "createStreamProvider.js",
         "store.js",
         "reactMixins.js",
-        "eventChannel.js",
         "errors.js",
         "baseActions.js",
         "dispatcher.js",

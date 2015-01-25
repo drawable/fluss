@@ -5,15 +5,13 @@
 "use strict";
 
 
-define(["tools", "emitter", "stream", "store", "reactMixins", "eventChannel", "errors", "baseActions", "dispatcher", "plugins"], function(
-    Tools, Emitter, Stream, Store, ReactMixins, EventChannel, Errors, BaseActions, Dispatcher, Plugins) {
+define(["tools", "stream", "store", "reactMixins", "errors", "baseActions", "dispatcher", "plugins"], function(
+    Tools, Stream, Store, ReactMixins, Errors, BaseActions, Dispatcher, Plugins) {
     return {
         Tools: Tools,
-        Emitter: Emitter,
         Stream: Stream,
         Store: Store,
         ReactMixins: ReactMixins,
-        EventChannel: EventChannel,
         Errors: Errors,
         BaseActions: BaseActions,
         Dispatcher: Dispatcher,

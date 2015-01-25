@@ -140,80 +140,6 @@ if (typeof this["define"] === "function") {
 }
 
 /**
- * Created by Stephan.Smola on 28.10.2014.
- */
-"use strict";
-var Fluss;
-(function (Fluss) {
-    var Emitter;
-    (function (_Emitter) {
-        /**
-         * An event-emitter
-         */
-        var Emitter = (function () {
-            function Emitter() {
-            }
-            Emitter.prototype.subscribe = function (event, handler) {
-                if (!this._eventHandlers) {
-                    this._eventHandlers = {};
-                }
-                if (!this._eventHandlers[event]) {
-                    this._eventHandlers[event] = [];
-                }
-                this._eventHandlers[event].push(handler);
-            };
-            Emitter.prototype.unsubscribe = function (event, handler) {
-                if (!this._eventHandlers) {
-                    return;
-                }
-                if (this._eventHandlers[event]) {
-                    this._eventHandlers[event].splice(this._eventHandlers[event].indexOf(handler), 1);
-                }
-            };
-            Object.defineProperty(Emitter.prototype, "eventHandlers", {
-                get: function () {
-                    return this._eventHandlers;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Emitter.prototype.emit = function (event) {
-                var args = [];
-                for (var _i = 1; _i < arguments.length; _i++) {
-                    args[_i - 1] = arguments[_i];
-                }
-                var that = this;
-                if (this._eventHandlers && this._eventHandlers[event]) {
-                    this._eventHandlers[event].forEach(function (handler) {
-                        handler.apply(that, args);
-                    });
-                }
-            };
-            Emitter.prototype.relay = function (emitter, subscribingEvent, emittingEvent) {
-                var that = this;
-                emitter.subscribe(subscribingEvent, function () {
-                    var args = [];
-                    for (var _i = 0; _i < arguments.length; _i++) {
-                        args[_i - 0] = arguments[_i];
-                    }
-                    that.emit.apply(that, [emittingEvent].concat(args));
-                });
-            };
-            return Emitter;
-        })();
-        _Emitter.Emitter = Emitter;
-    })(Emitter = Fluss.Emitter || (Fluss.Emitter = {}));
-})(Fluss || (Fluss = {}));
-if (typeof exports !== "undefined") {
-    exports.Emitter = Fluss.Emitter;
-}
-if (typeof this["define"] === "function") {
-    this["define"]("emitter", [], function () {
-        return Fluss.Emitter;
-    });
-}
-
-/**
  * Created by Stephan on 27.12.2014.
  *
  * A simple implementation of a collection stream that supports reactive patterns.
@@ -1970,241 +1896,44 @@ if (typeof this["define"] === "function") {
     });
 }
 
-/// <reference path="./emitter.ts" />
-/// <reference path="./stream.ts" />
-/**
- * Created by Stephan.Smola on 28.10.2014.
- */
-"use strict";
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Fluss;
-(function (Fluss) {
-    var EventChannel;
-    (function (_EventChannel) {
-        var EventChannel = (function () {
-            function EventChannel() {
-                this._eventHandlers = {};
-            }
-            EventChannel.prototype.subscribe = function (emitter, event, handler) {
-                if (!this._eventHandlers[emitter]) {
-                    this._eventHandlers[emitter] = {};
-                }
-                if (!this._eventHandlers[emitter][event]) {
-                    this._eventHandlers[emitter][event] = [];
-                }
-                this._eventHandlers[emitter][event].push(handler);
-            };
-            EventChannel.prototype.unsubscribe = function (emitter, event, handler) {
-                if (this._eventHandlers[emitter]) {
-                    if (this._eventHandlers[emitter][event]) {
-                        this._eventHandlers[emitter][event].splice(this._eventHandlers[emitter][event].indexOf(handler), 1);
-                    }
-                }
-            };
-            EventChannel.prototype.channelEmit = function (emitter, emitterID, event, args) {
-                if (this._eventHandlers && this._eventHandlers[emitterID] && this._eventHandlers[emitterID][event]) {
-                    this._eventHandlers[emitterID][event].forEach(function (handler) {
-                        handler.apply(emitter, args);
-                    });
-                }
-            };
-            EventChannel.prototype.unsubscribeAll = function (emitterID) {
-                delete this._eventHandlers[emitterID];
-            };
-            return EventChannel;
-        })();
-        var eventChannel = new EventChannel();
-        //export var channel:IEventChannel = eventChannel;
-        function getChannel() {
-            return eventChannel;
-        }
-        _EventChannel.getChannel = getChannel;
-        function subscribe(emitter, event, handler) {
-            eventChannel.subscribe(emitter, event, handler);
-        }
-        _EventChannel.subscribe = subscribe;
-        function unsubscribe(emitter, event, handler) {
-            eventChannel.unsubscribe(emitter, event, handler);
-        }
-        _EventChannel.unsubscribe = unsubscribe;
-        function channelEmit(emitterID, event) {
-            var args = [];
-            for (var _i = 2; _i < arguments.length; _i++) {
-                args[_i - 2] = arguments[_i];
-            }
-            eventChannel.channelEmit(null, emitterID, event, args);
-        }
-        _EventChannel.channelEmit = channelEmit;
-        function unsubscribeAll(emitterID) {
-            eventChannel.unsubscribeAll(emitterID);
-        }
-        _EventChannel.unsubscribeAll = unsubscribeAll;
-        var emitterIDs = [];
-        var ChanneledEmitter = (function (_super) {
-            __extends(ChanneledEmitter, _super);
-            function ChanneledEmitter(_emitterID) {
-                _super.call(this);
-                if (_emitterID) {
-                    this.emitterID = _emitterID;
-                }
-                else {
-                    this.emitterID = "Emitter" + emitterIDs.length;
-                }
-                if (emitterIDs.indexOf(this.emitterID) !== -1) {
-                    throw new Error("Duplicate emitterID. This is not supported");
-                }
-            }
-            ChanneledEmitter.prototype.subscribe = function (event, handler) {
-                _super.prototype.subscribe.call(this, event, handler);
-                //console.log("Consider using the EventChannel instead of subscribing directly to the " + this.emitterID);
-            };
-            ChanneledEmitter.prototype.emit = function (event) {
-                var args = [];
-                for (var _i = 1; _i < arguments.length; _i++) {
-                    args[_i - 1] = arguments[_i];
-                }
-                // No super call because passing rest parameters to a super method is kind of awkward and hacky
-                // https://typescript.codeplex.com/discussions/544797
-                var that = this;
-                if (this.eventHandlers && this.eventHandlers[event]) {
-                    this.eventHandlers[event].forEach(function (handler) {
-                        handler.apply(that, args);
-                    });
-                }
-                eventChannel.channelEmit(this, this.emitterID, event, args);
-            };
-            return ChanneledEmitter;
-        })(Fluss.Emitter.Emitter);
-        _EventChannel.ChanneledEmitter = ChanneledEmitter;
-        var EventStream = (function (_super) {
-            __extends(EventStream, _super);
-            function EventStream(name, _emitterID, _event) {
-                _super.call(this, name);
-                this._emitterID = _emitterID;
-                this._event = _event;
-                this._handler = this.handleEvent.bind(this);
-                subscribe(this._emitterID, _event, this._handler);
-            }
-            EventStream.prototype.handleEvent = function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i - 0] = arguments[_i];
-                }
-                this.push({
-                    emitter: this._emitterID,
-                    event: this._event,
-                    args: args
-                });
-            };
-            EventStream.prototype.dispose = function () {
-                _super.prototype.dispose.call(this);
-                unsubscribe(this._emitterID, this._event, this._handler);
-            };
-            return EventStream;
-        })(Fluss.Stream.Stream);
-        /**
-         * Creates a stream for a channeled event. If  mor than one event is given, a combined
-         * stream for all events is created
-         *
-         * @param name
-         * @param emitterID
-         * @param events
-         * @returns {null}
-         */
-        function createEventStream(emitterID) {
-            var events = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                events[_i - 1] = arguments[_i];
-            }
-            var stream = null;
-            events.forEach(function (event) {
-                var eStream = new EventStream(emitterID + "-" + event, emitterID, event);
-                if (stream) {
-                    stream = stream.combine(eStream);
-                }
-                else {
-                    stream = eStream;
-                }
-            });
-            return stream;
-        }
-        _EventChannel.createEventStream = createEventStream;
-    })(EventChannel = Fluss.EventChannel || (Fluss.EventChannel = {}));
-})(Fluss || (Fluss = {}));
-if (typeof exports !== "undefined") {
-    exports.EventChannel = Fluss.EventChannel;
-}
-if (typeof this["define"] === "function") {
-    this["define"]("eventChannel", ["emitter", "stream"], function () {
-        return Fluss.EventChannel;
-    });
-}
-
-/// <reference path="./eventChannel.ts" />
 /**
  * Created by Stephan.Smola on 30.10.2014.
  */
 "use strict";
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var Fluss;
 (function (Fluss) {
     var Errors;
     (function (Errors) {
-        (function (EVENTS) {
-            EVENTS[EVENTS["ERROR"] = 0] = "ERROR";
-            EVENTS[EVENTS["FATAL"] = 1] = "FATAL";
-            EVENTS[EVENTS["FRAMEWORK"] = 2] = "FRAMEWORK";
-            EVENTS[EVENTS["CLEAR"] = 3] = "CLEAR";
-        })(Errors.EVENTS || (Errors.EVENTS = {}));
-        var EVENTS = Errors.EVENTS;
-        var ErrorHandler = (function (_super) {
-            __extends(ErrorHandler, _super);
-            function ErrorHandler() {
-                _super.call(this, "ERROR");
-                /*
-                 if (window) {
-                 window.onerror = function(error, url, line) {
-                 this.fatal(error + "\nin: " + url + "\nline: " + line, window);
-                 }
-                 }
-                 */
-            }
-            ErrorHandler.prototype.error = function (message, that) {
-                this.emit(0 /* ERROR */, message, that);
-            };
-            ErrorHandler.prototype.fatal = function (message, that) {
-                this.emit(1 /* FATAL */, message, that);
-            };
-            ErrorHandler.prototype.framework = function (message, exception, that) {
-                throw exception;
-            };
-            return ErrorHandler;
-        })(Fluss.EventChannel.ChanneledEmitter);
-        var errorHandler = new ErrorHandler();
-        function getErrorHandler() {
-            return errorHandler;
+        var streams = Fluss.Stream.createStreamProvider();
+        function errors() {
+            return streams.newStream("errors");
         }
-        Errors.getErrorHandler = getErrorHandler;
+        function fatals() {
+            return streams.newStream("fatals");
+        }
+        function frameworks() {
+            return streams.newStream("framework");
+        }
         function error(message, that) {
-            return errorHandler.error(message, that);
+            streams.push("errors", {
+                message: message,
+                that: that
+            });
         }
         Errors.error = error;
         function fatal(message, that) {
-            return errorHandler.fatal(message, that);
+            streams.push("fatals", {
+                message: message,
+                that: that
+            });
         }
         Errors.fatal = fatal;
-        function framework(message, exceotion, that) {
-            return errorHandler.framework(message, exceotion, that);
+        function framework(message, exception, that) {
+            streams.push("fatals", {
+                message: message,
+                exception: exception,
+                that: that
+            });
         }
         Errors.framework = framework;
     })(Errors = Fluss.Errors || (Fluss.Errors = {}));
@@ -2213,7 +1942,7 @@ if (typeof exports !== "undefined") {
     exports.Errors = Fluss.Errors;
 }
 if (typeof this["define"] === "function") {
-    this["define"]("errors", ["eventChannel"], function () {
+    this["define"]("errors", [], function () {
         return Fluss.Errors;
     });
 }
@@ -2266,18 +1995,11 @@ if (typeof this["define"] === "function") {
 }
 
 /// <reference path="./errors.ts" />
-/// <reference path="./eventChannel.ts" />
 /// <reference path="./baseActions.ts" />
 /**
  * Created by Stephan.Smola on 28.10.2014.
  */
 "use strict";
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var Fluss;
 (function (Fluss) {
     /**
@@ -2567,10 +2289,8 @@ var Fluss;
          * Undo manager implementations. It utilises two stacks (undo, redo) to provide the
          * necessary means to undo and redo actions.
          */
-        var UndoManager = (function (_super) {
-            __extends(UndoManager, _super);
+        var UndoManager = (function () {
             function UndoManager() {
-                _super.call(this, "UndoManager");
                 this.clear();
                 getDispatcher().subscribeAction(-2000 /* UNDO */, this.undo.bind(this));
             }
@@ -2590,7 +2310,6 @@ var Fluss;
                     });
                     this.mementos.push(mementos);
                     this.redos = [];
-                    this.emit(2 /* MEMENTO_STORED */, mementos);
                 }
             };
             /**
@@ -2613,7 +2332,6 @@ var Fluss;
                         }
                     });
                     this.redos.push(redos);
-                    this.emit(0 /* UNDO */, us);
                 }
             };
             /**
@@ -2626,7 +2344,6 @@ var Fluss;
                     rs.forEach(function (r) {
                         getDispatcher().dispatchAction.apply(getDispatcher(), [r.action].concat(r.data));
                     });
-                    this.emit(1 /* REDO */, rs);
                 }
             };
             /**
@@ -2635,13 +2352,12 @@ var Fluss;
             UndoManager.prototype.clear = function () {
                 this.mementos = [];
                 this.redos = [];
-                this.emit(3 /* CLEAR */);
             };
             UndoManager.prototype.getMementos = function () {
                 return this.mementos;
             };
             return UndoManager;
-        })(Fluss.EventChannel.ChanneledEmitter);
+        })();
         /**
          * Singleton.
          * @type {UndoManager}
@@ -2667,19 +2383,12 @@ if (typeof this["define"] === "function") {
 }
 
 /// <reference path="./dispatcher.ts" />
-/// <reference path="./eventChannel.ts" />
 /// <reference path="./baseActions.ts" />
 /// <reference path="./tools.ts" />
 /**
  * Created by stephan on 01.11.14.
  */
 "use strict";
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var Fluss;
 (function (Fluss) {
     /**
@@ -2810,10 +2519,8 @@ var Fluss;
         /**
          * Base implementation for a plugin container.
          */
-        var PluginContainer = (function (_super) {
-            __extends(PluginContainer, _super);
-            function PluginContainer(emitterId) {
-                _super.call(this, emitterId || "Container" + Fluss.Tools.oid(this));
+        var PluginContainer = (function () {
+            function PluginContainer() {
                 this._plugins = {};
                 this._anyPlugins = [];
                 this._protocols = {};
@@ -2995,7 +2702,7 @@ var Fluss;
                         if (!aborted) {
                             var memento = plugin.getMemento.apply(plugin, composeArgs(plugin, action));
                             if (memento) {
-                                memento.instance = {
+                                memento["instance"] = {
                                     restoreFromMemento: function (mem) {
                                         plugin.restoreFromMemento(that, mem);
                                     }
@@ -3174,7 +2881,7 @@ var Fluss;
                 }
             };
             return PluginContainer;
-        })(Fluss.EventChannel.ChanneledEmitter);
+        })();
         Plugins.PluginContainer = PluginContainer;
         function createContainer(spec) {
             return Fluss.Tools.subclass(spec, PluginContainer);
@@ -3186,7 +2893,7 @@ if (typeof exports !== "undefined") {
     exports.Plugins = Fluss.Plugins;
 }
 if (typeof this["define"] === "function") {
-    this["define"]("plugins", ["dispatcher", "eventChannel", "baseActions", "tools"], function () {
+    this["define"]("plugins", ["dispatcher", "baseActions", "tools"], function () {
         return Fluss.Plugins;
     });
 }

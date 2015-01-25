@@ -1,5 +1,4 @@
 /// <reference path="./dispatcher.ts" />
-/// <reference path="./eventChannel.ts" />
 /// <reference path="./baseActions.ts" />
 /// <reference path="./tools.ts" />
 /**
@@ -188,7 +187,7 @@ module Fluss {
         /**
          * Plugin-Container proivdes the means to use plugins to execute actions
          */
-        export interface IPluginContainer extends EventChannel.IEmitter {
+        export interface IPluginContainer {
 
 
             /**
@@ -275,7 +274,7 @@ module Fluss {
         /**
          * Base implementation for a plugin container.
          */
-        export class PluginContainer extends EventChannel.ChanneledEmitter implements IPluginContainer {
+        export class PluginContainer implements IPluginContainer {
 
             private _plugins;
             private _anyPlugins:IActionPlugin[];
@@ -283,8 +282,7 @@ module Fluss {
             private _runningPlugins;
             private _mementos;
 
-            constructor(emitterId?:string) {
-                super(emitterId || "Container" + Tools.oid(this));
+            constructor() {
                 this._plugins = {};
                 this._anyPlugins = [];
                 this._protocols = {};
@@ -297,7 +295,7 @@ module Fluss {
              * @param config
              */
             public configure(config:PluginConfig) {
-                function construct(constructor, args) {
+                function construct(constructor:any, args:any) {
 
                     function F() : void {
                         constructor.apply(this, args);
@@ -494,7 +492,7 @@ module Fluss {
                         if (!aborted) {
                             var memento = plugin.getMemento.apply(plugin, composeArgs(plugin, action));
                             if (memento) {
-                                memento.instance = {
+                                memento["instance"] = {
                                     restoreFromMemento: function(mem) {
                                         plugin.restoreFromMemento(that, mem);
                                     }
@@ -681,7 +679,7 @@ if (typeof exports !== "undefined") {
     exports.Plugins = Fluss.Plugins;
 }
 if (typeof this["define"] === "function") {
-    this["define"]("plugins", ["dispatcher", "eventChannel", "baseActions", "tools"], function () {
+    this["define"]("plugins", ["dispatcher", "baseActions", "tools"], function () {
         return Fluss.Plugins;
     });
 }

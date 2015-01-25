@@ -1,5 +1,4 @@
 /// <reference path="./errors.ts" />
-/// <reference path="./eventChannel.ts" />
 /// <reference path="./baseActions.ts" />
 /**
  * Created by Stephan.Smola on 28.10.2014.
@@ -375,13 +374,12 @@ module Fluss {
          * Undo manager implementations. It utilises two stacks (undo, redo) to provide the
          * necessary means to undo and redo actions.
          */
-        class UndoManager extends EventChannel.ChanneledEmitter implements IUndoManager {
+        class UndoManager implements IUndoManager {
 
             private mementos:IMemento[][];
             private redos:IAction[][];
 
             constructor() {
-                super("UndoManager");
                 this.clear();
 
                 getDispatcher().subscribeAction(BaseActions.ACTIONS.UNDO, this.undo.bind(this));
@@ -405,7 +403,6 @@ module Fluss {
 
                     this.mementos.push(mementos);
                     this.redos = [];
-                    this.emit(EVENTS.MEMENTO_STORED, mementos);
                 }
             }
 
@@ -430,7 +427,6 @@ module Fluss {
                     });
 
                     this.redos.push(redos);
-                    this.emit(EVENTS.UNDO, us);
                 }
             }
 
@@ -444,7 +440,6 @@ module Fluss {
                     rs.forEach(function(r) {
                         getDispatcher().dispatchAction.apply(getDispatcher(), [r.action].concat(r.data));
                     });
-                    this.emit(EVENTS.REDO, rs);
                 }
             }
 
@@ -454,7 +449,6 @@ module Fluss {
             public clear() {
                 this.mementos = [];
                 this.redos = [];
-                this.emit(EVENTS.CLEAR);
             }
 
             public getMementos():IMemento[][] {
