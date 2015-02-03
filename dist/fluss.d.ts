@@ -2,6 +2,7 @@
 /// <reference path="./src/dispatcher.ts" />
 /// <reference path="./src/errors.ts" />
 /// <reference path="./src/plugins.ts" />
+/// <reference path="./src/plugins2.ts" />
 /// <reference path="./src/reactMixins.ts" />
 /// <reference path="./src/store.ts" />
 /// <reference path="./src/stream.ts" />

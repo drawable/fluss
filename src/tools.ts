@@ -143,8 +143,3 @@ declare var exports: any;
 if (typeof exports !== "undefined") {
     exports.Tools = Fluss.Tools;
 }
-if (typeof this["define"] === "function") {
-    this["define"]("tools", [], function () {
-        return Fluss.Tools;
-    });
-}

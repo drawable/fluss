@@ -270,7 +270,6 @@ module Fluss {
 
 
             get isDisposing():Stream.IStream {
-                var that = this;
                 var s = Stream.createStream("disposing");
                 this._disposingStreams.push(s);
                 return s;
@@ -412,7 +411,7 @@ module Fluss {
                 super();
             }
 
-            set(value:any) {
+            set() {
 
             }
 
@@ -1351,27 +1350,29 @@ module Fluss {
                     that.setupSubStreams(i, this._data[i]);
                 }
 
-                for (i = this._maxProps; i < this._data.length; i++) {
-                    (function(index) {
-                        Object.defineProperty(that, "" + index, {
-                            configurable: true,
-                            get: function():any {
-                                return that._data[index];
-                            },
+                function define(index) {
+                    Object.defineProperty(that, "" + index, {
+                        configurable: true,
+                        get: function():any {
+                            return that._data[index];
+                        },
 
-                            set: function(value:any) {
-                                var old = that._data[index];
-                                if (value !== old) {
-                                    that._data[index] = value;
-                                    that.disposeSubstream(old);
-                                    that.setupSubStreams(index, value);
-                                    that._updateStreams.forEach(function(stream) {
-                                        stream.push(createUpdateInfo<number>(index, that._data[index], that, null));
-                                    })
-                                }
+                        set: function(value:any) {
+                            var old = that._data[index];
+                            if (value !== old) {
+                                that._data[index] = value;
+                                that.disposeSubstream(old);
+                                that.setupSubStreams(index, value);
+                                that._updateStreams.forEach(function(stream) {
+                                    stream.push(createUpdateInfo<number>(index, that._data[index], that, null));
+                                })
                             }
-                        })
-                    })(i);
+                        }
+                    })
+                }
+
+                for (i = this._maxProps; i < this._data.length; i++) {
+                    define(i);
                 }
 
                 this._maxProps = this._data.length;
@@ -1398,13 +1399,10 @@ module Fluss {
                 var l = values.length;
 
                 while(l--) {
-                    (function() {
-                        that._data.unshift(values[0]);
-                        that._addItemsStreams.forEach(function (stream) {
-                            stream.push(createUpdateInfo<number>(0, that._data[0], that));
-                        })
-
-                    })();
+                    that._data.unshift(values[0]);
+                    that._addItemsStreams.forEach(function (stream) {
+                        stream.push(createUpdateInfo<number>(0, that._data[0], that));
+                    })
                 }
                 this.updateProperties();
             }
@@ -1542,21 +1540,23 @@ module Fluss {
                 var that = this;
                 var i;
 
-                for (i = this._maxProps; i < this._parent.length; i++) {
-                    (function(index) {
-                        Object.defineProperty(that, "" + index, {
-                            configurable: true,
-                            get: function():any {
-                                if (isStore(that._parent[index])) {
-                                    return that._parent[index].immutable;
-                                }
-                                return that._parent[index];
-                            },
-
-                            set: function(value:any) {
+                function define(index) {
+                    Object.defineProperty(that, "" + index, {
+                        configurable: true,
+                        get: function():any {
+                            if (isStore(that._parent[index])) {
+                                return that._parent[index].immutable;
                             }
-                        })
-                    })(i);
+                            return that._parent[index];
+                        },
+
+                        set: function(value:any) {
+                        }
+                    })
+                }
+
+                for (i = this._maxProps; i < this._parent.length; i++) {
+                    define(i);
                 }
 
                 this._maxProps = this._parent.length;
@@ -1672,9 +1672,4 @@ module Fluss {
 declare var exports: any;
 if (typeof exports !== "undefined") {
     exports.Store = Fluss.Store;
-}
-if (typeof this["define"] === "function") {
-    this["define"]("store", ["stream", "tools"], function () {
-        return Fluss.Store;
-    });
 }

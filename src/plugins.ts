@@ -45,7 +45,7 @@ module Fluss {
      * ```
      *
      * Adding undo functionality is simple. You need to  provide methods to create a memento and to restore state from that
-     * memento into your plugin.
+     * memento in your plugin.
      *
      * ```js
      * class MyPlugin extends Fluss.Plugins.BasePlugin {
@@ -54,7 +54,7 @@ module Fluss {
      *          container.property = value;
      *      }
      *
-     *      // getMemento is always called with the exact same arguments as run. getMemento will alway be called before
+     *      // getMemento is always called with the exact same arguments as run. getMemento will always be called before
      *      // run is called.
      *      getMemento(container:MyContainer, action:number, value:string):Fluss.Dispatcher.IMemento {
      *          return Fluss.Dispatcher.createMemento(null, container.property.
@@ -295,7 +295,7 @@ module Fluss {
              * @param config
              */
             public configure(config:PluginConfig) {
-                function construct(constructor:any, args:any) {
+                function construct(constructor:any, args:any):any {
 
                     function F() : void {
                         constructor.apply(this, args);
@@ -359,44 +359,19 @@ module Fluss {
                         this.abortAction(action);
                     }
                 }
-
             }
 
             /**
-             * This handles an action sent by the dispatcher and delegates it to the plugins.
-             * Plugins are "wrapped" around each other. They build kind of brackets defined by two of
-             * their methods: run - opens the brackets
-             *                finish/abort - closes the brackets.
+             * Handle the action.
              *
-             * We'll talk about finish from now on. That can be replaced by abort everywhere. The first plugin to abort
-             * forces all succeeding plugins to abort as well.
+             * This does
+             *  * Runs the plugins in the reverse wrapping order
+             *  * Let's a plugin create a memento first
+             *  * When a plugin hold's the execution, it waits for the plugin to call release
+             *  * When a plugin is done calls its afterFinish-method
+             *  * When a plugin aborts, aborts all other plugins
+             *  *
              *
-             * So wrapping in the order A->B->C leads to these brackets:
-             *
-             *  runC-runB-runA-finishA-finishB-finishC
-             *
-             * finish is only called when the plugin calls the done-callback that is provided to its run-method.
-             *
-             * So to correctly execute this "chain" we need to wait for the plugins to call their done-callbacks before
-             * we can proceed. Because the plugins may call their done-callback outside their run-method, e.g. triggered by
-             * user interaction, we need to keep track of what the plugins did using a protocol.
-             *
-             * That protocol looks like this:
-             *
-             *  ```js
-             *  {
-             *    i: { done: A function that calls either finish or abort on the i-th plugin,
-             *         abort: did the plugin abort?
-             *
-             *    i+1: ...
-             *  }
-             *  ```
-             *
-             * this protocol is initialized by null entries for all plugins. Then the run-methods for all plugins are called, giving them a done
-             * callback, that fills the protocol.
-             *
-             * After every run-method we check if we're at the innermost plugin (A in the example above, the one that first wrapped the action).
-             * If we are, we work through the protocol as long as there are valid entries. Then we wait for the next done-callback to be called.
              *
              * @param action
              * @param args
@@ -563,7 +538,10 @@ module Fluss {
                         var memento = plugin.getMemento.apply(plugin, [that, action].concat(args));
                         if (memento) {
                             memento.instance = {
-                                restoreFromMemento: function(mem) {
+                                storeToMemento: function():Dispatcher.IMemento {
+                                    return null;
+                                },
+                                restoreFromMemento: function(mem){
                                     plugin.restoreFromMemento(that, mem);
                                 }
                             };
@@ -605,14 +583,7 @@ module Fluss {
                             }
                             that.handleAction(act, args);
                         }, function(type:number, ...args:any[]):Dispatcher.IMemento[] {
-                            return null;  // Whe handle the mementos ourselves
-
-                            /*
-                             if (that._plugins[type]) {
-                             return;
-                             }
-                             return that.provideMementos(type, args);
-                             */
+                            return null;
                         })
                     }
 
@@ -678,8 +649,4 @@ declare var exports: any;
 if (typeof exports !== "undefined") {
     exports.Plugins = Fluss.Plugins;
 }
-if (typeof this["define"] === "function") {
-    this["define"]("plugins", ["dispatcher", "baseActions", "tools"], function () {
-        return Fluss.Plugins;
-    });
-}
+

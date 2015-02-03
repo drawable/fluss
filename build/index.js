@@ -133,11 +133,7 @@ var Fluss;
 if (typeof exports !== "undefined") {
     exports.Tools = Fluss.Tools;
 }
-if (typeof this["define"] === "function") {
-    this["define"]("tools", [], function () {
-        return Fluss.Tools;
-    });
-}
+
 
 /**
  * Created by Stephan on 27.12.2014.
@@ -644,11 +640,7 @@ var Fluss;
 if (typeof exports !== "undefined") {
     exports.Stream = Fluss.Stream;
 }
-if (typeof this["define"] === "function") {
-    this["define"]("stream", [], function () {
-        return Fluss.Stream;
-    });
-}
+
 
 /// <reference path="./tools.ts" />
 /// <reference path="./stream.ts" />
@@ -779,7 +771,6 @@ var Fluss;
             });
             Object.defineProperty(Store.prototype, "isDisposing", {
                 get: function () {
-                    var that = this;
                     var s = Fluss.Stream.createStream("disposing");
                     this._disposingStreams.push(s);
                     return s;
@@ -917,7 +908,7 @@ var Fluss;
                 _super.call(this);
                 this._parent = _parent;
             }
-            ImmutableItem.prototype.set = function (value) {
+            ImmutableItem.prototype.set = function () {
             };
             ImmutableItem.prototype.get = function () {
                 var v = this._parent["_value"];
@@ -1556,26 +1547,27 @@ var Fluss;
                 for (i = 0; i < this._data.length; i++) {
                     that.setupSubStreams(i, this._data[i]);
                 }
-                for (i = this._maxProps; i < this._data.length; i++) {
-                    (function (index) {
-                        Object.defineProperty(that, "" + index, {
-                            configurable: true,
-                            get: function () {
-                                return that._data[index];
-                            },
-                            set: function (value) {
-                                var old = that._data[index];
-                                if (value !== old) {
-                                    that._data[index] = value;
-                                    that.disposeSubstream(old);
-                                    that.setupSubStreams(index, value);
-                                    that._updateStreams.forEach(function (stream) {
-                                        stream.push(createUpdateInfo(index, that._data[index], that, null));
-                                    });
-                                }
+                function define(index) {
+                    Object.defineProperty(that, "" + index, {
+                        configurable: true,
+                        get: function () {
+                            return that._data[index];
+                        },
+                        set: function (value) {
+                            var old = that._data[index];
+                            if (value !== old) {
+                                that._data[index] = value;
+                                that.disposeSubstream(old);
+                                that.setupSubStreams(index, value);
+                                that._updateStreams.forEach(function (stream) {
+                                    stream.push(createUpdateInfo(index, that._data[index], that, null));
+                                });
                             }
-                        });
-                    })(i);
+                        }
+                    });
+                }
+                for (i = this._maxProps; i < this._data.length; i++) {
+                    define(i);
                 }
                 this._maxProps = this._data.length;
             };
@@ -1603,12 +1595,10 @@ var Fluss;
                 var that = this;
                 var l = values.length;
                 while (l--) {
-                    (function () {
-                        that._data.unshift(values[0]);
-                        that._addItemsStreams.forEach(function (stream) {
-                            stream.push(createUpdateInfo(0, that._data[0], that));
-                        });
-                    })();
+                    that._data.unshift(values[0]);
+                    that._addItemsStreams.forEach(function (stream) {
+                        stream.push(createUpdateInfo(0, that._data[0], that));
+                    });
                 }
                 this.updateProperties();
             };
@@ -1731,20 +1721,21 @@ var Fluss;
             ImmutableArray.prototype.updateProperties = function () {
                 var that = this;
                 var i;
-                for (i = this._maxProps; i < this._parent.length; i++) {
-                    (function (index) {
-                        Object.defineProperty(that, "" + index, {
-                            configurable: true,
-                            get: function () {
-                                if (isStore(that._parent[index])) {
-                                    return that._parent[index].immutable;
-                                }
-                                return that._parent[index];
-                            },
-                            set: function (value) {
+                function define(index) {
+                    Object.defineProperty(that, "" + index, {
+                        configurable: true,
+                        get: function () {
+                            if (isStore(that._parent[index])) {
+                                return that._parent[index].immutable;
                             }
-                        });
-                    })(i);
+                            return that._parent[index];
+                        },
+                        set: function (value) {
+                        }
+                    });
+                }
+                for (i = this._maxProps; i < this._parent.length; i++) {
+                    define(i);
                 }
                 this._maxProps = this._parent.length;
             };
@@ -1860,11 +1851,7 @@ var Fluss;
 if (typeof exports !== "undefined") {
     exports.Store = Fluss.Store;
 }
-if (typeof this["define"] === "function") {
-    this["define"]("store", ["stream", "tools"], function () {
-        return Fluss.Store;
-    });
-}
+
 
 /// <reference path="./stream.ts" />
 /**
@@ -1890,11 +1877,7 @@ var Fluss;
 if (typeof exports !== "undefined") {
     exports.ReactMixins = Fluss.ReactMixins;
 }
-if (typeof this["define"] === "function") {
-    this["define"]("reactMixins", ["stream"], function () {
-        return Fluss.ReactMixins;
-    });
-}
+
 
 /**
  * Created by Stephan.Smola on 30.10.2014.
@@ -1941,11 +1924,7 @@ var Fluss;
 if (typeof exports !== "undefined") {
     exports.Errors = Fluss.Errors;
 }
-if (typeof this["define"] === "function") {
-    this["define"]("errors", [], function () {
-        return Fluss.Errors;
-    });
-}
+
 
 /// <reference path="./dispatcher.ts" />
 /**
@@ -1988,11 +1967,7 @@ var Fluss;
 if (typeof exports !== "undefined") {
     exports.BaseActions = Fluss.BaseActions;
 }
-if (typeof this["define"] === "function") {
-    this["define"]("baseActions", ["dispatcher"], function () {
-        return Fluss.BaseActions;
-    });
-}
+
 
 /// <reference path="./errors.ts" />
 /// <reference path="./baseActions.ts" />
@@ -2376,11 +2351,7 @@ var Fluss;
 if (typeof exports !== "undefined") {
     exports.Dispatcher = Fluss.Dispatcher;
 }
-if (typeof this["define"] === "function") {
-    this["define"]("dispatcher", ["errors", "eventChannel", "baseActions"], function () {
-        return Fluss.Dispatcher;
-    });
-}
+
 
 /// <reference path="./dispatcher.ts" />
 /// <reference path="./baseActions.ts" />
@@ -2427,7 +2398,7 @@ var Fluss;
      * ```
      *
      * Adding undo functionality is simple. You need to  provide methods to create a memento and to restore state from that
-     * memento into your plugin.
+     * memento in your plugin.
      *
      * ```js
      * class MyPlugin extends Fluss.Plugins.BasePlugin {
@@ -2436,7 +2407,7 @@ var Fluss;
      *          container.property = value;
      *      }
      *
-     *      // getMemento is always called with the exact same arguments as run. getMemento will alway be called before
+     *      // getMemento is always called with the exact same arguments as run. getMemento will always be called before
      *      // run is called.
      *      getMemento(container:MyContainer, action:number, value:string):Fluss.Dispatcher.IMemento {
      *          return Fluss.Dispatcher.createMemento(null, container.property.
@@ -2590,40 +2561,16 @@ var Fluss;
                 }
             };
             /**
-             * This handles an action sent by the dispatcher and delegates it to the plugins.
-             * Plugins are "wrapped" around each other. They build kind of brackets defined by two of
-             * their methods: run - opens the brackets
-             *                finish/abort - closes the brackets.
+             * Handle the action.
              *
-             * We'll talk about finish from now on. That can be replaced by abort everywhere. The first plugin to abort
-             * forces all succeeding plugins to abort as well.
+             * This does
+             *  * Runs the plugins in the reverse wrapping order
+             *  * Let's a plugin create a memento first
+             *  * When a plugin hold's the execution, it waits for the plugin to call release
+             *  * When a plugin is done calls its afterFinish-method
+             *  * When a plugin aborts, aborts all other plugins
+             *  *
              *
-             * So wrapping in the order A->B->C leads to these brackets:
-             *
-             *  runC-runB-runA-finishA-finishB-finishC
-             *
-             * finish is only called when the plugin calls the done-callback that is provided to its run-method.
-             *
-             * So to correctly execute this "chain" we need to wait for the plugins to call their done-callbacks before
-             * we can proceed. Because the plugins may call their done-callback outside their run-method, e.g. triggered by
-             * user interaction, we need to keep track of what the plugins did using a protocol.
-             *
-             * That protocol looks like this:
-             *
-             *  ```js
-             *  {
-             *    i: { done: A function that calls either finish or abort on the i-th plugin,
-             *         abort: did the plugin abort?
-             *
-             *    i+1: ...
-             *  }
-             *  ```
-             *
-             * this protocol is initialized by null entries for all plugins. Then the run-methods for all plugins are called, giving them a done
-             * callback, that fills the protocol.
-             *
-             * After every run-method we check if we're at the innermost plugin (A in the example above, the one that first wrapped the action).
-             * If we are, we work through the protocol as long as there are valid entries. Then we wait for the next done-callback to be called.
              *
              * @param action
              * @param args
@@ -2770,6 +2717,9 @@ var Fluss;
                         var memento = plugin.getMemento.apply(plugin, [that, action].concat(args));
                         if (memento) {
                             memento.instance = {
+                                storeToMemento: function () {
+                                    return null;
+                                },
                                 restoreFromMemento: function (mem) {
                                     plugin.restoreFromMemento(that, mem);
                                 }
@@ -2816,13 +2766,7 @@ var Fluss;
                             for (var _i = 1; _i < arguments.length; _i++) {
                                 args[_i - 1] = arguments[_i];
                             }
-                            return null; // Whe handle the mementos ourselves
-                            /*
-                             if (that._plugins[type]) {
-                             return;
-                             }
-                             return that.provideMementos(type, args);
-                             */
+                            return null;
                         });
                     }
                     for (var a in this._plugins) {
@@ -2892,8 +2836,213 @@ var Fluss;
 if (typeof exports !== "undefined") {
     exports.Plugins = Fluss.Plugins;
 }
-if (typeof this["define"] === "function") {
-    this["define"]("plugins", ["dispatcher", "baseActions", "tools"], function () {
-        return Fluss.Plugins;
-    });
+
+
+/// <reference path="./stream.ts" />
+/// <reference path="./dispatcher.ts" />
+/// <reference path="./plugins.ts" />
+/**
+ * Created by Stephan on 31.01.2015.
+ */
+"use strict";
+var Fluss;
+(function (Fluss) {
+    var Plugins;
+    (function (Plugins) {
+        var PluginCarrier = (function () {
+            function PluginCarrier(_plugin) {
+                this._plugin = _plugin;
+                var that = this;
+                this._holds = false;
+                this._plugin["hold"] = function () {
+                    that._holds = true;
+                };
+                this._plugin["release"] = function () {
+                    if (that._holds) {
+                        that._holds = false;
+                        that._streams.push("released", that._params);
+                    }
+                };
+                this._plugin["abort"] = function () {
+                    that.abort.apply(that, that._params);
+                };
+                this._streams = Fluss.Stream.createStreamProvider();
+            }
+            Object.defineProperty(PluginCarrier.prototype, "started", {
+                get: function () {
+                    return this._streams.newStream("started");
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PluginCarrier.prototype, "done", {
+                get: function () {
+                    return this._streams.newStream("done");
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PluginCarrier.prototype, "finished", {
+                get: function () {
+                    return this._streams.newStream("finished");
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PluginCarrier.prototype, "aborted", {
+                get: function () {
+                    return this._streams.newStream("aborted");
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PluginCarrier.prototype, "holding", {
+                get: function () {
+                    return this._streams.newStream("holding");
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PluginCarrier.prototype, "released", {
+                get: function () {
+                    return this._streams.newStream("released");
+                },
+                enumerable: true,
+                configurable: true
+            });
+            PluginCarrier.prototype.run = function (params) {
+                this._params = params;
+                this._holds = false;
+                this._aborted = false;
+                this._streams.push("started", true);
+                this._plugin.run.apply(this._plugin, params);
+                if (!this._aborted) {
+                    if (this._holds) {
+                        this._streams.push("holding", params);
+                    }
+                    else {
+                        this._streams.push("done", params);
+                    }
+                }
+            };
+            PluginCarrier.prototype.getMemento = function (params) {
+                return this._plugin.getMemento.apply(this._plugin, params);
+            };
+            PluginCarrier.prototype.restoreFromMemento = function (container, memento) {
+                return this._plugin.restoreFromMemento(container, memento);
+            };
+            PluginCarrier.prototype.afterAbort = function (params) {
+                return this._plugin.afterAbort.apply(this._plugin, params);
+            };
+            PluginCarrier.prototype.abort = function (container, action) {
+                this._aborted = true;
+                this._streams.push("aborted", this._params);
+            };
+            PluginCarrier.prototype.afterFinish = function (params) {
+                if (!this._holds) {
+                    this._plugin.afterFinish.apply(this._plugin, params);
+                    this._streams.push("finished", params);
+                }
+            };
+            return PluginCarrier;
+        })();
+        var NewContainer = (function () {
+            function NewContainer() {
+                this._plugins = {};
+                this._stack = [];
+                this._anyPlugins = [];
+            }
+            NewContainer.prototype.destroy = function () {
+                this._plugins = null;
+            };
+            NewContainer.prototype.abort = function (action) {
+                if (this._stack.length) {
+                    this._stack.pop().abort(this, action);
+                }
+                this._stack = [];
+            };
+            NewContainer.prototype.wrap = function (action, plugin) {
+                if (action === -1000 /* __ANY__ */) {
+                    this._anyPlugins.push(plugin);
+                    this.dowrap(action, plugin);
+                    for (var a in this._plugins) {
+                        if (this._plugins.hasOwnProperty(a) && (a != -1000 /* __ANY__ */)) {
+                            this.dowrap(a, plugin);
+                        }
+                    }
+                }
+                else {
+                    this.wrapAnyPluginsForAction(action);
+                    this.dowrap(action, plugin);
+                }
+            };
+            NewContainer.prototype.wrapAnyPluginsForAction = function (action) {
+                if (!this._plugins[action]) {
+                    var that = this;
+                    this._anyPlugins.forEach(function (plg) {
+                        that.dowrap(action, plg);
+                    });
+                }
+            };
+            NewContainer.prototype.dowrap = function (action, plugin) {
+                var plg = new PluginCarrier(plugin);
+                var that = this;
+                if (this._plugins[action]) {
+                    var next = this._plugins[action];
+                    plg.done.combine(plg.holding).forEach(function (params) {
+                        next.run(params);
+                    });
+                    next.finished.forEach(function (params) {
+                        that._stack.pop();
+                        plg.afterFinish(params);
+                    });
+                    next.aborted.forEach(function (params) {
+                        plg.abort.apply(plg, params);
+                    });
+                }
+                else {
+                    plg.done.forEach(function (params) {
+                        plg.afterFinish(params);
+                    });
+                    Fluss.Dispatcher.subscribeAction(action, function () {
+                        var args = [];
+                        for (var _i = 0; _i < arguments.length; _i++) {
+                            args[_i - 0] = arguments[_i];
+                        }
+                        that._stack = [];
+                        // We have to reread the first plugin when executing the action because other plugins might have
+                        // been wrapped in the meantime. Don't use plg here.
+                        var plg = that._plugins[action];
+                        if (plg && action !== -1000 /* __ANY__ */) {
+                            that._plugins[action].run([that, action].concat(args));
+                        }
+                        else if (that._anyPlugins.length) {
+                            var act = args.shift();
+                            if (!that._plugins[act]) {
+                                that._plugins[-1000 /* __ANY__ */].run([that, act].concat(args));
+                            }
+                        }
+                    }, null);
+                }
+                plg.released.forEach(function (params) {
+                    plg.afterFinish(params);
+                });
+                plg.aborted.forEach(function (params) {
+                    plg.afterAbort(params);
+                });
+                plg.started.forEach(function () {
+                    that._stack.push(plg);
+                });
+                this._plugins[action] = plg;
+            };
+            return NewContainer;
+        })();
+        Plugins.NewContainer = NewContainer;
+    })(Plugins = Fluss.Plugins || (Fluss.Plugins = {}));
+})(Fluss || (Fluss = {}));
+if (typeof exports !== "undefined") {
+    exports.Plugins = Fluss.Plugins;
 }
+
+
+//# sourceMappingURL=index.js.map

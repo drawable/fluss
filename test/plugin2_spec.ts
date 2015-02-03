@@ -17,7 +17,7 @@ declare function require(module:string):any;
 var Fluss:any = require("../build/index");
 
 
-class App extends Fluss.Plugins.PluginContainer {
+class App extends Fluss.Plugins.NewContainer {
 
     constructor() {
         super();
@@ -191,7 +191,7 @@ var PureJSPlugin2 = Fluss.Plugins.createPlugin({
 });
 
 
-describe("Plugins", function() {
+describe("Plugins2", function() {
 
     var app:App;
 

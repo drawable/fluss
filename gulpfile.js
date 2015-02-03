@@ -10,7 +10,7 @@ var typedoc = require("gulp-typedoc");
 var sourcemaps = require('gulp-sourcemaps');
 var source = require('vinyl-source-stream');
 var del = require("del");
-var concat = require("gulp-concat");
+var concat = require("gulp-concat-sourcemap");
 var modify = require("gulp-modify");
 var path = require("path");
 var requirejs = require("gulp-requirejs");
@@ -33,7 +33,8 @@ var directories = {
         "errors.js",
         "baseActions.js",
         "dispatcher.js",
-        "plugins.js"
+        "plugins.js",
+        "plugins2.js"
     ]
 };
 
@@ -65,19 +66,26 @@ gulp.task("module-amd", ["copy-dist"], function() {
 });
 
 gulp.task("optimize-amd", ["module-amd"], function() {
-    requirejs({
-        baseUrl: directories.build + "/amd/",
-        out: "index.js",
-        name: "fluss"
-    })
+        gulp.src(
+                directories.libFiles.map(function(file) {
+                    return directories.build + "/amd/" + file;
+                }))
         .pipe(modify({
             fileModifier: function(flie, content) {
                 return content.replace(/(define\("[^"]+",\sfunction\(\)\{\}\);)/g, "//$1")
             }
         }))
+        .pipe(concat("index.js"))
+        .pipe(modify({
+            fileModifier: function(flile, content)  {
+                return "define([], function() {\n"
+                + content.replace(/this\.__extends/g, "__extends")
+                + "\nreturn Fluss;\n });"
+            }
+        }))
         .pipe(gulp.dest(directories.build + "/amd"))
-        .pipe(uglify())
-        .pipe(rename("index.min.js"))
+   //     .pipe(uglify())
+   //        .pipe(rename("index.min.js"))
         .pipe(gulp.dest(directories.build + "/amd"));
 });
 
@@ -138,6 +146,12 @@ gulp.task("clean", function(cb) {
 
 
 gulp.task("build", ["copy-dist", "amd", "commonjs"], function() {
+
+    gulp.src(directories.build + "/index.js")
+        .pipe(uglify())
+        .pipe(rename("index.min.js"))
+        .pipe(gulp.dest(directories.build))
+
 });
 
 

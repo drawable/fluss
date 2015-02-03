@@ -476,8 +476,3 @@ declare var exports: any;
 if (typeof exports !== "undefined") {
     exports.Dispatcher = Fluss.Dispatcher;
 }
-if (typeof this["define"] === "function") {
-    this["define"]("dispatcher", ["errors", "eventChannel", "baseActions"], function () {
-        return Fluss.Dispatcher;
-    });
-}

@@ -50,8 +50,3 @@ declare var exports: any;
 if (typeof exports !== "undefined") {
     exports.Errors = Fluss.Errors;
 }
-if (typeof this["define"] === "function") {
-    this["define"]("errors", [], function () {
-        return Fluss.Errors;
-    });
-}
