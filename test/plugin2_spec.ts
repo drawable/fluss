@@ -494,6 +494,35 @@ describe("Plugins2", function() {
         expect(cs).to.equal("(1:r-C-Z)(1:r-B-Z)(1:r-A-Z)(1:f-A)(1:f-B)(1:f-C)");
     });
 
+    /*
+    it("can handle actions within actions they are handling themselves", function() {
+        var clock = sinon.useFakeTimers();
+
+        var callA = new DispatchingPlugin("A", 2);
+        var simpleB = new SimplePlugin("B");
+
+        app.wrap(1, callA);     // Index 1
+        app.wrap(1, simpleB);   // Index 0
+        app.wrap(2, callA);
+
+        Fluss.Dispatcher.dispatch(1, "W");
+
+        clock.tick(5000);
+
+        var cs = getCallSignature();
+
+        expect(cs).to.equal("(1:r-B-W)(1:r-A-W)(2:r-A-W)(2:f-A)(1:f-A)(1:f-B)");
+
+        clock.restore()
+    });
+*/
+
+
+
+
+    /*
+    This is no longer supported
+
     it("can handle actions within actions they are handling themselves", function() {
         var clock = sinon.useFakeTimers();
 
@@ -537,4 +566,6 @@ describe("Plugins2", function() {
         clock.restore()
 
     });
+
+    */
 });

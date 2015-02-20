@@ -608,6 +608,10 @@ module Fluss {
             }
 
             get keys():string[] {
+                if (Object.getOwnPropertyNames) {
+                    return Object.getOwnPropertyNames(this._data);
+                }
+
                 var r = [];
                 for (var k in this._data) {
                     r.push(k);
@@ -1414,7 +1418,7 @@ module Fluss {
                 this.disposeSubstream(r);
 
                 this._removeItemsStreams.forEach(function(stream) {
-                    stream.push(createUpdateInfo<number>(that._data.length, null, that));
+                    stream.push(createUpdateInfo<number>(that._data.length, r, that));
                 });
 
                 return r;
@@ -1427,7 +1431,7 @@ module Fluss {
                 this.disposeSubstream(r);
 
                 this._removeItemsStreams.forEach(function(stream) {
-                    stream.push(createUpdateInfo<number>(0, null, that));
+                    stream.push(createUpdateInfo<number>(0, r, that));
                 });
 
                 return r;

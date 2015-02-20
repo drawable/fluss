@@ -195,6 +195,10 @@ var Fluss;
                 this._closeMethods = [];
                 this._errorMethods = [];
             };
+            Stream.prototype.reset = function () {
+                this._buffer = [];
+                this._closed = false;
+            };
             Stream.prototype.times = function (maxLength) {
                 this._maxLength = maxLength;
                 return this;
@@ -529,6 +533,15 @@ var Fluss;
                 this.registerNextStream(nextStream);
                 return nextStream;
             };
+            Stream.prototype.combineAll = function () {
+                var nextStream = new Stream("combineAll");
+                this.forEach(function (stream) {
+                    stream.forEach(function (item) { return nextStream.push(item); });
+                });
+                this.onClose(function () { return nextStream.close(); });
+                this.registerNextStream(nextStream);
+                return nextStream;
+            };
             Stream.prototype.onClose = function (method) {
                 this.addCloseMethod(method);
                 return this;
@@ -607,6 +620,10 @@ var Fluss;
                     this._streams[type] = [];
                 }
                 this._streams[type].push(s);
+                var that = this;
+                s.onClose(function () {
+                    that._streams[type].splice(that._streams[type].indexOf(s), 0);
+                });
                 return s;
             };
             StreamProvider.prototype.push = function (streamType, value) {
@@ -1079,6 +1096,9 @@ var Fluss;
             });
             Object.defineProperty(RecordStore.prototype, "keys", {
                 get: function () {
+                    if (Object.getOwnPropertyNames) {
+                        return Object.getOwnPropertyNames(this._data);
+                    }
                     var r = [];
                     for (var k in this._data) {
                         r.push(k);
@@ -1607,7 +1627,7 @@ var Fluss;
                 var that = this;
                 this.disposeSubstream(r);
                 this._removeItemsStreams.forEach(function (stream) {
-                    stream.push(createUpdateInfo(that._data.length, null, that));
+                    stream.push(createUpdateInfo(that._data.length, r, that));
                 });
                 return r;
             };
@@ -1616,7 +1636,7 @@ var Fluss;
                 var that = this;
                 this.disposeSubstream(r);
                 this._removeItemsStreams.forEach(function (stream) {
-                    stream.push(createUpdateInfo(0, null, that));
+                    stream.push(createUpdateInfo(0, r, that));
                 });
                 return r;
             };
@@ -2910,12 +2930,24 @@ var Fluss;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(PluginCarrier.prototype, "errors", {
+                get: function () {
+                    return this._streams.newStream("errors");
+                },
+                enumerable: true,
+                configurable: true
+            });
             PluginCarrier.prototype.run = function (params) {
                 this._params = params;
                 this._holds = false;
                 this._aborted = false;
                 this._streams.push("started", true);
-                this._plugin.run.apply(this._plugin, params);
+                try {
+                    this._plugin.run.apply(this._plugin, params);
+                }
+                catch (e) {
+                    this._streams.push("errors", e);
+                }
                 if (!this._aborted) {
                     if (this._holds) {
                         this._streams.push("holding", params);
@@ -2951,10 +2983,46 @@ var Fluss;
                 this._plugins = {};
                 this._stack = [];
                 this._anyPlugins = [];
+                this._streams = Fluss.Stream.createStreamProvider();
             }
             NewContainer.prototype.destroy = function () {
                 this._plugins = null;
             };
+            Object.defineProperty(NewContainer.prototype, "addedPlugin", {
+                get: function () {
+                    return this._streams.newStream("addedPlugin");
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(NewContainer.prototype, "errors", {
+                get: function () {
+                    return this._streams.newStream("errors");
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(NewContainer.prototype, "startedAction", {
+                get: function () {
+                    return this._streams.newStream("startedAction");
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(NewContainer.prototype, "finishedAction", {
+                get: function () {
+                    return this._streams.newStream("finishedAction");
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(NewContainer.prototype, "abortedAction", {
+                get: function () {
+                    return this._streams.newStream("abortedAction");
+                },
+                enumerable: true,
+                configurable: true
+            });
             NewContainer.prototype.abort = function (action) {
                 if (this._stack.length) {
                     this._stack.pop().abort(this, action);
@@ -3009,12 +3077,18 @@ var Fluss;
                         for (var _i = 0; _i < arguments.length; _i++) {
                             args[_i - 0] = arguments[_i];
                         }
+                        if (that._stack && that._stack.length) {
+                            console.log("nest");
+                            that._streams.push("errors", new Error("Nested action calls are not supported."));
+                            that.abort(action);
+                            return;
+                        }
                         that._stack = [];
                         // We have to reread the first plugin when executing the action because other plugins might have
                         // been wrapped in the meantime. Don't use plg here.
-                        var plg = that._plugins[action];
-                        if (plg && action !== -1000 /* __ANY__ */) {
-                            that._plugins[action].run([that, action].concat(args));
+                        var plugin = that._plugins[action];
+                        if (plugin && action !== -1000 /* __ANY__ */) {
+                            plugin.run([that, action].concat(args));
                         }
                         else if (that._anyPlugins.length) {
                             var act = args.shift();
@@ -3024,6 +3098,7 @@ var Fluss;
                         }
                     }, null);
                 }
+                this._streams.relay(plg.errors, "errors");
                 plg.released.forEach(function (params) {
                     plg.afterFinish(params);
                 });
@@ -3034,6 +3109,18 @@ var Fluss;
                     that._stack.push(plg);
                 });
                 this._plugins[action] = plg;
+                plg.done.forEach(function (params) {
+                    plg.afterFinish(params);
+                }).until(that.addedPlugin.filter(function (a) {
+                    return a === action;
+                }));
+                plg.finished.combine(plg.aborted).forEach(function (params) {
+                    console.log("Done", JSON.stringify(params));
+                    that._stack = [];
+                }).until(that.addedPlugin.filter(function (a) {
+                    return a === action;
+                }));
+                this._streams.push("addedPlugin", action);
             };
             return NewContainer;
         })();

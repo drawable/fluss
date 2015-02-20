@@ -64,6 +64,10 @@ module Fluss {
                 return this._streams.newStream("released");
             }
 
+            get errors():Fluss.Stream.IStream {
+                return this._streams.newStream("errors");
+            }
+
             run(params:any[]) {
                 this._params = params;
                 this._holds = false;
@@ -71,7 +75,11 @@ module Fluss {
 
                 this._streams.push("started", true);
 
-                this._plugin.run.apply(this._plugin, params);
+                try {
+                    this._plugin.run.apply(this._plugin, params);
+                } catch(e) {
+                    this._streams.push("errors", e);
+                }
 
                 if (!this._aborted) {
                     if (this._holds) {
@@ -110,17 +118,39 @@ module Fluss {
         export class NewContainer {
 
             private _plugins;
-            private _anyPlugins: Fluss.Plugins.IActionPlugin[];
-            private _stack: PluginCarrier[];
+            private _anyPlugins:Fluss.Plugins.IActionPlugin[];
+            private _stack:PluginCarrier[];
+            private _streams:Fluss.Stream.IStreamProvider;
 
             constructor() {
                 this._plugins = {};
                 this._stack = [];
                 this._anyPlugins = [];
+                this._streams = Fluss.Stream.createStreamProvider();
             }
 
             destroy() {
                 this._plugins = null;
+            }
+
+            get addedPlugin():Fluss.Stream.IStream {
+                return this._streams.newStream("addedPlugin");
+            }
+
+            get errors():Fluss.Stream.IStream {
+                return this._streams.newStream("errors");
+            }
+
+            get startedAction():Fluss.Stream.IStream {
+                return this._streams.newStream("startedAction");
+            }
+
+            get finishedAction():Fluss.Stream.IStream {
+                return this._streams.newStream("finishedAction");
+            }
+
+            get abortedAction():Fluss.Stream.IStream {
+                return this._streams.newStream("abortedAction");
             }
 
             abort(action?:number) {
@@ -162,7 +192,6 @@ module Fluss {
                 if (this._plugins[action]) {
                     var next:PluginCarrier = this._plugins[action];
                     plg.done.combine(plg.holding).forEach(function(params) {
-
                         next.run(params);
                     });
 
@@ -179,13 +208,20 @@ module Fluss {
                     });
 
                     Fluss.Dispatcher.subscribeAction(action, function(...args:any[]) {
+                        if (that._stack && that._stack.length) {
+                            console.log("nest");
+                            that._streams.push("errors", new Error("Nested action calls are not supported."));
+                            that.abort(action);
+                            return;
+                        }
+
                         that._stack = [];
                         // We have to reread the first plugin when executing the action because other plugins might have
                         // been wrapped in the meantime. Don't use plg here.
-                        var plg = that._plugins[action];
+                        var plugin = that._plugins[action];
 
-                        if (plg && action !== Fluss.BaseActions.ACTIONS.__ANY__) {
-                            that._plugins[action].run([that, action].concat(args));
+                        if (plugin && action !== Fluss.BaseActions.ACTIONS.__ANY__) {
+                            plugin.run([that, action].concat(args));
                         }
                         else if (that._anyPlugins.length) {
                             var act = args.shift();
@@ -195,6 +231,8 @@ module Fluss {
                         }
                     }, null);
                 }
+
+                this._streams.relay(plg.errors, "errors");
 
                 plg.released.forEach(function(params) {
                     plg.afterFinish(params);
@@ -209,6 +247,21 @@ module Fluss {
                 });
 
                 this._plugins[action] = plg;
+
+                plg.done.forEach(function(params) {
+                    plg.afterFinish(params);
+                }).until(that.addedPlugin.filter(function(a) {
+                    return a === action;
+                }));
+
+                plg.finished.combine(plg.aborted).forEach(function(params) {
+                    console.log("Done", JSON.stringify(params))
+                    that._stack = [];
+                }).until(that.addedPlugin.filter(function(a) {
+                    return a === action;
+                }));
+
+                this._streams.push("addedPlugin", action);
             }
         }
     }

@@ -311,19 +311,19 @@ describe("Data stores", function () {
             expect(calls).to.equal("");
 
             var i = store.pop();         //--> 1, 2, 3, 4
-            expect(calls).to.equal("(4=null)");
+            expect(calls).to.equal("(4=5)");
             expect(i).to.equal(5);
 
             i = store.shift();           //--> 2, 3, 4
-            expect(calls).to.equal("(4=null)(0=null)");
+            expect(calls).to.equal("(4=5)(0=1)");
             expect(i).to.equal(1);
 
             i = store.shift();           //--> 3, 4
-            expect(calls).to.equal("(4=null)(0=null)(0=null)");
+            expect(calls).to.equal("(4=5)(0=1)(0=2)");
             expect(i).to.equal(2);
 
             i = store.pop();             //--> 3
-            expect(calls).to.equal("(4=null)(0=null)(0=null)(1=null)");
+            expect(calls).to.equal("(4=5)(0=1)(0=2)(1=4)");
             expect(i).to.equal(4);
 
             expect(store.length).to.equal(1);
@@ -512,7 +512,7 @@ describe("Data stores", function () {
             store.pop();
             checkEQ();
             expect(store.length).to.equal(imm.length);
-            expect(calls[4]).to.equal(null);
+            expect(calls[4]).to.equal(10);
 
             expect(imm.every(function(value) {
                 return typeof value !== "undefined";

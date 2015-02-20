@@ -540,6 +540,33 @@ describe("A stream (used for reactive programming patterns)", function() {
         expect(calls).to.equal("ABBABBAABAAB");
     });
 
+    it("provides 'combineAll', that returns a new stream that processes all items of all " +
+       "streams that are processed by the original", function() {
+       var calls = "";
+        var main = Fluss.Stream.createStream();
+
+        var a = Fluss.Stream.createStream();
+        var b = Fluss.Stream.createStream();
+        var c = Fluss.Stream.createStream();
+
+        var ca = main.combineAll();
+
+        ca.forEach((value) => calls += value);
+
+        a.push("A")
+        main.push(a);
+        main.push(b);
+        a.push("A")
+        main.push(c);
+        c.push("C");
+        b.push("B");
+        c.push("C");
+        a.push("A");
+        b.push("B");
+
+        expect(calls).to.equal("AACBCAB");
+    });
+
     describe("handles errors", function() {
         it("by providing onError to define an error handling method, that kicks in when an exception is raised", function() {
             var s = Fluss.Stream.createStream("myStream");
@@ -1296,6 +1323,32 @@ describe("A stream (used for reactive programming patterns)", function() {
             expect(calls).to.equal(2);
         });
     });
+
+    it("can be reopened", function() {
+        var calls = "";
+        var s = Fluss.Stream.createStream();
+
+        s.forEach(function(d) {
+            calls += d;
+        });
+
+        s.push(1);
+        s.push(2);
+        s.push(3);
+        s.close();
+        s.push(4);
+        s.push(5);
+        s.push(6);
+        s.reset();
+        s.forEach(function(d) {
+            calls += "-" + d;
+        });
+        s.push(7);
+        s.push(8);
+        s.push(9);
+
+        expect(calls).to.equal("123-7-8-9");
+    });
 });
 
 describe("A StreamProvider manages different streams for different occasions. It", function() {
@@ -1379,9 +1432,40 @@ describe("A StreamProvider manages different streams for different occasions. It
         expect(calls["A"]).to.equal("X");
         expect(calls["B"]).to.equal("X");
     })
+});
 
+describe("Stream - Usage patterns, demonstrating", function() {
+     it("being started by one event, processing another event and stopping on a third (use for D'n'D e.g)", function() {
+         var start = Fluss.Stream.createStream();
+         var interest = Fluss.Stream.createStream();
+         var stop = Fluss.Stream.createStream();
 
+         var calls = "";
 
+         start.map(function() {
+             interest.reset();
+             return interest.until(stop);
+         }).concatAll().forEach(function(data) {
+               calls += data;
+         });
+
+         interest.push(1);
+         interest.push(2);
+         interest.push(3);
+         interest.push(4);
+         start.push(true);
+         interest.push(5);
+         interest.push(6);
+         interest.push(7);
+         interest.push(8);
+         stop.push(true);
+         interest.push(9);
+         interest.push(10);
+         interest.push(11);
+         interest.push(12);
+
+         expect(calls).to.equal("5678");
+     });
 });
 
 

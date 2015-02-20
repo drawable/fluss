@@ -46,6 +46,12 @@ module Fluss {
              */
             dispose();
 
+
+            /**
+             * Reset stream: buffers cleared, all subscribers removed, reopend if closed.
+             */
+            reset();
+
             /**
              * Push a new value to the stream. This triggers all sub streams and processing methods.
              * Pushing, in contrary to a true array does not buffer the value. If you need the value
@@ -142,6 +148,12 @@ module Fluss {
             combine(stream:IStream):IStream;
 
             /**
+             * Used on a stream of streams this returns a new stream that processes all items of all incoming streams
+             * in the order the items occur in any of the streams.
+             */
+            combineAll():IStream;
+
+            /**
              * For each occurring error define a method that is called. Can be called multiple times. Returns the original stream.
              * The existence of at least one of these methods prevents the error to bubble up the stream chain.
              * @param method
@@ -226,6 +238,11 @@ module Fluss {
                 this._buffer = [];
                 this._closeMethods = [];
                 this._errorMethods = [];
+            }
+
+            reset() {
+                this._buffer = [];
+                this._closed = false;
             }
 
             times(maxLength:number):IStream {
@@ -617,6 +634,21 @@ module Fluss {
                 return nextStream;
             }
 
+            combineAll():IStream {
+                var nextStream = new Stream("combineAll");
+
+                this.forEach((stream) => {
+                    stream.forEach((item) => nextStream.push(item));
+                });
+
+                this.onClose(() => nextStream.close());
+
+                this.registerNextStream(nextStream);
+
+                return nextStream;
+            }
+
+
             onClose(method:Function):IStream {
                 this.addCloseMethod(method);
                 return this;
@@ -760,6 +792,11 @@ module Fluss {
                 }
 
                 this._streams[type].push(s);
+
+                var that = this;
+                s.onClose(function() {
+                    that._streams[type].splice(that._streams[type].indexOf(s), 0);
+                });
 
                 return s;
             }
