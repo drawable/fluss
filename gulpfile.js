@@ -30,11 +30,11 @@ var directories = {
         "stream.js",
         "store.js",
         "reactMixins.js",
-        "errors.js",
+        //"errors.js",
         "baseActions.js",
         "dispatcher.js",
-        "plugins.js",
-        "plugins2.js"
+        //"plugins2.js",
+        "plugins.js"
     ]
 };
 
@@ -45,6 +45,40 @@ gulp.task("copy-dist", function() {
 
     return gulp.src(["./dist/**/*", "README.md", "LICENSE"])
         .pipe(gulp.dest(directories.build));
+});
+
+
+/*********************************************************************
+ *                            BROWSER
+ *********************************************************************/
+
+
+gulp.task("browser-debug", ["copy-dist"], function() {
+    return gulp.src(
+        directories.libFiles.map(function(file) {
+            return directories.build + "/amd/" + file;
+        }))
+        .pipe(modify({
+            fileModifier: function(flie, content) {
+                return content.replace(/(define\("[^"]+",\sfunction\(\)\{\}\);)/g, "//$1")
+            }
+        }))
+        .pipe(concat("fluss.js"))
+        .pipe(modify({
+            fileModifier: function(flile, content)  {
+                return "!function() {\n"
+                    + content.replace(/this\.__extends/g, "__extends")
+                    + "\nwindow.Fluss = Fluss;\n }();"
+            }
+        }))
+        .pipe(gulp.dest(directories.build + "/browser"));
+});
+
+gulp.task("browser", ["browser-debug"], function() {
+    gulp.src(directories.build + "/browser/fluss.js")
+        .pipe(uglify())
+        .pipe(rename("fluss.min.js"))
+        .pipe(gulp.dest(directories.build + "/browser"))
 });
 
 
@@ -145,7 +179,7 @@ gulp.task("clean", function(cb) {
 });
 
 
-gulp.task("build", ["copy-dist", "amd", "commonjs"], function() {
+gulp.task("build", ["copy-dist", "amd", "commonjs", "browser"], function() {
 
     gulp.src(directories.build + "/index.js")
         .pipe(uglify())

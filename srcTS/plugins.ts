@@ -201,7 +201,7 @@ module Fluss {
              * @param action
              * @param handler
              */
-            wrap(action:number, handler:IActionPlugin);
+            wrap(action:number, handler:any);
 
             /**
              * Remove a plugin from the container
@@ -570,9 +570,22 @@ module Fluss {
              * given action.
              *
              * @param action
-             * @param handler
+             * @param _handler
              */
-            public wrap(action:number, handler:IActionPlugin) {
+            public wrap(action:number, handler:any) {
+                var _handler;
+                if (typeof handler === "function") {
+                    _handler = {
+                        run: (container, ...args) => handler["apply"](this, args),
+                        getMemento: () => null,
+                        restoreFromMemento: () => null,
+                        afterFinish: () => null,
+                        afterAbort: () => null
+                    }
+                } else {
+                    _handler = handler;
+                }
+
                 if (action === BaseActions.ACTIONS.__ANY__) {
                     if (this._anyPlugins.length === 0) {
                         var that = this;
@@ -589,10 +602,10 @@ module Fluss {
 
                     for (var a in this._plugins) {
                         if (this._plugins.hasOwnProperty(a)) {
-                            this.doWrap(a, handler);
+                            this.doWrap(a, _handler);
                         }
                     }
-                    this._anyPlugins.unshift(handler);
+                    this._anyPlugins.unshift(_handler);
                 } else {
                     if (!this._plugins[action] && this._anyPlugins.length) {
                         var l = this._anyPlugins.length;
@@ -600,7 +613,7 @@ module Fluss {
                             this.doWrap(action, this._anyPlugins[l]);
                         }
                     }
-                    this.doWrap(action, handler);
+                    this.doWrap(action, _handler);
                 }
             }
 

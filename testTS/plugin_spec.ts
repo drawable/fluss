@@ -17,7 +17,7 @@ declare function require(module:string):any;
 var Fluss:any = require("../build/index");
 
 
-class App extends Fluss.Plugins.NewContainer {
+class App extends Fluss.Plugins.PluginContainer {
 
     constructor() {
         super();
@@ -191,7 +191,7 @@ var PureJSPlugin2 = Fluss.Plugins.createPlugin({
 });
 
 
-describe("Plugins2", function() {
+describe("Plugins", function() {
 
     var app:App;
 
@@ -217,6 +217,20 @@ describe("Plugins2", function() {
         var cs = getCallSignature();
 
         expect(cs).to.equal("(1:r-A-Y)(1:f-A)");
+    });
+
+    it("can use a simple function to implement an action", function() {
+        var localCalls = [];
+       app.wrap(1, (v1, v2) => {
+           localCalls.push({ v1: v1, v2: v2})
+       });
+
+
+        Fluss.Dispatcher.dispatch(1, "A", 12);
+
+        expect(localCalls.length).to.equal(1);
+        expect(localCalls[0].v1).to.equal("A");
+        expect(localCalls[0].v2).to.equal(12);
     });
 
     it("can be created easily in plain JavaScript - 1", function() {
@@ -494,35 +508,6 @@ describe("Plugins2", function() {
         expect(cs).to.equal("(1:r-C-Z)(1:r-B-Z)(1:r-A-Z)(1:f-A)(1:f-B)(1:f-C)");
     });
 
-    /*
-    it("can handle actions within actions they are handling themselves", function() {
-        var clock = sinon.useFakeTimers();
-
-        var callA = new DispatchingPlugin("A", 2);
-        var simpleB = new SimplePlugin("B");
-
-        app.wrap(1, callA);     // Index 1
-        app.wrap(1, simpleB);   // Index 0
-        app.wrap(2, callA);
-
-        Fluss.Dispatcher.dispatch(1, "W");
-
-        clock.tick(5000);
-
-        var cs = getCallSignature();
-
-        expect(cs).to.equal("(1:r-B-W)(1:r-A-W)(2:r-A-W)(2:f-A)(1:f-A)(1:f-B)");
-
-        clock.restore()
-    });
-*/
-
-
-
-
-    /*
-    This is no longer supported
-
     it("can handle actions within actions they are handling themselves", function() {
         var clock = sinon.useFakeTimers();
 
@@ -566,6 +551,4 @@ describe("Plugins2", function() {
         clock.restore()
 
     });
-
-    */
 });

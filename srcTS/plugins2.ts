@@ -160,7 +160,7 @@ module Fluss {
                 this._stack = [];
             }
 
-            wrap(action:number, plugin:Fluss.Plugins.IActionPlugin) {
+            wrap(action:number, plugin:any) {
                 if (action === Fluss.BaseActions.ACTIONS.__ANY__) {
                     this._anyPlugins.push(plugin);
                     this.dowrap(action, plugin);
