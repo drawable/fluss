@@ -6,6 +6,17 @@
 
 import * as StreamProvider from './StreamProvider';
 
+/**
+ * Wrapper class for plugins. This defines the events a plugin emits (via streams) during execution:
+ *
+ * The simple case
+ *  -->started
+ *      run
+ *  -->ran
+ *      afterFinish
+ *  -->finished
+ *
+ */
 export default class PluginCarrier {
 
     constructor(plugin) {
@@ -31,7 +42,7 @@ export default class PluginCarrier {
             }
         };
 
-        this._plugin["abort"] = () => that.abort.apply(that, that._params);
+        this._plugin["abort"] = () => this.abort.apply(this, this._params);
         this._streams = StreamProvider.createStreamProvider();
     }
 
@@ -39,8 +50,8 @@ export default class PluginCarrier {
         return this._streams.newStream("started");
     }
 
-    get done() {
-        return this._streams.newStream("done");
+    get ran() {
+        return this._streams.newStream("ran");
     }
 
     get finished() {
@@ -80,7 +91,7 @@ export default class PluginCarrier {
             if (this._holds) {
                 this._streams.push("holding", params);
             } else {
-                this._streams.push("done", params);
+                this._streams.push("ran", params);
             }
         }
     }
@@ -107,5 +118,9 @@ export default class PluginCarrier {
             this._plugin.afterFinish.apply(this._plugin, params);
             this._streams.push("finished", params);
         }
+    }
+
+    undo(container, memento) {
+        this._plugin.undo(container, memento);
     }
 }

@@ -6,6 +6,7 @@
 
 import Domain from '../src/Domain';
 import Plugin from '../src/Plugin';
+import * as Actions from '../src/Actions'
 import {expect} from 'chai';
 let sinon = require('sinon');
 
@@ -97,16 +98,43 @@ class AbortingPlugin extends SimplePlugin {
         addCall(action, "r" + "-" + this.name + "-" + text);
         this.abort();
     }
-
 }
 
+
+class App extends Domain {
+    constructor() {
+        super();
+        this.value1 = 0;
+        this.value2 = 0;
+    }
+}
+
+class Setter extends Plugin {
+
+    constructor(propName, inc = 0) {
+        this.propName = propName;
+        this.inc = inc;
+    }
+
+    run(app, action, value) {
+        app[this.propName] = value + this.inc;
+    }
+
+    getMemento(app, action, value) {
+        return app[this.propName];
+    }
+
+    undo(app, memento) {
+        app[this.propName] = memento;
+    }
+}
 
 describe("Domain", function () {
 
     let app;
 
     beforeEach(function () {
-        app = new Domain();
+        app = new App();
         clearCalls();
     });
 
@@ -144,9 +172,14 @@ describe("Domain", function () {
     });
 
     it("can be wrapped so that several plugins handle the same action", function () {
+        var finished = -100;
+
         var plgA = new SimplePlugin("A");
         var plgB = new SimplePlugin("B");
 
+        app.finishedAction.forEach((action) =>  {
+            finished = action
+        });
 
         app.wrap(1, plgB);
         app.wrap(1, plgA);
@@ -156,13 +189,13 @@ describe("Domain", function () {
         var cs = getCallSignature();
 
         expect(cs).to.equal("(1:r-A-X)(1:r-B-X)(1:f-B)(1:f-A)");
+        expect(finished).to.equal(1);
     });
 
     it("can be wrapped multiple times so that several plugins handle the same action", function () {
         var plgC = new SimplePlugin("C");
         var plgD = new SimplePlugin("D");
         var plgE = new SimplePlugin("E");
-
 
         app.wrap(1, plgC);
         app.wrap(1, plgD);
@@ -176,10 +209,14 @@ describe("Domain", function () {
     });
 
     it("wait for 'inner' plugins to complete before they complete themselves - 1", function () {
+        var finished = -100;
         var plgC = new PluginNeverdone("C");
         var plgD = new SimplePlugin("D");
         var plgE = new SimplePlugin("E");
 
+        app.finishedAction.forEach((action) =>  {
+            finished = action
+        });
 
         app.wrap(1, plgC);
         app.wrap(1, plgD);
@@ -190,13 +227,18 @@ describe("Domain", function () {
         var cs = getCallSignature();
 
         expect(cs).to.equal("(1:r-E-X)(1:r-D-X)(1:r-C-X)");
+        expect(finished).to.equal(-100);
     });
 
     it("wait for 'inner' plugins to complete before they complete themselves - 2", function () {
+        var finished = -100;
         var plgC = new SimplePlugin("C");
         var plgD = new PluginNeverdone("D");
         var plgE = new SimplePlugin("E");
 
+        app.finishedAction.forEach((action) =>  {
+            finished = action
+        });
 
         app.wrap(1, plgC);
         app.wrap(1, plgD);
@@ -207,6 +249,7 @@ describe("Domain", function () {
         var cs = getCallSignature();
 
         expect(cs).to.equal("(1:r-E-X)(1:r-D-X)(1:r-C-X)(1:f-C)");
+        expect(finished).to.equal(-100);
     });
 
 
@@ -338,7 +381,7 @@ describe("Domain", function () {
     it("can handle any action", function () {
         var anyA = new SimplePlugin("A");
 
-        app.wrap(Fluss.BaseActions.ACTIONS.__ANY__, anyA);
+        app.wrap(Actions.IDs.__ANY__, anyA);
 
         app.execute(42, "X");
         var cs = getCallSignature();
@@ -349,7 +392,7 @@ describe("Domain", function () {
         var anyA = new SimplePlugin("A");
         var specB = new SimplePlugin("B");
 
-        app.wrap(Fluss.BaseActions.ACTIONS.__ANY__, anyA);
+        app.wrap(Actions.IDs.__ANY__, anyA);
         app.wrap(1, specB);
 
         app.execute(42, "X");
@@ -367,7 +410,7 @@ describe("Domain", function () {
         var specB = new SimplePlugin("B");
         var anyC = new SimplePlugin("C");
 
-        app.wrap(Fluss.BaseActions.ACTIONS.__ANY__, anyA);
+        app.wrap(Actions.IDs.__ANY__, anyA);
         app.wrap(1, specB);
 
         app.execute(42, "X");
@@ -379,7 +422,7 @@ describe("Domain", function () {
         cs = getCallSignature();
         expect(cs).to.equal("(1:r-B-Z)(1:r-A-Z)(1:f-A)(1:f-B)");
 
-        app.wrap(Fluss.BaseActions.ACTIONS.__ANY__, anyC);
+        app.wrap(Actions.IDs.__ANY__, anyC);
         clearCalls();
         app.execute(42, "X");
         cs = getCallSignature();
@@ -391,48 +434,65 @@ describe("Domain", function () {
         expect(cs).to.equal("(1:r-C-Z)(1:r-B-Z)(1:r-A-Z)(1:f-A)(1:f-B)(1:f-C)");
     });
 
-    it("can handle actions within actions they are handling themselves", function () {
-        var clock = sinon.useFakeTimers();
+    it("provides mementos for undoing actions - 1", function() {
+        let setter1 = new Setter("value1");
 
-        var callA = new DispatchingPlugin("A", 2);
-        var simpleB = new SimplePlugin("B");
+        let initial = app.value1;
 
-        app.wrap(1, callA);     // Index 1
-        app.wrap(1, simpleB);   // Index 0
-        app.wrap(2, callA);
+        app.wrap(1, setter1);
+        app.execute(1, initial + 10);
+        expect(app.value1).to.equal(initial + 10);
 
-        app.execute(1, "W");
+        app.undo();
+        expect(app.value1).to.equal(initial);
 
-        clock.tick(5000);
+        app.execute(1, initial + 10);
+        expect(app.value1).to.equal(initial + 10);
+        app.execute(1, initial + 11);
+        expect(app.value1).to.equal(initial + 11);
+        app.execute(1, initial + 12);
+        expect(app.value1).to.equal(initial + 12);
 
-        var cs = getCallSignature();
-
-        expect(cs).to.equal("(1:r-B-W)(1:r-A-W)(2:r-A-W)(2:f-A)(1:f-A)(1:f-B)");
-
-        clock.restore()
+        app.undo();
+        expect(app.value1).to.equal(initial + 11);
+        app.execute(Actions.IDs.UNDO);
+        expect(app.value1).to.equal(initial + 10);
+        app.undo();
+        expect(app.value1).to.equal(initial);
     });
 
-    it("can handle actions within actions they are handling themselves - 2", function () {
-        var clock = sinon.useFakeTimers();
+    it("provides mementos for undoing actions - 2", function() {
+        let setter1 = new Setter("value1");
+        let setter2 = new Setter("value2");
 
-        var waitA = new PluginWaitForeverForOneAction("A", 1);
-        var simpleB = new SimplePlugin("B");
+        let initial1 = app.value1 = 10;
+        let initial2 = app.value2 = 13;
 
-        app.wrap(1, waitA);     // Index 1
-        app.wrap(1, simpleB);   // Index 0
-        app.wrap(2, waitA);
+        app.wrap(1, setter1);
+        app.wrap(1, setter2);
 
-        app.execute(1, "W");
-        app.execute(2, "X");
-        app.abort(1);
-        app.execute(2, "X");
+        app.execute(1, initial1 + 10);
+        expect(app.value1).to.equal(initial1 + 10);
+        expect(app.value2).to.equal(initial1 + 10);
 
-        var cs = getCallSignature();
-
-        expect(cs).to.equal("(1:r-B-W)(1:r-A-W)(2:r-A-X)(2:f-A)(1:a-A)(1:a-B)(2:r-A-X)(2:f-A)");
-
-        clock.restore()
-
+        app.undo();
+        expect(app.value1).to.equal(initial1);
+        expect(app.value2).to.equal(initial2);
     });
 
+    it("provides mementos for undoing actions - 3", function() {
+        let setter1 = new Setter("value1", 5);
+        let setter2 = new Setter("value1");
+
+        let initial = app.value1 = 10;
+
+        app.wrap(1, setter1);
+        app.wrap(1, setter2);
+
+        app.execute(1, initial + 10);
+        expect(app.value1).to.equal(initial + 15);
+
+        app.undo();
+        expect(app.value1).to.equal(initial);
+    })
 });

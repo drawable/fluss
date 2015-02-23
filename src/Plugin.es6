@@ -16,7 +16,7 @@ export default class Plugin {
         return null;
     }
 
-    restoreFromMemento(container, memento) {}
+    undo(container, memento) {}
     hold() {}
     release(action) {}
     abort(action) {}

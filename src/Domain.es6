@@ -13,7 +13,7 @@ let _private = (obj, func, ...args) => func.apply(obj, args);
 
 function wrapAnyPluginsForAction(action) {
     if (!this._plugins[action]) {
-        this._anyPlugins.forEach((plg) => this.dowrap(action, plg))
+        this._anyPlugins.forEach((plg) => _private(this, dowrap,action, plg))
     }
 }
 
@@ -23,93 +23,90 @@ function subscribe(action, handler) {
     }
 }
 
-function dowrap(action, plugin) {
-    let plg = new PluginCarrier(plugin);
-    var that = this;
-
-    if (this._plugins[action]) {
-        var next = this._plugins[action];
-        plg.done.combine(plg.holding).forEach((params) => next.run(params));
-
-        next.finished.forEach((params) => {
-            this._stack.pop();
-            plg.afterFinish(params);
-        });
-        next.aborted.forEach((params) => plg.abort.apply(plg, params));
-    } else {
-        // First plugin for that action
-        plg.done.forEach((params) => plg.afterFinish(params));
-
-        _private(this, subscribe, action, (args) => {
-                if (this._stack && this._stack.length) {
-                    this._streams.push("errors", new Error("Nested action calls are not supported."));
-                    this.abort(action);
-                    return;
-                }
-
-                this._stack = [];
-                // We have to reread the first plugin when executing the action because other plugins might have
-                // been wrapped in the meantime. Don't use plg here.
-                var plugin = this._plugins[action];
-
-                if (plugin && action !== Actions.IDs.__ANY__) {
-                    let memento = plugin.getMemento([this, action].concat(args));
-                    plugin.run([this, action].concat(args));
-                }
-                else if (this._anyPlugins.length) {
-                    var act = args.shift();
-                    if (!this._plugins[act]) {
-                        this._plugins[Actions.IDs.__ANY__].run([this, act].concat(args));
-                    }
-                }
-            }
-            ,
-            null
-        )
-        ;
+function executeAction(args, forAction) {
+    if (this._stack && this._stack.length) {
+        this._streams.push("errors", new Error("Nested action calls are not supported."));
+        this.abort(forAction);
+        return;
     }
 
-    this._streams.relay(plg.errors, "errors");
+    this._stack = [];
+    this._mementos = [];
+    // We have to reread the first plugin when executing the action because other plugins might have
+    // been wrapped in the meantime. Don't use plg here.
+    let plugin = this._plugins[forAction];
 
-    plg.released.forEach(function (params) {
-        plg.afterFinish(params);
+    if (plugin && forAction !== Actions.IDs.__ANY__) {
+    } else if (this._anyPlugins.length && !this._plugins[forAction]) {
+        plugin = this._plugins[Actions.IDs.__ANY__]
+    }
+
+    let memento = plugin.getMemento([this, forAction].concat(args));
+    plugin.run([this, forAction].concat(args));
+    this._mementos.push({plugin, memento})
+}
+
+/**
+ * Wraps a plugin for an action. This defines the control flow for the plugins.
+ * @see   PluginCarrier
+ * @param action
+ * @param plugin
+ */
+function dowrap(action, plugin) {
+    let carrier = new PluginCarrier(plugin);
+
+    if (this._plugins[action]) {
+        let inner = this._plugins[action];
+        carrier.ran.combine(carrier.holding).forEach((params) => {
+            let memento = inner.getMemento(params);
+            inner.run(params);
+            this._mementos.push({plugin: inner, memento});
+        });
+
+        inner.finished.forEach((params) => carrier.afterFinish(params));
+        inner.aborted.forEach((params) => carrier.abort(this, params));
+    } else {
+        carrier.ran.forEach((params) => carrier.afterFinish(params));
+        _private(this, subscribe, action, (args, forAction) => _private(this, executeAction, args, forAction), null);
+    }
+
+    carrier.started.forEach((params) => this._stack.push(carrier));
+    carrier.finished.forEach(() => this._stack.pop());
+    carrier.released.forEach((params) => carrier.afterFinish(params));
+    carrier.aborted.forEach((params) => carrier.afterAbort(params));
+
+    carrier.finished.forEach((params) => {
+        let action = params[1];
+        if (carrier === this._plugins[action]) {
+            this._streams.push("finishedAction", action);
+        }
     });
 
-    plg.aborted.forEach(function (params) {
-        plg.afterAbort(params);
+    carrier.aborted.forEach((params) => {
+        let action = params[1];
+        if (carrier === this._plugins[action]) {
+            this._streams.push("abortedAction", action);
+        }
     });
 
-    plg.started.forEach(function () {
-        that._stack.push(plg);
-    });
-
-    this._plugins[action] = plg;
-
-    plg.done.forEach(function (params) {
-        plg.afterFinish(params);
-    }).until(that.addedPlugin.filter(function (a) {
-        return a === action;
-    }));
-
-    plg.finished.combine(plg.aborted).forEach(function (params) {
-        console.log("Done", JSON.stringify(params))
-        that._stack = [];
-    }).until(that.addedPlugin.filter(function (a) {
-        return a === action;
-    }));
-
-    this._streams.push("addedPlugin", action);
+    this._plugins[action] = carrier;
+    this._streams.push("addedPlugin", {action, carrier});
 }
 
 
 export default class Domain {
 
     constructor() {
+        this._undoStack = [];
         this._handlers = {};
         this._plugins = {};
         this._stack = [];
+        this._mementos = null;
         this._anyPlugins = [];
         this._streams = StreamProvider.createStreamProvider();
+
+        this.errors.forEach(() => this._mementos = null);
+        this.finishedAction.forEach(() => this._undoStack.push(this._mementos));
     }
 
     destroy() {
@@ -141,6 +138,7 @@ export default class Domain {
             this._stack.pop().abort(this, action);
         }
         this._stack = [];
+        this._mementos = null;
     }
 
     wrap(action, plugin) {
@@ -160,10 +158,22 @@ export default class Domain {
     }
 
     execute(action, ...args) {
-        if (this._handlers[action]) {
-            this._handlers[action](args);
+        if (action === Actions.IDs.UNDO) {
+            this.undo();
+        } else if (this._handlers[action]) {
+            this._streams.push("startedAction", action);
+            this._handlers[action](args, action);
         } else if (this._handlers[Actions.IDs.__ANY__]) {
-            this._handlers[Actions.IDs.__ANY__](args);
+            this._streams.push("startedAction", action);
+            this._handlers[Actions.IDs.__ANY__](args, action);
+        }
+        this._mementos = null;
+    }
+
+    undo() {
+        let mementos = this._undoStack.pop();
+        if (mementos) {
+            mementos.forEach(({plugin, memento}) => plugin.undo(this, memento));
         }
     }
 }

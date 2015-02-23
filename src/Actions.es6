@@ -18,4 +18,7 @@ export function enumerateActions(...actions) {
     return r;
 }
 
-export const IDs = enumerateActions("__ANY__", "UNDO");
+export const IDs = {"__ANY__": -1000,
+                    "UNDO": -2000,
+                    "-1000": "__ANY__",
+                    "-2000": "UNDO" };
