@@ -21,14 +21,13 @@ function processBuffer(buffer, methods, baseIndex) {
     if (!methods.length) return null;
 
     var l = buffer.length;
-    var that = this;
     var errors = [];
 
     while (l--) {
         var value = buffer.pop();
-        methods.forEach(function (m, i) {
+        methods.forEach((m, i) => {
             try {
-                m.call(that, value, i + baseIndex);
+                m.call(this, value, i + baseIndex);
             } catch (e) {
                 errors.push(e);
             }
@@ -78,14 +77,13 @@ function addCloseMethod(method) {
 }
 
 function registerNextStream(nextStream) {
-    var that = this;
     this._nextStreams.push(nextStream);
-    nextStream.onClose(function() {
-        var i = that._nextStreams.indexOf(nextStream);
+    nextStream.onClose(() => {
+        var i = this._nextStreams.indexOf(nextStream);
         if (i !== -1) {
-            that._nextStreams.splice(i, 1);
-            if (!that._nextStreams.length) {
-                that.close();
+            this._nextStreams.splice(i, 1);
+            if (!this._nextStreams.length) {
+                this.close();
             }
         }
     })
@@ -107,9 +105,7 @@ function addMethodToNextStream(nextStream, method, onClose) {
     _private(this, registerNextStream, nextStream);
 
     if (!onClose) {
-        this.onClose(function () {
-            nextStream.close();
-        });
+        this.onClose(() => nextStream.close());
     } else {
         this.onClose(onClose);
     }
@@ -187,11 +183,9 @@ class Stream {
      * @param stream
      */
     until(stream) {
-        let that = this;
         if (stream) {
-            stream.forEach(() => that.close())
+            stream.forEach(() => this.close())
         }
-
         return this;
     }
 
@@ -254,11 +248,10 @@ class Stream {
      */
     filter(method) {
         let nextStream = new Stream(this._name + ".filter");
-        let that = this;
 
         if (typeof  method === "function") {
             _private(this, addMethodToNextStream, nextStream, (value, index) => {
-                if (method.call(that, value, index)) {
+                if (method.call(this, value, index)) {
                     nextStream.push(value);
                 }});
         } else {
@@ -285,10 +278,9 @@ class Stream {
     map(method) {
         let nextStream = new Stream(this._name + ".map");
 
-        let that = this;
         if (typeof method === "function") {
             _private(this, addMethodToNextStream, nextStream,
-                (value, index) => nextStream.push(method.call(that, value, index)));
+                (value, index) => nextStream.push(method.call(this, value, index)));
         } else {
             _private(this, addMethodToNextStream, nextStream,
                                        () => nextStream.push(method));
@@ -308,10 +300,9 @@ class Stream {
      */
     scan(method, seed) {
         let nextStream = new Stream(this._name + ".scan");
-        let that = this;
         let scanned = seed;
         _private(this, addMethodToNextStream, nextStream, (value) => {
-            scanned = method.call(that, scanned, value);
+            scanned = method.call(this, scanned, value);
             nextStream.push(scanned);
         });
 
@@ -331,10 +322,9 @@ class Stream {
      */
     reduce(method, seed) {
         let nextStream = new Stream(this._name + ".reduce");
-        let that = this;
         let reduced = seed;
         _private(this, addMethodToNextStream, nextStream,
-            (value) => reduced = method.call(that, reduced, value),
+            (value) => reduced = method.call(this, reduced, value),
             () => {
                 nextStream.push(reduced);
                 nextStream.close();
@@ -372,7 +362,7 @@ class Stream {
         // method attached to the stream. Otherwise any data that
         // is pushed to stream before the original is closed would
         // be lost for the concat.
-        stream.forEach(function (value) {
+        stream.forEach((value) => {
             if (buffer) {
                 buffer.push(value);
             } else {
@@ -380,7 +370,7 @@ class Stream {
             }
         });
 
-        stream.onClose(function() {
+        stream.onClose(() => {
             if (!buffer) {
                 nextStream.close();
             }
@@ -447,12 +437,12 @@ class Stream {
             };
             queue.unshift(subBuffer);
 
-            stream.forEach(function(value) {
+            stream.forEach((value) => {
                 subBuffer.data.unshift(value);
                 update();
             });
 
-            stream.onClose(function() {
+            stream.onClose(() => {
                 subBuffer.done = true;
                 nextInQueue();
             });
@@ -462,13 +452,8 @@ class Stream {
             }
         }
 
-        this.forEach(function(subStream) {
-            concatStream(subStream);
-        });
-
-        this.onClose(function() {
-            nextStream.close();
-        });
+        this.forEach((subStream) => concatStream(subStream));
+        this.onClose(() => nextStream.close());
 
         if (this._closed) {
             nextStream.close();
@@ -484,25 +469,20 @@ class Stream {
      * @param stream
      */
     combine(stream) {
-        let that = this;
         let nextStream = new Stream(this._name + ".combine");
 
-        this.forEach(function(value) {
-            nextStream.push(value);
-        });
+        this.forEach((value) => nextStream.push(value));
 
-        stream.forEach(function(value) {
-            nextStream.push(value);
-        });
+        stream.forEach((value) => nextStream.push(value));
 
-        this.onClose(function() {
+        this.onClose(() => {
             if (stream.closed) {
                 nextStream.close();
             }
         });
 
-        stream.onClose(function() {
-            if (that._closed) {
+        stream.onClose(() => {
+            if (this._closed) {
                 nextStream.close();
             }
         });
@@ -620,11 +600,9 @@ class Stream {
 
         let buffer = [];
 
-        this.forEach(function(value) {
-            buffer.push(value);
-        });
+        this.forEach((value) => buffer.push(value));
 
-        until.forEach(function() {
+        until.forEach(() => {
             nextStream.push(buffer);
             buffer = [];
         });
