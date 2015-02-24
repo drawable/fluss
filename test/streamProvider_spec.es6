@@ -9,13 +9,13 @@ import {expect} from 'chai';
 
 describe("A StreamProvider manages different streams for different occasions. It", function() {
     it("can be created", function() {
-        var sp = Fluss.StreamProvider.createStreamProvider ();
+        var sp = Fluss.StreamProvider.create();
 
         expect(sp).to.be.ok();
     });
 
     it("can create streams", function() {
-        var sp = Fluss.StreamProvider.createStreamProvider ();
+        var sp = Fluss.StreamProvider.create();
 
         var sA1 = sp.newStream("A");
         var sA2 = sp.newStream("A");
@@ -34,7 +34,7 @@ describe("A StreamProvider manages different streams for different occasions. It
     });
 
     it("can push values to streams it has created", function() {
-        var sp = Fluss.StreamProvider.createStreamProvider ();
+        var sp = Fluss.StreamProvider.create();
 
         var calls = "";
 
@@ -67,7 +67,7 @@ describe("A StreamProvider manages different streams for different occasions. It
     });
 
     it("it can relay one stream to many", function() {
-        var sp = Fluss.StreamProvider.createStreamProvider ();
+        var sp = Fluss.StreamProvider.create();
         var a = sp.newStream("Demo");
         var b = sp.newStream("Demo");
         var calls = {};

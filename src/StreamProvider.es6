@@ -17,6 +17,15 @@ class StreamProvider {
         this._streams = {};
     }
 
+    /**
+     * Clear all data. This closes all streams before removing them
+     */
+    dispose() {
+        Object.keys(this._streams).forEach((key) => {
+            this._streams[key].forEach((stream) => stream.close());
+        });
+        this._streams = {}
+    }
 
     /**
      * Create a new stream for an "event"-type
@@ -82,6 +91,6 @@ class StreamProvider {
  * Create a new stream provider
  * @returns {StreamProvider}
  */
-export function createStreamProvider() {
+export function create() {
     return new StreamProvider();
 }

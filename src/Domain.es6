@@ -103,7 +103,7 @@ export default class Domain {
         this._stack = [];
         this._mementos = null;
         this._anyPlugins = [];
-        this._streams = StreamProvider.createStreamProvider();
+        this._streams = StreamProvider.create();
 
         this.errors.forEach(() => this._mementos = null);
         this.finishedAction.forEach(() => this._undoStack.push(this._mementos));

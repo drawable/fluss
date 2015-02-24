@@ -43,7 +43,7 @@ export default class PluginCarrier {
         };
 
         this._plugin["abort"] = () => this.abort.apply(this, this._params);
-        this._streams = StreamProvider.createStreamProvider();
+        this._streams = StreamProvider.create();
     }
 
     get started() {

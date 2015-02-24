@@ -622,4 +622,3 @@ class Stream {
 export function createStream(name) {
     return new Stream(name || "stream");
 }
-

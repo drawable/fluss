@@ -307,12 +307,11 @@ module Fluss {
         /**
          * Base class for immutable stores.
          */
-        class ImmutableStore extends Store {
+        export class ImmutableStore extends Store {
             get isImmutable():boolean {
                 return true;
             }
         }
-
 
         export class Item extends Store implements IItem {
 
