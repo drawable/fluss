@@ -6,9 +6,11 @@ fluss
 
 It can be used on the frontend and on the backend.
 
-**fluss** is written in Typescript but it can be used in JavaScript as well. Views created with
-[React](http://facebook.github.io/react/) are the target but **fluss** has no dependencies
-whatsoever to React. Using other view technologies is possible.
+**fluss** is written in ES6. Views created with [React](http://facebook.github.io/react/) are the target but **fluss**
+has no dependencies whatsoever to React. Using other view technologies is possible.
+
+
+**I am currently converting fluss from Typescript to ES6 and refactor some parts of it significantly. Info below may not be up to date.**
 
 ## Contact
 
@@ -20,13 +22,9 @@ Reach me on Twitter [@drawableIO](https://twitter.com/drawableio)
 * Stores: An implementation of record stores and array stores for keeping application state.
   These provide reactive streams for updates. Stores can be nested. Stores provide an
   immutable proxy.
+* Domains. They define a closed set of stores and actions. You can create several.
 * Actions. Really simple. You need to provide the functions yourself or call a generic dispatcher function.
-* A Plugin-System that allows the developer to encapsulate the functionality behind an action in one class. It provides an
-  implementation of the memento pattern for full undo/redo support, the use of multiple plugins for the same action and
-  the use of plugins to run on every action.
-
-See the full [API here](http://www.drawable.de/doc/).
-
+* Plugins. Encapsulate all you need to perform an action and revert an action in one place.
 
 ## Modules
 
@@ -38,10 +36,12 @@ This is beta software. APIs may change. Bugs are likely although there are [test
 
 ## Browser compatibility
 
-**fluss** uses ES5 features so you need a modern browser. It is tested on the latest Firefox (33+), Chrome (37+) and
+**fluss** is compiled to ES5 so you need a modern browser. It is tested on the latest Firefox (33+), Chrome (37+) and
 IE 10. It should work for ChromeApps, in NodeWebkit, Atomshell and the likes.
 
 ## Installation
+
+(This will get you the Typescript version atm).
 
     npm install fluss
 
@@ -100,42 +100,23 @@ Filtered (and mapped) stores are even more reactive (within limits)...
     or array parameters. If these are used, the result is likely to be undefined and wrong. For these cases the behaviour
     can be disabled).
 
-Create a container for plugins
+Create a domain for plugins
 
-    // In Typescript
-    class Application extends Fluss.Plugins.PluginContainer {
-
-        todos:Fluss.Store.IArrayStore;
+    class Application extends Fluss.Domain {
 
         constructor() {
             super();
             this._todos = Fluss.Store.array();
     }
 
-    // In JavaScript
-    var Application = Fluss.Plugins.createContainer({
-        todos: Fluss.Store.array()
-    })
-
-    var application = new Application();
-
 Create a plugin...
 
-    // In Typescript
-    class AddTodo extends Fluss.Plugins.BasePlugin {
+    class AddTodo extends Fluss.Plugin {
 
-        run(container:Application.Application, action:number, title:string) {
-            container.todos.push(Fluss.Store.record({ title: title, completed: false }));
+        run(domain, action, title) {
+            domain.todos.push(Fluss.Store.record({ title: title, completed: false }));
         }
     }
-
-
-    // In Javascript
-    var AddTodo = Fluss.Plugins.createPlugin({
-        run(container, action, title) {
-            container.todos.push(Fluss.Store.record({ title: title, completed: false }));
-        }
-    });
 
 ... add it to your container...
 
@@ -144,39 +125,31 @@ Create a plugin...
 
 ... and execute the action
 
-    Fluss.Dispatcher.dispatch(NEW_TODO, "... and make an awesome app with it");
-
-You can create a nicely typed function for that
-
-    function newTodo(title:string) {
-        Fluss.Dispatcher.dispatch(NEW_TODO, "... and make an awesome app with it");
-    }
+    application.execute(NEW_TODO, "... and make an awesome app with it");
 
 Extend your plugin to support UNDO/REDO
 
-        class AddTodo extends Fluss.Plugins.BasePlugin {
-            run(container:Application.Application, action:number, title:string) {
-                container.todos.push(Fluss.Store.record({ title: title, completed: false}));
+        class AddTodo extends Fluss.Plugin {
+            run(domain, action, title) {
+                domain.todos.push(Fluss.Store.record({ title: title, completed: false}));
             }
 
-            getMemento(container:Application.Application,
-                       action:number, title:string):Fluss.Dispatcher.IMemento {
-                return Fluss.Dispatcher.createMemento(null, { index: container.todos.length })
+            getMemento(domain, action) {
+                return container.todos.length
             }
 
-            restoreFromMemento(container:Application.Application,
-                               memento:Fluss.Dispatcher.IMemento) {
-                container.todos.remove(memento.data.index, 1);
+            restoreFromMemento(domain, memento) {
+                container.todos.remove(memento, 1);
             }
         }
 
 ... and now you can undo actions
 
     // Create a new Todo
-    Fluss.Dispatcher.dispatch(NEW_TODO, "Never do unit tests again");
+    domain.execute(NEW_TODO, "Never do unit tests again");
 
     // Reconsider... and undo your last action
-    Fluss.BaseActions.undo();
+    domain.undo();
 
 ## A full example
 
@@ -220,6 +193,12 @@ the heart of flux.
 The store just stores data - nothing else. Handling the actions is done in the plugin. The plugin manipulates the data in the store. The plugin even
 knows how to undo the action, i.e. what data changes to apply to get to an earlier state.
 
+### No singleton dispatcher
+
+There are other implementations that do this as well. Basically you can create a domain, that defines the data and the actions that are performed
+on that data. Actions are executed on the domain. This allows you to have multiple domains in your application. Most relevant use case is
+separating UI state from Application state.
+
 
 ## Building
 
@@ -251,15 +230,6 @@ Building the npm module is done using
     gulp build
 
 It creates a directory `build` with everything in it.
-
-## Why reinvent the wheel?
-
-Most importantly it is fun to write. It's an exploration of concepts and ideas.
-
-**fluss** is the result of both an ambitious project as well as a learning experience. Very good implementations for reactive
-programming exist ([BaconJS](https://baconjs.github.io/), [kefir.js](http://pozadi.github.io/kefir/), [RxJS](https://github.com/Reactive-Extensions/RxJS))
-but to completely wrap my head around reactive programming I wanted to implement my own thing.
-
 
 ## Changelog
 
