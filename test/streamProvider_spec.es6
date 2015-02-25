@@ -51,6 +51,7 @@ describe("A StreamProvider manages different streams for different occasions. It
             })
         }
 
+
         makeForEach(sA1, "A1");
         makeForEach(sA2, "A2");
         makeForEach(sA3, "A3");
@@ -79,7 +80,7 @@ describe("A StreamProvider manages different streams for different occasions. It
             calls["B"] = v;
         });
 
-        var s = Fluss.Stream.createStream();
+        var s = Fluss.Stream.create();
 
         sp.relay(s, "Demo");
 

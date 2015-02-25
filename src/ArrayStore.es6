@@ -12,25 +12,26 @@ import ImmutableArrayStore from './ImmutableArrayStore';
 let _private = (obj, func, ...args) => func.apply(obj, args);
 
 function setupSubStreams(item, value) {
-    var that = this;
     if (Store.isStore(value)) {
-        var substream = this._substreams[Tools.oid(value)];
-        if (substream) {
-            substream.updates.close();
-        }
+        _private(this, disposeSubstream, value);
+        let subStream = {};
 
-        substream = {
-            updates: value.updates
-        };
-        substream.updates.forEach(function(update) {
-            var updateInfo = Store.createUpdateInfo(update.item,
+        let doSubStream = (streamId) => {
+            subStream[streamId] = value[streamId];
+            subStream[streamId].forEach((update) => {
+                let info = Store.createUpdateInfo(update.item,
                     update.value,
-                    that,
+                    this,
                     update.path ? item + "." + update.path : item + "." + update.item,
                     item);
-            that._streams.push("updates", updateInfo);
-        });
-        this._substreams[Tools.oid(value)] = substream;
+                this._streams.push(streamId, info);
+            });
+        };
+
+        doSubStream("updates");
+        doSubStream("newItems");
+        doSubStream("removedItems");
+        this._substreams[Tools.oid(value)] = subStream;
     }
 }
 
@@ -43,38 +44,37 @@ function disposeSubstream(value) {
         var subStream = this._substreams[Tools.oid(value)];
         if (subStream) {
             subStream.updates.close();
+            subStream.newItems.close();
+            subStream.removedItems.close();
             delete this._substreams[Tools.oid(value)];
         }
     }
 }
 
 function updateProperties() {
-    var that = this;
     var i;
 
     // We reset the stream every time because using shift, unshift, splice etc. the indexes of the values change constantly
     for (i = 0; i < this._data.length; i++) {
-        _private(that, setupSubStreams, i, this._data[i]);
+        _private(this, setupSubStreams, i, this._data[i]);
     }
 
-    function define(index) {
-        Object.defineProperty(that, "" + index, {
+    let define = (index) => {
+        Object.defineProperty(this, "" + index, {
             configurable: true,
-            get: function() {
-                return that._data[index];
-            },
+            get: () => this._data[index],
 
-            set: function(value) {
-                var old = that._data[index];
+            set: (value) => {
+                var old = this._data[index];
                 if (value !== old) {
-                    that._data[index] = value;
-                    _private(that, disposeSubstream, old);
-                    _private(that, setupSubStreams, index, value);
-                    that._streams.push("updates", Store.createUpdateInfo(index, that._data[index], that, null))
+                    this._data[index] = value;
+                    _private(this, disposeSubstream, old);
+                    _private(this, setupSubStreams, index, value);
+                    this._streams.push("updates", Store.createUpdateInfo(index, this._data[index], this, null))
                 }
             }
         })
-    }
+    };
     for (i = this._maxProps; i < this._data.length; i++) {
         define(i);
     }
@@ -90,28 +90,23 @@ export default class ArrayStore extends Store.Store {
         this._substreams = {};
         this._data = initial || [];
         this._maxProps = 0;
-        _private(this, updateProperties);
-        this._synced = true;
         this._immutable = null;
 
-        var that = this;
+        _private(this, updateProperties);
 
         if (adder) {
-            adder.forEach(function (update) {
-                that.splice(update.item, 0, update.value);
-            }).until(this.isDisposing);
+            adder.forEach((update) => this.splice(update.item, 0, update.value))
+                 .until(this.isDisposing);
         }
 
         if (remover) {
-            remover.forEach(function (update) {
-                that.splice(update.item, 1);
-            }).until(this.isDisposing);
+            remover.forEach((update) => this.splice(update.item, 1))
+                   .until(this.isDisposing);
         }
 
         if (updater) {
-            updater.forEach(function (update) {
-                that[update.item] = update.value;
-            }).until(this.isDisposing);
+            updater.forEach((update) => this[update.item] = update.value)
+                   .until(this.isDisposing);
         }
     }
 
@@ -198,9 +193,9 @@ export default class ArrayStore extends Store.Store {
     map(callbackfn, thisArg) {
         var mapped = this._data.map(callbackfn, thisArg);
 
-        var adder = Stream.createStream();
-        var remover = Stream.createStream();
-        var updater = Stream.createStream();
+        var adder = Stream.create();
+        var remover = Stream.create();
+        var updater = Stream.create();
         var mappedStore = new ArrayStore(mapped, adder, remover, updater);
         var that = this;
 
@@ -314,9 +309,9 @@ export default class ArrayStore extends Store.Store {
 
 
         if (!noUpdates) {
-            adder = Stream.createStream();
-            remover = Stream.createStream();
-            updater = Stream.createStream();
+            adder = Stream.create();
+            remover = Stream.create();
+            updater = Stream.create();
 
             this.newItems.forEach(function (update) {
                 if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {

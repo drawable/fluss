@@ -16,17 +16,23 @@ function checkNameAllowed(name) {
 function setupSubStream(name, value) {
     _private(this, disposeSubStream, name);
     if (Store.isStore(value)) {
-        var subStream;
-        var that = this;
-        subStream = value.updates;
-        subStream.forEach(function (update) {
-            var info = Store.createUpdateInfo(update.item,
-                update.value,
-                update.store,
-                update.path ? name + "." + update.path : name + "." + update.item,
-                name);
-            that._streams.push("updates", info);
-        });
+        let subStream = {};
+
+        let doSubStream = (streamId) => {
+            subStream[streamId] = value[streamId];
+            subStream[streamId].forEach((update) => {
+                let info = Store.createUpdateInfo(update.item,
+                    update.value,
+                    update.store,
+                    update.path ? name + "." + update.path : name + "." + update.item,
+                    name);
+                this._streams.push(streamId, info);
+            });
+        };
+
+        doSubStream("updates");
+        doSubStream("newItems");
+        doSubStream("removedItems");
 
         this._subStreams[name] = subStream;
     }
@@ -35,7 +41,10 @@ function setupSubStream(name, value) {
 function disposeSubStream(name) {
     var subStream = this._subStreams[name];
     if (subStream) {
-        subStream.dispose();
+        subStream.updates.close();
+        subStream.newItems.close();
+        subStream.removedItems.close();
+        delete this._substreams[name];
     }
 }
 
@@ -84,11 +93,11 @@ export default class RecordStore extends Store.Store {
         if (!Object.getPrototypeOf(this).hasOwnProperty(name)) {
             Object.defineProperty(this, name, {
                 configurable: true,
-                get: function ():any {
+                get: function () {
                     return that._get(name);
                 },
 
-                set: function (value:any) {
+                set: function (value) {
                     return that._set(name, value);
                 }
             });

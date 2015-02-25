@@ -32,7 +32,7 @@ class StreamProvider {
      * @param type
      */
     newStream(type) {
-        var s = Stream.createStream(type);
+        var s = Stream.create(type);
 
         if (!this._streams[type]) {
             this._streams[type] = [];

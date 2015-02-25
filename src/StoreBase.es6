@@ -4,6 +4,7 @@
 
 "use strict";
 
+import * as Tools from './Tools';
 import * as StreamProvider from './StreamProvider';
 
 export function createUpdateInfo(item, value, store, path, rootItem) {
@@ -72,6 +73,7 @@ export class Store {
     }
 }
 
+
 export class ImmutableStore extends Store {
     get isImmutable() {
         return true;
@@ -84,5 +86,5 @@ export class ImmutableStore extends Store {
  * @returns {boolean}
  */
 export function isStore(thing) {
-    return typeof thing.newItems !== "undefined";
+    return thing && typeof thing.newItems !== "undefined";
 }

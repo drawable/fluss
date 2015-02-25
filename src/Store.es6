@@ -6,11 +6,10 @@
 
 import * as Tools from './Tools';
 import * as StoreBase from './StoreBase'
-import ArrayStore from './ArrayStore';
-import RecordStore from './RecordStore';
+import MArrayStore from './ArrayStore';
+import MRecordStore from './RecordStore';
 import ImmutableArrayStore from './ImmutableArrayStore';
 import ImmutableRecordStore from './ImmutableArrayStore';
-
 
 
 function buildDeep(value) {
@@ -29,13 +28,13 @@ function buildDeep(value) {
     }
 
     function buildArray(value) {
-        var store = new ArrayStore();
+        var store = new MArrayStore();
         value.forEach((item) => store.push(getItem(item)));
         return store;
     }
 
     function buildRecord(values) {
-        var store = new RecordStore();
+        var store = new MRecordStore();
         for (var key in values) {
             if (values.hasOwnProperty(key)) {
                 store.addItem(key, getItem(values[key]));
@@ -56,21 +55,6 @@ function buildDeep(value) {
     }
 }
 
-
-/**
- * Create a new record. If an initial value is given it will have the enumerable properties of that value. You can
- * create nested stores by providing a complex object as an initial value.
- * @param initial
- * @returns {*}
- */
-export function record(initial) {
-    if (initial) {
-        return buildDeep(initial);
-    } else {
-        return new RecordStore();
-    }
-}
-
 /**
  * Create an array store. If an initial value is provided it will initialize the array
  * with it. The initial value can be a JavaScript array of either simple values or plain objects.
@@ -82,8 +66,26 @@ export function array(initial) {
     if (initial) {
         return buildDeep(initial);
     } else {
-        return new ArrayStore()
+        return new MArrayStore()
     }
 }
 
+
+/**
+ * Create a new record. If an initial value is given it will have the enumerable properties of that value. You can
+ * create nested stores by providing a complex object as an initial value.
+ * @param initial
+ * @returns {*}
+ */
+export function record(initial) {
+    if (initial) {
+        return buildDeep(initial);
+    } else {
+        return new MRecordStore();
+    }
+}
+
+
 export const isStore = StoreBase.isStore;
+
+export const RecordStore = MRecordStore;

@@ -619,6 +619,6 @@ class Stream {
  * @param name {String}
  * @returns {Stream}
  */
-export function createStream(name) {
+export function create(name) {
     return new Stream(name || "stream");
 }

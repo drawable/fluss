@@ -52,6 +52,17 @@ describe("Data stores", function () {
             expect(calls).to.equal("(a=2)(b=x)*c=43*!a!");
         });
 
+        it("provides a stream that processes on all change types", function() {
+            var record = Store.record({
+                a: 1
+            });
+
+            var calls = "";
+            record.allChanges.forEach((update) => {
+                calls += "(" + update.item + "=" + update.value + ")"
+            });
+        });
+
         it("can be initialized upon creation", function () {
             var store = Store.record({
                 a: 1,
@@ -997,7 +1008,7 @@ describe("Data stores", function () {
             expect(calls["subArray.3"]).to.equal(1);
             expect(updateCount).to.equal(10);
 
-            sub3["a"] = 10;
+            sub3["a"] = 17;
             expect(calls["subArray.3.a"]).to.equal(5);       // <-- this must not change because we removed the store from the array
             expect(updateCount).to.equal(10);
         });
