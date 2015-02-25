@@ -159,34 +159,11 @@ Please see the [tutorial](examples/tutorial.md).
 
 I don't know all implementations of flux so not all may apply to every implementation.
 
-### Actions are just IDs
-
-You do not create an action object or anything. The reason for this lies in the ambiguous signature that leads to. Even for JavaScript
-modern IDEs do a great job a code completion and hinting the developer on the usage of functions and their parameters. From a interface
-perspective these generated actions are anonymous and the IDE cannot help you in telling the developer about which parameters the action
-expects. This is even more relevant in a Typescript Environment where the IDE has very valid information for code completion.
-
-Therefore right now actions are just IDs (numbers) and the developer can provide a dedicated function with an explicit signature to trigger
-the action. To some this might seem a bit tedious and they're right. In the tutorial you have to edit three files to add a new action: The file that
-provides all actions, the implementation of the plugin and the creation of the application that wraps the new plugin for the action. But it is all
-about maintainability and end ease of use of the actions for the developer.
-
 ### There are no events
 
 No event emitter in the classical sense is used. Change notifications from stores to the UI (or whomever) are transported using reactive streams.
+Reactive programming seems like a natural fit for React UIs - not because of the similarities in names.
 
-Reactive programming seems like a natural fit for React UIs - not because of the similarities in names - but because React let's us so stupidly rerender
-our UI whenever something changes and then does an excellent job determining what updates the DOM really needs.
-
-There still is an implementation of an emitter and even an event channel that enables the subscription of events without knowing the emitting object.
-With the introduction of the reactive streams these are obsolete and maybe are removed in a future version.
-
-Of course one can regard the subscription to a stream using `forEach` the same as subscribing to an event.
-
-### Immutable store proxies enforce the direction of data flow
-
-The immutable store actively prevents it's user from changing the store data. When it is used in the UI it will enforce the dataflow that is at
-the heart of flux.
 
 ### The store does not know the actions
 
