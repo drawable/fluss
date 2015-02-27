@@ -8,6 +8,7 @@ import * as Stream from './Stream';
 
 let _private = (obj, func, ...args) => func.apply(obj, args);
 
+
 function updateProperties() {
     var that = this;
     var i;

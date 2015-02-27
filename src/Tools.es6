@@ -14,7 +14,6 @@ export function isArray(thing) {
 }
 
 
-
 var OID_PROP = "__ID__";
 var oids = 10000;
 

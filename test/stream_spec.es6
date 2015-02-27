@@ -8,6 +8,7 @@ import * as Stream from '../src/Stream'
 import {expect} from 'chai';
 let sinon = require('sinon');
 
+
 let Fluss = {
     Stream: Stream
 };
@@ -16,7 +17,7 @@ describe("A stream (used for reactive programming patterns)", function() {
     it("can be created", function() {
         var s = Fluss.Stream.create("myStream");
 
-        expect(s).not.to.be.undefined();
+        expect(s).not.to.be.undefined;
         expect(s.name).to.equal("myStream");
     });
 
@@ -112,7 +113,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         expect(calls[0]).to.equal("A");
         expect(calls[1]).to.equal(23);
         expect(s.length).to.equal(2);
-        expect(s.closed).to.be.ok();
+        expect(s.closed).to.be.ok;
     });
 
     it("can use multiple 'forEach'", function() {
@@ -812,8 +813,8 @@ describe("A stream (used for reactive programming patterns)", function() {
         expect(calls[0]).to.equal("A");
         expect(calls[1]).to.equal(23);
         expect(s.length).to.equal(2);
-        expect(closed).to.be.ok();
-        expect(s.closed).to.be.ok();
+        expect(closed).to.be.ok;
+        expect(s.closed).to.be.ok;
 
         // Subsequent calls to close have no effect
         s.close();
@@ -847,11 +848,11 @@ describe("A stream (used for reactive programming patterns)", function() {
         s.push(23);
         s.close();
 
-        expect(s.closed).to.be.ok();
-        expect(m1.closed).to.be.ok();
-        expect(m2.closed).to.be.ok();
-        expect(m3.closed).to.be.ok();
-        expect(closed).to.be.ok();
+        expect(s.closed).to.be.ok;
+        expect(m1.closed).to.be.ok;
+        expect(m2.closed).to.be.ok;
+        expect(m3.closed).to.be.ok;
+        expect(closed).to.be.ok;
     });
 
     it("can be throttled", function() {
@@ -999,7 +1000,7 @@ describe("A stream (used for reactive programming patterns)", function() {
             s.push(4);
             s.push(5);
             expect(s.length).to.equal(4);
-            expect(s.closed).to.be.ok();
+            expect(s.closed).to.be.ok;
         });
 
         it("when another stream processes by using 'until'", function() {
@@ -1013,7 +1014,7 @@ describe("A stream (used for reactive programming patterns)", function() {
             c.push(1);      //<-- this closes
             s.push(5);
             expect(s.length).to.equal(4);
-            expect(s.closed).to.be.ok();
+            expect(s.closed).to.be.ok;
         });
 
         it("when it is a filter and the filtered stream closes", function() {
@@ -1028,8 +1029,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             s.push(1);
             s.close();
 
-            expect(s.closed).to.be.ok();
-            expect(f.closed).to.be.ok();
+            expect(s.closed).to.be.ok;
+            expect(f.closed).to.be.ok;
         });
 
         it("when it is a map and the mapped stream closes", function() {
@@ -1044,8 +1045,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             s.push(1);
             s.close();
 
-            expect(s.closed).to.be.ok();
-            expect(m.closed).to.be.ok();
+            expect(s.closed).to.be.ok;
+            expect(m.closed).to.be.ok;
         });
 
         it("when it is a scan and the scanned stream closes", function() {
@@ -1060,8 +1061,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             s.push(1);
             s.close();
 
-            expect(s.closed).to.be.ok();
-            expect(m.closed).to.be.ok();
+            expect(s.closed).to.be.ok;
+            expect(m.closed).to.be.ok;
         });
 
         it("when it is a reduction and the reduced stream closes", function() {
@@ -1076,8 +1077,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             s.push(1);
             s.close();
 
-            expect(s.closed).to.be.ok();
-            expect(m.closed).to.be.ok();
+            expect(s.closed).to.be.ok;
+            expect(m.closed).to.be.ok;
         });
 
         it("when it is a concat and the second stream closes", function() {
@@ -1094,15 +1095,15 @@ describe("A stream (used for reactive programming patterns)", function() {
             s2.push(1);
             s2.push(1);
 
-            expect(s1.closed).to.be.ok();
-            expect(s2.closed).not.to.be.ok();
-            expect(co.closed).not.to.be.ok();
+            expect(s1.closed).to.be.ok;
+            expect(s2.closed).not.to.be.ok;
+            expect(co.closed).not.to.be.ok;
 
             s2.close();
 
-            expect(s1.closed).to.be.ok();
-            expect(s2.closed).to.be.ok();
-            expect(co.closed).to.be.ok();
+            expect(s1.closed).to.be.ok;
+            expect(s2.closed).to.be.ok;
+            expect(co.closed).to.be.ok;
         });
 
         it("when it is a concatAll and the concatted stream closes", function() {
@@ -1142,8 +1143,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             OOOO.push(6534);  // <-- this is ignored
 
             s.close();
-            expect(s.closed).to.be.ok();
-            expect(co.closed).to.be.ok();
+            expect(s.closed).to.be.ok;
+            expect(co.closed).to.be.ok;
         });
 
         it("when it is a combination and both of the combined streams close", function() {
@@ -1156,23 +1157,23 @@ describe("A stream (used for reactive programming patterns)", function() {
             s1.push(1);
             s1.push(1);
 
-            expect(s1.closed).not.to.be.ok();
-            expect(s2.closed).not.to.be.ok();
-            expect(co.closed).not.to.be.ok();
+            expect(s1.closed).not.to.be.ok;
+            expect(s2.closed).not.to.be.ok;
+            expect(co.closed).not.to.be.ok;
 
             s1.close();
             s2.push(1);
             s2.push(1);
             s2.push(1);
 
-            expect(s1.closed).to.be.ok();
-            expect(s2.closed).not.to.be.ok();
-            expect(co.closed).not.to.be.ok();
+            expect(s1.closed).to.be.ok;
+            expect(s2.closed).not.to.be.ok;
+            expect(co.closed).not.to.be.ok;
 
             s2.close();
-            expect(s1.closed).to.be.ok();
-            expect(s2.closed).to.be.ok();
-            expect(co.closed).to.be.ok();
+            expect(s1.closed).to.be.ok;
+            expect(s2.closed).to.be.ok;
+            expect(co.closed).to.be.ok;
 
             // Now close s2 first
             s1 = Fluss.Stream.create("A");
@@ -1184,9 +1185,9 @@ describe("A stream (used for reactive programming patterns)", function() {
             s1.push(1);
             s1.push(1);
 
-            expect(s1.closed).not.to.be.ok();
-            expect(s2.closed).not.to.be.ok();
-            expect(co.closed).not.to.be.ok();
+            expect(s1.closed).not.to.be.ok;
+            expect(s2.closed).not.to.be.ok;
+            expect(co.closed).not.to.be.ok;
 
             s2.push(1);
             s2.push(1);
@@ -1194,14 +1195,14 @@ describe("A stream (used for reactive programming patterns)", function() {
 
             s2.close();
 
-            expect(s1.closed).not.to.be.ok();
-            expect(s2.closed).to.be.ok();
-            expect(co.closed).not.to.be.ok();
+            expect(s1.closed).not.to.be.ok;
+            expect(s2.closed).to.be.ok;
+            expect(co.closed).not.to.be.ok;
 
             s1.close();
-            expect(s1.closed).to.be.ok();
-            expect(s2.closed).to.be.ok();
-            expect(co.closed).to.be.ok();
+            expect(s1.closed).to.be.ok;
+            expect(s2.closed).to.be.ok;
+            expect(co.closed).to.be.ok;
 
         });
     });
@@ -1219,7 +1220,7 @@ describe("A stream (used for reactive programming patterns)", function() {
                 s2Closed = true;
             });
 
-            expect(s2Closed).to.be.ok();
+            expect(s2Closed).to.be.ok;
         });
 
         it("when it is a filter on an already closed stream", function() {
@@ -1228,8 +1229,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             var s2 = s1.filter(function() {
                 return 1;
             });
-            expect(s1.closed).to.be.ok();
-            expect(s2.closed).to.be.ok();
+            expect(s1.closed).to.be.ok;
+            expect(s2.closed).to.be.ok;
         });
 
         it("when it is a map on an already closed stream", function() {
@@ -1238,8 +1239,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             var s2 = s1.map(function() {
                 return 1;
             });
-            expect(s1.closed).to.be.ok();
-            expect(s2.closed).to.be.ok();
+            expect(s1.closed).to.be.ok;
+            expect(s2.closed).to.be.ok;
         });
 
         it("when it is a scan on an already closed stream", function() {
@@ -1248,8 +1249,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             var s2 = s1.scan(function() {
                 return 1;
             }, 0);
-            expect(s1.closed).to.be.ok();
-            expect(s2.closed).to.be.ok();
+            expect(s1.closed).to.be.ok;
+            expect(s2.closed).to.be.ok;
         });
 
         it("when it is a reduction on an already closed stream", function() {
@@ -1258,8 +1259,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             var s2 = s1.reduce(function() {
                 return 1;
             }, 0);
-            expect(s1.closed).to.be.ok();
-            expect(s2.closed).to.be.ok();
+            expect(s1.closed).to.be.ok;
+            expect(s2.closed).to.be.ok;
         });
 
         it("when it is a concat of two already closed streams", function() {
@@ -1269,17 +1270,17 @@ describe("A stream (used for reactive programming patterns)", function() {
             s2.close();
             var s3 = s1.concat(s2);
 
-            expect(s1.closed).to.be.ok();
-            expect(s2.closed).to.be.ok();
-            expect(s3.closed).to.be.ok();
+            expect(s1.closed).to.be.ok;
+            expect(s2.closed).to.be.ok;
+            expect(s3.closed).to.be.ok;
         });
 
         it("when it is a concatAll on an already closed stream", function() {
             var s1 = Fluss.Stream.create("A");
             s1.close();
             var s2 = s1.concatAll();
-            expect(s1.closed).to.be.ok();
-            expect(s2.closed).to.be.ok();
+            expect(s1.closed).to.be.ok;
+            expect(s2.closed).to.be.ok;
         });
 
         it("when it is a combination of two already closed streams", function() {
@@ -1289,9 +1290,9 @@ describe("A stream (used for reactive programming patterns)", function() {
             s2.close();
             var s3 = s1.combine(s2);
 
-            expect(s1.closed).to.be.ok();
-            expect(s2.closed).to.be.ok();
-            expect(s3.closed).to.be.ok();
+            expect(s1.closed).to.be.ok;
+            expect(s2.closed).to.be.ok;
+            expect(s3.closed).to.be.ok;
         });
 
         it("will close automatically when all 'child-streams' close", function() {

@@ -7,6 +7,7 @@
 import * as Store from '../src/Store';
 import {expect} from 'chai';
 
+
 describe("Data stores", function () {
     describe("come as record stores. They", function () {
         it("can hold values, that can be retrieved and set", function() {
@@ -83,8 +84,8 @@ describe("Data stores", function () {
                 }
             });
 
-            expect(Store.isStore(store)).to.be.ok();
-            expect(Store.isStore(store["sub"])).to.be.ok();
+            expect(Store.isStore(store)).to.be.ok;
+            expect(Store.isStore(store["sub"])).to.be.ok;
             expect(typeof store["sub"].addItem).to.equal("function");
 
         });
@@ -96,8 +97,8 @@ describe("Data stores", function () {
                 sub: [1, 2, 3]
             });
 
-            expect(Store.isStore(store)).to.be.ok();
-            expect(Store.isStore(store["sub"])).to.be.ok();
+            expect(Store.isStore(store)).to.be.ok;
+            expect(Store.isStore(store["sub"])).to.be.ok;
             expect(typeof store["sub"].push).to.equal("function");
         });
 
@@ -108,9 +109,9 @@ describe("Data stores", function () {
                 sub: [1, 2, { x: 10 }]
             });
 
-            expect(Store.isStore(store)).to.be.ok();
-            expect(Store.isStore(store["sub"])).to.be.ok();
-            expect(Store.isStore(store["sub"][2])).to.be.ok();
+            expect(Store.isStore(store)).to.be.ok;
+            expect(Store.isStore(store["sub"])).to.be.ok;
+            expect(Store.isStore(store["sub"][2])).to.be.ok;
 
             var calls = {};
             var updates = store.updates;
@@ -165,9 +166,9 @@ describe("Data stores", function () {
             store.addItem("sub", sub);
 
             var imm = store.immutable;
-            expect(Store.isStore(store["sub"])).to.be.ok();
-            expect(imm.isImmutable).to.be.ok();
-            expect(imm["sub"].isImmutable).to.be.ok();
+            expect(Store.isStore(store["sub"])).to.be.ok;
+            expect(imm.isImmutable).to.be.ok;
+            expect(imm["sub"].isImmutable).to.be.ok;
         });
 
         it("can be disposed and will delete all data and dispose all streams", function() {
@@ -192,7 +193,7 @@ describe("Data stores", function () {
             expect(closes).to.include("U");
             expect(closes).to.include("N");
             expect(closes).to.include("D");
-            expect(store["a"]).to.be.undefined();
+            expect(store["a"]).to.be.undefined;
         });
     });
 
@@ -356,7 +357,7 @@ describe("Data stores", function () {
 
             expect(calls[0]).to.equal(4);
             expect(calls[1]).to.equal(3);
-            expect(calls[2]).to.be.undefined();
+            expect(calls[2]).to.be.undefined;
             expect(calls[3]).to.equal(1);
             expect(calls[4]).to.equal(0);
         });
@@ -380,7 +381,7 @@ describe("Data stores", function () {
 
             expect(calls[0]).to.equal(4);
             expect(calls[1]).to.equal(3);
-            expect(calls[2]).to.be.undefined();
+            expect(calls[2]).to.be.undefined;
             expect(calls[3]).to.equal(1);
             expect(calls[4]).to.equal(0);
         });
@@ -522,7 +523,7 @@ describe("Data stores", function () {
 
             expect(imm.every(function(value) {
                 return typeof value !== "undefined";
-            })).not.to.be.undefined();
+            })).not.to.be.undefined;
         });
 
         it("will find the index of an substores immutable", function() {
@@ -545,8 +546,8 @@ describe("Data stores", function () {
 
             var m = store.item(sub);
 
-            expect(imm.isImmutable).to.be.ok();
-            expect(m.isImmutable).not.to.be.ok();
+            expect(imm.isImmutable).to.be.ok;
+            expect(m.isImmutable).not.to.be.ok;
             expect(m["a"]).to.equal(imm["a"]);
 
             m.a = 10;
@@ -607,7 +608,7 @@ describe("Data stores", function () {
             expect(evens[2]).to.equal(6);
 
             expect(calls[2]).to.equal(6);
-            expect(calls[3]).to.be.undefined();
+            expect(calls[3]).to.be.undefined;
 
             array[6] = 8;                   // [1, 2, 3, 4, 5, 6, 8]
             expect(evens.length).to.equal(4);
@@ -895,7 +896,7 @@ describe("Data stores", function () {
         it("can be created", function() {
             var i = Store.item(5);
 
-            expect(i).to.be.ok();
+            expect(i).to.be.ok;
         });
 
         it("are reactive", function() {

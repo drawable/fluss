@@ -6,7 +6,7 @@
 
 let index = 0;
 
-export function enumerateActions(...actions) {
+export function enumerate(...actions) {
     let r = {};
 
     actions.forEach((action) => {
@@ -22,3 +22,4 @@ export const IDs = {"__ANY__": -1000,
                     "UNDO": -2000,
                     "-1000": "__ANY__",
                     "-2000": "UNDO" };
+

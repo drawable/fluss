@@ -25,6 +25,7 @@ function addItem(name) {
     });
 }
 
+
 function removeItem(name) {
     delete this[name];
 }

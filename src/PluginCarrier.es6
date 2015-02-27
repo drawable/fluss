@@ -6,6 +6,7 @@
 
 import * as StreamProvider from './StreamProvider';
 
+
 /**
  * Wrapper class for plugins. This defines the events a plugin emits (via streams) during execution:
  *

@@ -129,6 +129,7 @@ class Setter extends Plugin {
     }
 }
 
+
 describe("Domain", function () {
 
     let app;
@@ -140,7 +141,7 @@ describe("Domain", function () {
 
     afterEach(function () {
         if (app) {
-            app.destroy();
+            app.dispose();
         }
     });
 

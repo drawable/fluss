@@ -7,7 +7,6 @@
 
 import * as Stream from './Stream';
 
-
 /**
  * A streamprovider manages multiple streams for different usages. It is a helper for objects
  * that want to provide streams for different events.

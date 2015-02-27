@@ -10,7 +10,6 @@ import * as StreamProvider from './StreamProvider';
 
 let _private = (obj, func, ...args) => func.apply(obj, args);
 
-
 function wrapAnyPluginsForAction(action) {
     if (!this._plugins[action]) {
         this._anyPlugins.forEach((plg) => _private(this, dowrap,action, plg))
@@ -109,7 +108,7 @@ export default class Domain {
         this.finishedAction.forEach(() => this._undoStack.push(this._mementos));
     }
 
-    destroy() {
+    dispose() {
         this._plugins = null;
     }
 

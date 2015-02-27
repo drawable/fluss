@@ -13,6 +13,7 @@ function checkNameAllowed(name) {
     return true;
 }
 
+
 function setupSubStream(name, value) {
     _private(this, disposeSubStream, name);
     if (Store.isStore(value)) {

@@ -11,7 +11,7 @@ describe("Actions", function() {
 
     describe("enumerator", function() {
         it("creates a bidirectional object of action ids", function() {
-            var a = Actions.enumerateActions("A", "B", "C");
+            var a = Actions.enumerate("A", "B", "C");
 
             expect(a.A).to.equal(0);
             expect(a[0]).to.equal("A");

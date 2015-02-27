@@ -27,7 +27,6 @@ export function createUpdateInfo(item, value, store, path, rootItem) {
     return r;
 }
 
-
 export class Store {
     constructor() {
         this._streams = StreamProvider.create();

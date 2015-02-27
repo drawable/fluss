@@ -4,7 +4,12 @@
 
 "use strict";
 
+import Tools from './Tools'
 import * as Stream from './Stream';
-import * as StreamProvider from './StreamProvider'
+import * as StreamProvider from './StreamProvider';
+import * as Store from './Store';
+import * as Actions from './Actions'
+import Domain from './Domain';
+import Plugin from './Plugin'
 
-export { Stream, StreamProvider}
+export default { Tools, Stream, StreamProvider, Store, Actions, Domain, Plugin }

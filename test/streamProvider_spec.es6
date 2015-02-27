@@ -3,15 +3,14 @@
  */
 
 "use strict";
-import * as Fluss from '../src/Fluss'
+import Fluss from '../src/Fluss'
 import {expect} from 'chai';
-
 
 describe("A StreamProvider manages different streams for different occasions. It", function() {
     it("can be created", function() {
         var sp = Fluss.StreamProvider.create();
 
-        expect(sp).to.be.ok();
+        expect(sp).to.be.ok;
     });
 
     it("can create streams", function() {
@@ -25,12 +24,12 @@ describe("A StreamProvider manages different streams for different occasions. It
         var sB3 = sp.newStream("B");
 
 
-        expect(sA1).to.be.ok();
-        expect(sA2).to.be.ok();
-        expect(sA3).to.be.ok();
-        expect(sB1).to.be.ok();
-        expect(sB2).to.be.ok();
-        expect(sB3).to.be.ok();
+        expect(sA1).to.be.ok;
+        expect(sA2).to.be.ok;
+        expect(sA3).to.be.ok;
+        expect(sB1).to.be.ok;
+        expect(sB2).to.be.ok;
+        expect(sB3).to.be.ok;
     });
 
     it("can push values to streams it has created", function() {

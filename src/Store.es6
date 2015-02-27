@@ -11,7 +11,6 @@ import MRecordStore from './RecordStore';
 import ImmutableArrayStore from './ImmutableArrayStore';
 import ImmutableRecordStore from './ImmutableArrayStore';
 
-
 function buildDeep(value) {
     function getItem(value) {
         var v;

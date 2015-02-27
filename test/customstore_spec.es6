@@ -19,6 +19,7 @@ class Custom extends Store.RecordStore {
     }
 }
 
+
 describe("A custom Store", function() {
     it("can be used very much like a regular object", function() {
         var store = new Custom();
