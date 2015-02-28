@@ -175,7 +175,7 @@ on that data. Actions are executed on the domain. This allows you to have multip
 
 ## Building
 
-You need [node](http://nodejs.org/), [NPM](https://www.npmjs.com), [Typescript](http://www.typescriptlang.org/)
+You need [node](http://nodejs.org/), [NPM](https://www.npmjs.com), [Babel](http://babeljs.io/)
 [Gulp](http://gulpjs.com/) and [Mocha](http://mochajs.org/) installed globally.
 
 Checkout the whole thing from github
