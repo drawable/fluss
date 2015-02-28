@@ -2,8 +2,6 @@
  * Created by Stephan on 22.02.2015.
  */
 
-"use strict";
-
 let _private = (obj, func, ...args) => func.apply(obj, args);
 
 

@@ -5,6 +5,11 @@
 "use strict";
 
 var gulp = require('gulp');
+var browserify = require('browserify');
+
+var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
 var rename = require("gulp-rename");
 var babel = require("gulp-babel");
@@ -92,5 +97,36 @@ gulp.task("module-copy-dist", function() {
         .pipe(gulp.dest(dest("module-dist")));
 });
 
+
+var getBundleName = function () {
+    var version = require('./package.json').version;
+    var name = require('./package.json').name;
+    return name + "." + version;
+};
+
+gulp.task('module-single-file', function() {
+
+    var bundler = browserify({
+        entries: ['./build/src/Fluss.js'],
+        debug: true
+    });
+
+    var bundle = function() {
+        return bundler
+            .bundle()
+            .pipe(source(getBundleName() + '.js'))
+            .pipe(buffer())
+            .pipe(sourcemaps.init({loadMaps: true}))
+            // Add transformation tasks to the pipeline here.
+           // .pipe(uglify())
+            .pipe(sourcemaps.write('./', { sourceRoot: "../../"}))
+            .pipe(gulp.dest('./build/'));
+    };
+
+    return bundle();
+});
+
 gulp.task("module-build", ["module-copy-src", "module-copy-dist"], function() {
 });
+
+

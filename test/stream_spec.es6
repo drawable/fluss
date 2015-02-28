@@ -2,8 +2,6 @@
  * Created by Stephan on 22.02.2015.
  */
 
-"use strict";
-
 import * as Stream from '../src/Stream'
 import {expect} from 'chai';
 let sinon = require('sinon');

@@ -2,8 +2,6 @@
  * Created by Stephan on 22.02.2015.
  */
 
-"use strict";
-
 import * as Actions from './Actions';
 import PluginCarrier from './PluginCarrier';
 import * as StreamProvider from './StreamProvider';

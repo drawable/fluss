@@ -2,8 +2,6 @@
  * Created by Stephan on 22.02.2015.
  */
 
-"use strict";
-
 import Domain from '../src/Domain';
 import Plugin from '../src/Plugin';
 import * as Actions from '../src/Actions'

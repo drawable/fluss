@@ -2,7 +2,7 @@
  * Created by Stephan on 22.02.2015.
  */
 
-"use strict";
+
 import Fluss from '../src/Fluss'
 import {expect} from 'chai';
 

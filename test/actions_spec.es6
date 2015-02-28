@@ -2,7 +2,6 @@
  * Created by Stephan on 22.02.2015.
  */
 
-"use strict";
 
 import * as Actions from "../src/Actions";
 import {expect} from 'chai';

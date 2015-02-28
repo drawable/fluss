@@ -37,7 +37,8 @@ IE 10. It should work for ChromeApps, in NodeWebkit, Atomshell and the likes.
 
 ## Installation
 
-(This will get you the Typescript version atm).
+**This will get you the Typescript version atm**. If you want the current ES6 development version please clone this
+repository and [build](https://github.com/drawable/fluss#building) it.
 
     npm install fluss
 

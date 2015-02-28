@@ -2,8 +2,6 @@
  * Created by Stephan on 24.02.2015.
  */
 
-"use strict";
-
 /**
  * Check if something is an array.
  * @param thing

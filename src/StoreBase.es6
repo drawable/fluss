@@ -2,8 +2,6 @@
  * Created by Stephan on 24.02.2015.
  */
 
-"use strict";
-
 import * as Tools from './Tools';
 import * as StreamProvider from './StreamProvider';
 

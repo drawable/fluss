@@ -2,8 +2,6 @@
  * Created by Stephan on 22.02.2015.
  */
 
-"use strict";
-
 /**
  * Base implementation for a plugin. Does absolutely nothing.
  */

@@ -2,8 +2,6 @@
  * Created by Stephan on 24.02.2015.
  */
 
-"use strict";
-
 import * as Store from '../src/Store';
 import {expect} from 'chai';
 
