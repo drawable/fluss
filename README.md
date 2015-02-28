@@ -219,4 +219,5 @@ It creates a directory `build` with everything in it.
 
 [MIT](LICENSE)
 
-Copyright &copy; 2014 Stephan Smola
+Copyright &copy; 2014, 2015 Stephan Smola
+
