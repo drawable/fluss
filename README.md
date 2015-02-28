@@ -1,7 +1,7 @@
 fluss
 =====
 
-**fluss** is a application framework for the frontend and the backend. It is an interpretation of the
+**fluss** is an application framework for the frontend and the backend. It is an interpretation of the
 [flux architecture](http://facebook.github.io/flux/) that establishes a unidirectional flow of data through the application.
 
 **fluss** is written in ES6. Views created with [React](http://facebook.github.io/react/) are the target but **fluss**
@@ -27,7 +27,7 @@ Reach me on Twitter [@drawableIO](https://twitter.com/drawableio)
 
 ## Stability
 
-This is beta software. I am still figuring out how thing a best implemented so APIs may change. Bugs are likely,
+This is beta software. I am still figuring out how things are best implemented so APIs may change. Bugs are likely,
 but there are some [tests](test).
 
 ## Browser compatibility
