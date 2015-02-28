@@ -28,6 +28,11 @@ var directories = {
     "module-sources": {
         src: "./src/**/*.*",
         dest: "./build/src"
+    },
+
+    "module-dist": {
+        src: "./dist/**/*.*",
+        dest: "./build/"
     }
 
 };
@@ -80,4 +85,12 @@ gulp.task("module-clean", function(done) {
 gulp.task("module-copy-src", ["module-clean", "compile-sources-inplace"], function() {
     return gulp.src(src("module-sources"))
            .pipe(gulp.dest(dest("module-sources")));
+});
+
+gulp.task("module-copy-dist", function() {
+    return gulp.src(src("module-dist"))
+        .pipe(gulp.dest(dest("module-dist")));
+});
+
+gulp.task("module-build", ["module-copy-src", "module-copy-dist"], function() {
 });

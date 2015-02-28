@@ -2,7 +2,7 @@
   "name": "fluss",
   "version": "0.3.4",
   "description": "A Typescript/JavaScript application framework for the frontend and the backend",
-  "main": "index.js",
+  "main": "./src/Fluss.js",
   "scripts": {
     "test": "mocha"
   },
@@ -13,7 +13,7 @@
   "keywords": [
     "flux",
     "reactive",
-    "typescipt"
+    "ES6"
   ],
   "author": "Stephan Smola",
   "license": "MIT",

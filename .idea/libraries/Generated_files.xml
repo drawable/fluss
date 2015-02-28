@@ -2,21 +2,14 @@
   <library name="Generated files" type="javaScript">
     <properties>
       <sourceFilesUrls>
-        <item url="file://$PROJECT_DIR$/test - Kopie/streamProvider_spec.js" />
-        <item url="file://$PROJECT_DIR$/test - Kopie/domain_spec.js" />
         <item url="file://$PROJECT_DIR$/test/actions_spec.js" />
-        <item url="file://$PROJECT_DIR$/test/store_spec.js" />
-        <item url="file://$PROJECT_DIR$/test - Kopie/actions_spec.js" />
-        <item url="file://$PROJECT_DIR$/test/customstore_spec.js" />
-        <item url="file://$PROJECT_DIR$/test/domain_spec.js" />
-        <item url="file://$PROJECT_DIR$/test - Kopie/stream_spec.js" />
-        <item url="file://$PROJECT_DIR$/test - Kopie/customstore_spec.js" />
-        <item url="file://$PROJECT_DIR$/src/ArrayStore.js" />
         <item url="file://$PROJECT_DIR$/test/stream_spec.js" />
-        <item url="file://$PROJECT_DIR$/test/streamProvider_spec.js" />
-        <item url="file://$PROJECT_DIR$/dist/index.js" />
+        <item url="file://$PROJECT_DIR$/test/store_spec.js" />
+        <item url="file://$PROJECT_DIR$/test/customstore_spec.js" />
         <item url="file://$PROJECT_DIR$/src/Fluss.js" />
-        <item url="file://$PROJECT_DIR$/test - Kopie/store_spec.js" />
+        <item url="file://$PROJECT_DIR$/test/domain_spec.js" />
+        <item url="file://$PROJECT_DIR$/src/ArrayStore.js" />
+        <item url="file://$PROJECT_DIR$/src/Actions.js" />
       </sourceFilesUrls>
     </properties>
     <CLASSES>
@@ -145,20 +138,21 @@
       <root url="file://$PROJECT_DIR$/src - Kopie/PluginCarrier.js" />
       <root url="file://$PROJECT_DIR$/test/streamProvider_spec.js" />
       <root url="file://$PROJECT_DIR$/test - Kopie/streamProvider_spec.js" />
-      <root url="file://$PROJECT_DIR$/test/actions_spec.js" />
       <root url="file://$PROJECT_DIR$/test - Kopie/domain_spec.js" />
-      <root url="file://$PROJECT_DIR$/test/store_spec.js" />
       <root url="file://$PROJECT_DIR$/test - Kopie/actions_spec.js" />
-      <root url="file://$PROJECT_DIR$/test/customstore_spec.js" />
-      <root url="file://$PROJECT_DIR$/test/domain_spec.js" />
       <root url="file://$PROJECT_DIR$/test - Kopie/stream_spec.js" />
       <root url="file://$PROJECT_DIR$/test - Kopie/customstore_spec.js" />
-      <root url="file://$PROJECT_DIR$/src/ArrayStore.js" />
-      <root url="file://$PROJECT_DIR$/test/stream_spec.js" />
       <root url="file://$PROJECT_DIR$/test/streamProvider_spec.js" />
       <root url="file://$PROJECT_DIR$/dist/index.js" />
-      <root url="file://$PROJECT_DIR$/src/Fluss.js" />
       <root url="file://$PROJECT_DIR$/test - Kopie/store_spec.js" />
+      <root url="file://$PROJECT_DIR$/test/actions_spec.js" />
+      <root url="file://$PROJECT_DIR$/test/stream_spec.js" />
+      <root url="file://$PROJECT_DIR$/test/store_spec.js" />
+      <root url="file://$PROJECT_DIR$/test/customstore_spec.js" />
+      <root url="file://$PROJECT_DIR$/test/domain_spec.js" />
+      <root url="file://$PROJECT_DIR$/src/Fluss.js" />
+      <root url="file://$PROJECT_DIR$/src/ArrayStore.js" />
+      <root url="file://$PROJECT_DIR$/src/Actions.js" />
     </CLASSES>
     <SOURCES />
   </library>

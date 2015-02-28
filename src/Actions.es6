@@ -6,16 +6,9 @@
 
 let index = 0;
 
-export function enumerate(...actions) {
-    let r = {};
-
-    actions.forEach((action) => {
-        r["" + action] = index;
-        r[index] = "" + action;
-        index++;
-    });
-
-    return r;
+export function enumerate(actions) {
+    Object.keys(actions).forEach((key) => actions[key] = index++);
+    return actions;
 }
 
 export const IDs = {"__ANY__": -1000,

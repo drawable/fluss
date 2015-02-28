@@ -4,13 +4,8 @@ fluss
 **fluss** is a application framework for the frontend and the backend. It is an interpretation of the
 [flux architecture](http://facebook.github.io/flux/) that establishes a unidirectional flow of data through the application.
 
-It can be used on the frontend and on the backend.
-
 **fluss** is written in ES6. Views created with [React](http://facebook.github.io/react/) are the target but **fluss**
 has no dependencies whatsoever to React. Using other view technologies is possible.
-
-
-**I am currently converting fluss from Typescript to ES6 and refactor some parts of it significantly. Info below may not be up to date.**
 
 ## Contact
 
@@ -23,7 +18,7 @@ Reach me on Twitter [@drawableIO](https://twitter.com/drawableio)
   These provide reactive streams for updates. Stores can be nested. Stores provide an
   immutable proxy.
 * Domains. They define a closed set of stores and actions. You can create several.
-* Actions. Really simple. You need to provide the functions yourself or call a generic dispatcher function.
+* Actions. Really simple. You need to provide the functions yourself or call a generic execution function on the domain.
 * Plugins. Encapsulate all you need to perform an action and revert an action in one place.
 
 ## Modules
@@ -32,7 +27,8 @@ Reach me on Twitter [@drawableIO](https://twitter.com/drawableio)
 
 ## Stability
 
-This is beta software. APIs may change. Bugs are likely although there are [tests](test).
+This is beta software. I am still figuring out how thing a best implemented so APIs may change. Bugs are likely,
+but there are some [tests](test).
 
 ## Browser compatibility
 
@@ -96,11 +92,8 @@ Filtered (and mapped) stores are even more reactive (within limits)...
     //
     // And the console reads
     //  make coffee... was completed!
-(This is only guranteed to work when the filter-callback only uses the value for calculations and ignores the index
-    or array parameters. If these are used, the result is likely to be undefined and wrong. For these cases the behaviour
-    can be disabled).
 
-Create a domain for plugins
+Create a domain to bundle state and action behaviour
 
     class Application extends Fluss.Domain {
 
@@ -153,7 +146,8 @@ Extend your plugin to support UNDO/REDO
 
 ## A full example
 
-Please see the [tutorial](examples/tutorial.md).
+Please see the [tutorial](examples/tutorial.md). Attention: This is still based on the Typescript version. It also misses
+the latest changes, like the introduction of the domain object.
 
 ## Differences to the original flux and other implementations
 
@@ -174,7 +168,8 @@ knows how to undo the action, i.e. what data changes to apply to get to an earli
 
 There are other implementations that do this as well. Basically you can create a domain, that defines the data and the actions that are performed
 on that data. Actions are executed on the domain. This allows you to have multiple domains in your application. Most relevant use case is
-separating UI state from Application state.
+[separating UI state from Application state](http://blog.drawable.de/2015/02/27/double-flux-separating-ui-state-from-application-state/).
+
 
 
 ## Building
@@ -192,7 +187,7 @@ Go to the directory and do an
 
 Now you should be able to compile the typescript with
 
-    gulp compile-tsc
+    gulp compile
 
 and run the tests with
 
@@ -204,7 +199,7 @@ or
 
 Building the npm module is done using
 
-    gulp build
+    gulp module-build
 
 It creates a directory `build` with everything in it.
 
