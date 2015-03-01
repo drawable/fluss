@@ -18,6 +18,10 @@ var del = require("del");
 
 
 var directories = {
+    readme: {
+      src: "./README.md"
+    },
+
     sources: {
         src: "./src/**/*.es6",
         dest: "./src"
@@ -92,11 +96,11 @@ gulp.task("module-copy-src", ["module-clean", "compile-sources-inplace"], functi
            .pipe(gulp.dest(dest("module-sources")));
 });
 
+
 gulp.task("module-copy-dist", function() {
-    return gulp.src(src("module-dist"))
+    return gulp.src([src("module-dist"), src("readme")])
         .pipe(gulp.dest(dest("module-dist")));
 });
-
 
 var getBundleName = function () {
     var version = require('./package.json').version;
