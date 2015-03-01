@@ -1,6 +1,6 @@
 {
   "name": "fluss",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A JavaScript application framework for the frontend and the backend",
   "main": "./src/Fluss.js",
   "scripts": {
