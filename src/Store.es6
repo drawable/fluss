@@ -86,3 +86,4 @@ export function record(initial) {
 export const isStore = StoreBase.isStore;
 
 export const RecordStore = MRecordStore;
+export const ArrayStore = MArrayStore;

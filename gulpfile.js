@@ -104,6 +104,8 @@ var getBundleName = function () {
     return name + "." + version;
 };
 
+
+
 gulp.task('module-single-file', function() {
 
     var bundler = browserify({

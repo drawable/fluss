@@ -23,11 +23,11 @@ Reach me on Twitter [@drawableIO](https://twitter.com/drawableio)
 
 ## Modules
 
-**fluss** can be compiled to create either AMD or CommonJS modules. The npm package provides both.
+The npm module of **fluss** provides commonjs.
 
 ## Stability
 
-This is beta software. I am still figuring out how things are best implemented so APIs may change. Bugs are likely,
+This is beta software. I am still figuring out how things are best implemented so APIs and behavior may change. Bugs are likely,
 but there are some [tests](test).
 
 ## Browser compatibility
@@ -45,6 +45,10 @@ repository and [build](https://github.com/drawable/fluss#building) it.
 See [fluss-npm-module-usage](https://github.com/drawable/fluss-npm-module-usage) on how to setup your project in various ways.
 
 ## Getting started
+
+Use **fluss** in ES6
+
+    import Fluss from 'fluss'
 
 Create stores ...
 
@@ -205,6 +209,24 @@ Building the npm module is done using
 It creates a directory `build` with everything in it.
 
 ## Changelog
+
+### 0.4.0
+This release ist not backwards compatible!
+
+Converted from Typescript to ES6.
+
+In order to simplify the API this contains breaking changes:
+* Stream.createStream is now Stream.create
+* The streamprovider is now in it's own submodule.
+* Stream.createStreamProvider is now StreamProvider.create
+* There is no dispatcher anymore. Instead of a singleton dispatching actions globally use Domain instances
+* Plugins.BasePlugin is now it's own module Plugin
+* Plugins.Container is now it's own module Domain. It is completely rewritten into a simpler implementation
+  and handles action execution and undo handling itself
+* Instead of Dispatcher.dispatchAction use aDomainInstance.execute
+* There is no UndoManager anymore.
+
+
 
 ### 0.3.5
 * Added: Stream.throttle, Stream.debounce, Stream.buffer
