@@ -207,6 +207,11 @@ It creates a directory `build` with everything in it.
 
 ## Changelog
 
+### 0.4.3
+
+* Fix error that made Fluss.Tools unusable
+
+
 ### 0.4.0
 This release ist not backwards compatible!
 

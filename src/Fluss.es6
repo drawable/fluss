@@ -2,7 +2,7 @@
  * Created by Stephan on 22.02.2015.
  */
 
-import Tools from './Tools'
+import * as Tools from './Tools'
 import * as Stream from './Stream';
 import * as StreamProvider from './StreamProvider';
 import * as Store from './Store';

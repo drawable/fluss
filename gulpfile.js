@@ -16,7 +16,6 @@ var babel = require("gulp-babel");
 var concat = require("gulp-concat");
 var del = require("del");
 
-
 var directories = {
     readme: {
       src: "./README.md"
@@ -134,5 +133,3 @@ gulp.task('module-single-file', function() {
 
 gulp.task("module-build", ["module-copy-src", "module-copy-dist"], function() {
 });
-
-
