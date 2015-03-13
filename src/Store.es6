@@ -12,8 +12,13 @@ import ImmutableRecordStore from './ImmutableArrayStore';
 function buildDeep(value) {
     function getItem(value) {
         var v;
+        if (value === null) {
+            return value;
+        }
         if (typeof value === "object") {
-            if (Tools.isArray(value)) {
+            if (StoreBase.isStore(value)) {
+                return value;
+            } else if (Tools.isArray(value)) {
                 v = buildArray(value);
             } else {
                 v = buildRecord(value);

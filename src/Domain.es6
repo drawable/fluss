@@ -86,6 +86,8 @@ function dowrap(action, plugin) {
         }
     });
 
+    this._streams.relay(carrier.errors, "errors");
+
     this._plugins[action] = carrier;
     this._streams.push("addedPlugin", {action, carrier});
 }
