@@ -52,6 +52,10 @@ function executeAction(args, forAction) {
 function dowrap(action, plugin) {
     let carrier = new PluginCarrier(plugin);
 
+    if (!this._plugins) {
+        throw new Error("Domain not properly initialized. Did you call 'super()' in the constuctor?")
+    }
+
     if (this._plugins[action]) {
         let inner = this._plugins[action];
         carrier.ran.combine(carrier.holding).forEach((params) => {

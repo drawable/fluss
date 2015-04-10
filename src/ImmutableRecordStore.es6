@@ -55,6 +55,11 @@ export default class ImmutableRecord extends Store.ImmutableStore {
         return this;
     }
 
+    item(name) {
+        let item = this._parent.item(name);
+        return item.immutable;
+    }
+
     get keys() {
         return this._parent.keys;
     }

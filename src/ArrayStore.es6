@@ -183,12 +183,24 @@ export default class ArrayStore extends Store.Store {
         return this._data.join(separator);
     }
 
+
     /**
      * Calls a defined callback function on each element of an array, and returns an array that contains the results.
      * @param callbackfn A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
      * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
      */
     map(callbackfn, thisArg) {
+        let res = this._data.map(callbackfn, thisArg);
+        return new ArrayStore(res);
+    }
+
+    /**
+     * Calls a defined callback function on each element of an array, and returns an array that contains the results. The resulting ArrayStore will update
+     * automatically when the base store updates.
+     * @param callbackfn A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
+     * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+     */
+    automap(callbackfn, thisArg) {
         var mapped = this._data.map(callbackfn, thisArg);
 
         var adder = Stream.create();
@@ -212,18 +224,30 @@ export default class ArrayStore extends Store.Store {
         return mappedStore;
     }
 
+
     /**
      * Returns the elements of an array that meet the condition specified in a callback function.
-     * The returned ArrayStore will update automatically when the base ArrayStore updates. This is guaranteed to work correctly when
-     * callbackfn only uses the value to determine whether to keep it or not. Using index or even the array, filter functions can be
-     * created that will lead to undefined results. In these cases or when you don't need that behaviour you can disable it by
-     * setting noUpdates.
      *
      * @param callbackfn A function that accepts up to three arguments. The filter method calls the callbackfn function one time for each element in the array.
      * @param noUpdates Disable the automatic update of the filtered store
      * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
      */
-    filter(callbackfn, noUpdates, thisArg) {
+    filter(callbackfn, thisArg) {
+        let filtered = this._data.filter(callbackfn, thisArg);
+        return new ArrayStore(filtered);
+    }
+
+    /**
+     * Returns the elements of an array that meet the condition specified in a callback function.
+     * The returned ArrayStore will update automatically when the base ArrayStore updates. This is guaranteed to work correctly when
+     * callbackfn only uses the value to determine whether to keep it or not. Using index or even the array, filter functions can be
+     * created that will lead to undefined results.
+     *
+     * @param callbackfn A function that accepts up to three arguments. The filter method calls the callbackfn function one time for each element in the array.
+     * @param noUpdates Disable the automatic update of the filtered store
+     * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+     */
+    autofilter(callbackfn, thisArg) {
         var that = this;
         var adder, remover, updater, filteredStore;
 
@@ -306,49 +330,48 @@ export default class ArrayStore extends Store.Store {
         });
 
 
-        if (!noUpdates) {
-            adder = Stream.create();
-            remover = Stream.create();
-            updater = Stream.create();
+        adder = Stream.create();
+        remover = Stream.create();
+        updater = Stream.create();
 
-            this.newItems.forEach(function (update) {
-                if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
-                    if (isMapped(update.rootItem)) {
-                        adder.push(Store.createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
-                    } else {
-                        adder.push(Store.createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
-                    }
-                    addMap(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
+        this.newItems.forEach(function (update) {
+            if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
+                if (isMapped(update.rootItem)) {
+                    adder.push(Store.createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
                 } else {
-                    addMap(update.rootItem, -1);
+                    adder.push(Store.createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
                 }
-            });
+                addMap(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
+            } else {
+                addMap(update.rootItem, -1);
+            }
+        });
 
-            this.removedItems.forEach(function (update) {
+        this.removedItems.forEach(function (update) {
+            if (isMapped(update.rootItem)) {
+                remover.push(Store.createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
+            }
+            removeMap(update.rootItem);
+        });
+
+        this.updates.forEach(function (update) {
+            if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
+                if (isMapped(update.rootItem)) {
+                    updater.push(Store.createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store))
+                } else {
+                    adder.push(Store.createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
+                    map(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
+                }
+            } else {
                 if (isMapped(update.rootItem)) {
                     remover.push(Store.createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
-                }
-                removeMap(update.rootItem);
-            });
-
-            this.updates.forEach(function (update) {
-                if (callbackfn(that._data[update.rootItem], update.rootItem, that._data)) {
-                    if (isMapped(update.rootItem)) {
-                        updater.push(Store.createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store))
-                    } else {
-                        adder.push(Store.createUpdateInfo(getClosestLeftMap(update.rootItem) + 1, that._data[update.rootItem], update.store));
-                        map(update.rootItem, filteredStore.indexOf(that._data[update.rootItem]));
-                    }
+                    unmap(update.rootItem);
                 } else {
-                    if (isMapped(update.rootItem)) {
-                        remover.push(Store.createUpdateInfo(mapIndex(update.rootItem), that._data[update.rootItem], update.store));
-                        unmap(update.rootItem);
-                    } else {
-                        map(update.rootItem, -1);
-                    }
+                    map(update.rootItem, -1);
                 }
-            });
-        }
+            }
+        });
+
 
         filteredStore = new ArrayStore(filtered, adder, remover, updater);
 

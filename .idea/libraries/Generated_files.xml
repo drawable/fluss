@@ -21,6 +21,7 @@
         <item url="file://$PROJECT_DIR$/src/Fluss.js" />
         <item url="file://$PROJECT_DIR$/src/Store.js" />
         <item url="file://$PROJECT_DIR$/src/StreamProvider.js" />
+        <item url="file://$PROJECT_DIR$/src/StoreItem.js" />
         <item url="file://$PROJECT_DIR$/src/StoreBase.js" />
       </sourceFilesUrls>
     </properties>
@@ -173,6 +174,7 @@
       <root url="file://$PROJECT_DIR$/src/Tools.js" />
       <root url="file://$PROJECT_DIR$/src/Fluss.js" />
       <root url="file://$PROJECT_DIR$/src/Store.js" />
+      <root url="file://$PROJECT_DIR$/src/StoreItem.js" />
       <root url="file://$PROJECT_DIR$/src/StreamProvider.js" />
       <root url="file://$PROJECT_DIR$/src/StoreBase.js" />
     </CLASSES>

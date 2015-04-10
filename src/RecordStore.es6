@@ -2,7 +2,8 @@
  * Created by Stephan on 24.02.2015.
  */
 
-import * as Store from './StoreBase'
+import * as Store from './StoreBase';
+import Item from './StoreItem';
 import ImmutableRecord from './ImmutableRecordStore';
 
 let _private = (obj, func, ...args) => func.apply(obj, args);
@@ -43,9 +44,40 @@ function disposeSubStream(name) {
         subStream.updates.close();
         subStream.newItems.close();
         subStream.removedItems.close();
-        delete this._substreams[name];
+        delete this._subStreams[name];
     }
 }
+
+
+class RecordItem extends Item {
+
+    constructor(record, itemName) {
+        super();
+        this._record = record;
+        this._itemName = itemName;
+
+        this._streams.relay(this._record.updates.filter((update) => update.item === this._itemName ), "updates");
+        this._record.removedItems
+            .filter(update => update.item === this._itemName)
+            .forEach(() => this.dispose());
+    }
+
+    get value() {
+        return this._record[this._itemName];
+    }
+
+    set value(value) {
+        this._record[this._itemName] = value;
+    }
+
+    dispose() {
+        super.dispose();
+        this._record = null;
+        this._itemName = null;
+    }
+}
+
+
 
 
 export default class RecordStore extends Store.Store {
@@ -53,6 +85,7 @@ export default class RecordStore extends Store.Store {
     constructor(initial, locked) {
         super();
         this._data = {};
+        this._items = {};
         this._subStreams = {};
         this._immutable = null;
 
@@ -118,6 +151,16 @@ export default class RecordStore extends Store.Store {
         } else {
             throw new Error("Unknown property '" + name + "'.");
         }
+    }
+
+    item(name) {
+        if (this._data.hasOwnProperty(name)) {
+            if (!this._items.hasOwnProperty(name)) {
+                this._items[name] = new RecordItem(this, name);
+            }
+            return this._items[name];
+        }
+        throw new Error("Unknown property '" + name + "'.");
     }
 
     get immutable() {

@@ -555,7 +555,7 @@ describe("Data stores", function () {
 
         it("will update mapped stores when the base store changes", function() {
             var array = Store.array([1, 2, 3, 4, 5]);
-            var twice = array.map(function(value) {
+            var twice = array.automap(function(value) {
                 return value * 2;
             });
 
@@ -584,7 +584,7 @@ describe("Data stores", function () {
             var calls = {};
             var rcalls = {};
             var array = Store.array([1, 2, 3, 4, 5]);
-            var evens = array.filter(function(v) { return v % 2 === 0});
+            var evens = array.autofilter(function(v) { return v % 2 === 0});
 
             evens.newItems.forEach(function(update) {
                 calls[update.item] = update.value;
@@ -651,7 +651,7 @@ describe("Data stores", function () {
             array.push(Store.record({ a: false }));
             array.push(Store.record({ a: false }));
 
-            var filtered = array.filter(function(value) {
+            var filtered = array.autofilter(function(value) {
                 return value.a === false;
             });
 
@@ -680,7 +680,7 @@ describe("Data stores", function () {
             array.push(Store.record({a: false}));
             array.push(Store.record({a: false}));
 
-            var filtered = array.filter(function (value) {
+            var filtered = array.autofilter(function (value) {
                 return value.a === false;
             });
 
@@ -707,7 +707,7 @@ describe("Data stores", function () {
             array.push(Store.record({a: false}));
             array.push(Store.record({a: false}));
 
-            var filtered = array.filter(function (value) {
+            var filtered = array.autofilter(function (value) {
                 return value.a === false;
             });
 
@@ -725,7 +725,7 @@ describe("Data stores", function () {
             var array = Store.array([]);
             array.push(Store.record({ a: false }));
 
-            var filtered = array.filter(function(item) {
+            var filtered = array.autofilter(function(item) {
                 return !item.a;
             });
 
@@ -755,7 +755,7 @@ describe("Data stores", function () {
             var array = Store.array([]);
             array.push(Store.record({ a: false }));
 
-            var filtered = array.filter(function(item) {
+            var filtered = array.autofilter(function(item) {
                 return !item.a;
             });
 
@@ -785,7 +785,7 @@ describe("Data stores", function () {
             var array = Store.array([]);
             array.push(Store.record({a: false}));
 
-            var filtered = array.filter(function(item) {
+            var filtered = array.autofilter(function(item) {
                 return !item.a;
             });
 
@@ -805,7 +805,7 @@ describe("Data stores", function () {
             var array = Store.array([]);
             array.push(Store.record({a: false}));
 
-            var filtered = array.filter(function(item) {
+            var filtered = array.autofilter(function(item) {
                 return !item.a;
             });
 
@@ -826,7 +826,7 @@ describe("Data stores", function () {
             var array = Store.array([]);
             array.push(Store.record({ a: false }));
 
-            var filtered = array.filter(function (item) {
+            var filtered = array.autofilter(function (item) {
                 return !item.a;
             });
 
@@ -847,7 +847,7 @@ describe("Data stores", function () {
 
         it("will update filtered stores incorrectly with complex filter callbacks", function() {
             var array = Store.array("A B C D E".split(" "));
-            var filtered = array.filter(function(item, index) {
+            var filtered = array.autofilter(function(item, index) {
                 return index % 2 === 1;
             });
 
@@ -868,11 +868,11 @@ describe("Data stores", function () {
 
         it("will updated mixed filter/map stores automatically upon changes of the base store", function() {
             var array = Store.array([1, 2, 3, 4, 5]);
-            var evenTwice = array.filter(function(value) { return value % 2 === 0; })
-                .map(function(value) { return value * 2; });
+            var evenTwice = array.autofilter(function(value) { return value % 2 === 0; })
+                .automap(function(value) { return value * 2; });
 
-            var twiceEven = array.map(function(value) { return value * 2; })
-                .filter(function(value) { return value % 2 === 0; });
+            var twiceEven = array.automap(function(value) { return value * 2; })
+                .autofilter(function(value) { return value % 2 === 0; });
 
             expect(evenTwice.length).to.equal(2);
             expect(evenTwice[0]).to.equal(4);
@@ -887,6 +887,67 @@ describe("Data stores", function () {
 
             expect(twiceEven.length).to.equal(6);
             expect(twiceEven[5]).to.equal(12);
+        });
+    });
+
+    describe("Record store provides an item", () => {
+        it("gives you access to the value", () => {
+            let r = Store.record({ a: 1, b: "2" });
+            let i = r.item("a");
+
+            expect(i).to.be.ok;
+            expect(i.value).to.equal(r.a);
+
+            i.value = "X";
+            expect(i.value).to.equal(r.a);
+            expect(r.a).to.equal("X");
+
+            r.a = 12;
+            expect(i.value).to.equal(r.a);
+            expect(r.a).to.equal(12);
+        });
+
+        it("is always the same instance for the same property name", () => {
+            let r = Store.record({ a: 1, b: "2" });
+            let i = r.item("a");
+            let j = r.item("a");
+
+            expect(i).to.equal(j);
+        });
+
+        it("provides streams for updates", () => {
+            let r = Store.record({ a: 1, b: "2" });
+            let i = r.item("a");
+            let calls = [];
+
+            i.updates.forEach((update) => {
+                calls.push(update.item);
+            });
+
+
+            r.b = "lkjh";
+            expect(calls.length).to.equal(0);
+
+            r.a = "12";
+            expect(calls[0]).to.equal("a");
+
+            i.value = 20;
+            expect(calls[1]).to.equal("a");
+        });
+
+        it("disposes, when the item is removed from the record", () => {
+            let r = Store.record({ a: 1, b: "2" });
+            let i = r.item("a");
+
+            let called = false;
+
+            i.isDisposing.forEach(() => called = true);
+
+            r.removeItem("b");
+            expect(called).to.equal(false);
+
+            r.removeItem("a");
+            expect(called).to.equal(true);
         });
     });
 /*

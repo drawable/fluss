@@ -22,16 +22,11 @@ export default class PluginCarrier {
         this._plugin = null;
         if (typeof plugin === "function") {
             this._plugin = {
-                run: (container, action, ...args) => {
-                    this._streams.push("started", true);
-                    plugin.apply(this, args)
-                    this._streams.push("ran", true);
-                },
+                run: (container, action, ...args) => plugin.apply(this, args),
                 getMemento: () => null,
                 restoreFromMemento: () => null,
-                afterFinish: (params) => this._streams.push("finished", params),
-                afterAbort: () => null,
-                abort: (params) => this._streams.push("aborted", this._params)
+                afterFinish: () => null,
+                afterAbort: () => null
             }
         } else {
             this._plugin = plugin;
