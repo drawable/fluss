@@ -163,6 +163,7 @@ class Stream {
     reset() {
         this._buffer = [];
         this._closed = false;
+        this._length = 0;
     }
 
     /**
@@ -206,7 +207,7 @@ class Stream {
             this._length++;
             _private(this, processBuffers);
 
-            if (this._length === this._maxLength) {
+            if (this._maxLength && this._length >= this._maxLength) {
                 this.close();
             }
         }
@@ -226,7 +227,8 @@ class Stream {
     }
 
     /**
-     * For each processed value call the method. Returns the stream it is called on. Can be called multiple times.
+     * For each processed value call the method. Returns the stream it is called on. Can be used multiple times on one stream.
+     * Methods will be processed in the order they are registered using forEach
      * @param method
      */
     forEach(method) {

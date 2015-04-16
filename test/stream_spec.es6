@@ -1001,6 +1001,31 @@ describe("A stream (used for reactive programming patterns)", function() {
             expect(s.closed).to.be.ok;
         });
 
+        it("when a specific number of value where processed and can be reopend using reset", () => {
+            var s = Fluss.Stream.create("myStream").times(4);
+            var count = 0;
+            s.forEach(() => count++);
+
+            s.push(1);
+            s.push(2);
+            s.push(3);
+            s.push(4);
+            s.push(5);
+            expect(count).to.equal(4);
+            expect(s.closed).to.be.ok;
+
+            s.reset();
+            s.forEach(() => count++);
+            s.push(6);
+            s.push(7);
+            s.push(8);
+            s.push(9);
+            s.push(10);
+
+            expect(count).to.equal(8);
+
+        });
+
         it("when another stream processes by using 'until'", function() {
             var c = Fluss.Stream.create("closer");
             var s = Fluss.Stream.create("myStream").until(c);
