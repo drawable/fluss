@@ -83,5 +83,5 @@ export class ImmutableStore extends Store {
  * @returns {boolean}
  */
 export function isStore(thing) {
-    return thing && typeof thing.newItems !== "undefined";
+    return thing && typeof thing.updates !== "undefined";
 }

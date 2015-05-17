@@ -17,9 +17,9 @@ var concat = require("gulp-concat");
 var del = require("del");
 
 var directories = {
-    readme: {
-      src: "./README.md"
-    },
+        readme: {
+            src: "./README.md"
+        },
 
     sources: {
         src: "./src/**/*.es6",

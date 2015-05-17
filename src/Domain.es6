@@ -97,6 +97,11 @@ function dowrap(action, plugin) {
 }
 
 
+/**
+ * A domain groups all the actions and their behaviour (using plugins) into one object. It is created for a special
+ * domain of the application. That can be frontend and backend or more finely partitioned aspects of functional concern
+ * within the application.
+ */
 export default class Domain {
 
     constructor() {
@@ -112,30 +117,75 @@ export default class Domain {
         this.finishedAction.forEach(() => this._undoStack.push(this._mementos));
     }
 
+    /**
+     * Free memory
+     */
     dispose() {
         this._plugins = null;
+        this._stack = null;
+        this._mementos = null;
+        this._anyPlugins = null;
+        this._handlers = null;
+        this._undoStack = null;
+        this._streams.dispose();
+        this._streams = null;
     }
 
+    /**
+     * Stream that processes whenever a plugin is added to the domain
+     * @returns {*}
+     */
     get addedPlugin() {
         return this._streams.newStream("addedPlugin");
     }
 
+    /**
+     * Stream that processes whenever an action leads to an error.
+     * @returns {*}
+     */
     get errors() {
         return this._streams.newStream("errors");
     }
 
+    /**
+     * Stream that processes whenever an action is started
+     * @returns {*}
+     */
     get startedAction() {
         return this._streams.newStream("startedAction");
     }
 
+    /**
+     * Stream that processes whenever an action is finished
+     * @returns {*}
+     */
     get finishedAction() {
         return this._streams.newStream("finishedAction");
     }
 
+    /**
+     * Stream that processes whenever an action is aborted
+     * @returns {*}
+     */
     get abortedAction() {
         return this._streams.newStream("abortedAction");
     }
 
+
+    /**
+     * Returns a function that executes the given action on the domain this method is called on.
+     * @param action
+     * @returns {function(this:Domain)}
+     */
+    action(action) {
+        return this.execute.bind(this, action);
+    }
+
+
+    /**
+     * Abort the currently running action
+     * @param action
+     */
     abort(action) {
         if (this._stack.length) {
             this._stack.pop().abort(this, action);
@@ -144,6 +194,12 @@ export default class Domain {
         this._mementos = null;
     }
 
+    /**
+     * Add a new plugin for an action. This wraps the existing plugins for that action meaning
+     * It is started before the others and it ends after the others.
+     * @param action
+     * @param plugin
+     */
     wrap(action, plugin) {
         if (action === Actions.IDs.__ANY__) {
             this._anyPlugins.push(plugin);
@@ -160,6 +216,11 @@ export default class Domain {
         }
     }
 
+    /**
+     * Execute an action
+     * @param action
+     * @param args
+     */
     execute(action, ...args) {
         if (action === Actions.IDs.UNDO) {
             this.undo();
@@ -173,6 +234,9 @@ export default class Domain {
         this._mementos = null;
     }
 
+    /**
+     * Undo whatever is on the undostack
+     */
     undo() {
         let mementos = this._undoStack.pop();
         if (mementos) {

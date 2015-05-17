@@ -170,6 +170,22 @@ describe("Domain", function () {
         expect(localCalls[0].v2).to.equal(12);
     });
 
+    it("provides simple functions to execute specific actions", () => {
+        var localCalls = [];
+        app.wrap(1, (v1, v2) => {
+            localCalls.push({v1: v1, v2: v2})
+        });
+
+
+        let ac = app.action(1);
+
+        ac("A", 12);
+
+        expect(localCalls.length).to.equal(1);
+        expect(localCalls[0].v1).to.equal("A");
+        expect(localCalls[0].v2).to.equal(12);
+    });
+
     it("can be wrapped so that several plugins handle the same action", function () {
         var finished = -100;
 

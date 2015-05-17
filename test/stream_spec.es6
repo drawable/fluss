@@ -44,6 +44,26 @@ describe("A stream (used for reactive programming patterns)", function() {
         expect(calls[1]).to.equal(23);
     });
 
+    it("can have more than one value pushed to it. They all compile one call", function() {
+        var s = Fluss.Stream.create();
+        var calls = [];
+
+        s.forEach((a, b) => calls.push({a, b}));
+
+        s.push(1, 2);
+        s.push("a", 10);
+        s.push(9,"s");
+
+        expect(calls.length).to.equal(3);
+        expect(calls[0].a).to.equal(1);
+        expect(calls[0].b).to.equal(2);
+        expect(calls[1].a).to.equal("a");
+        expect(calls[1].b).to.equal(10);
+        expect(calls[2].a).to.equal(9);
+        expect(calls[2].b).to.equal("s");
+
+    });
+
     it("passes the index of the processed value to forEach", function() {
         var calls = "";
         var s = Fluss.Stream.create("myStream");
@@ -999,6 +1019,8 @@ describe("A stream (used for reactive programming patterns)", function() {
             s.push(5);
             expect(s.length).to.equal(4);
             expect(s.closed).to.be.ok;
+
+            expect(s._methods.length).to.equal(0);
         });
 
         it("when a specific number of value where processed and can be reopend using reset", () => {

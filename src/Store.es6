@@ -90,5 +90,12 @@ export function record(initial) {
 
 export const isStore = StoreBase.isStore;
 
+
+export class Store extends StoreBase.Store {
+
+}
+
 export const RecordStore = MRecordStore;
 export const ArrayStore = MArrayStore;
+
+export const createUpdateInfo = StoreBase.createUpdateInfo;

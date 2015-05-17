@@ -22,12 +22,12 @@ function processBuffer(buffer, methods, baseIndex) {
     var errors = [];
 
     while (l--) {
-        var value = buffer.pop();
+        var values = buffer.pop();
         methods.forEach((m, i) => {
             try {
-                m.call(this, value, i + baseIndex);
+                m.apply(this, values.concat(i + baseIndex));
             } catch (e) {
-                errors.push(e);
+                errors.push([e]);
             }
         });
     }
@@ -161,6 +161,7 @@ class Stream {
      * Reset stream: buffers cleared, all subscribers removed, reopend if closed.
      */
     reset() {
+        this.close();
         this._buffer = [];
         this._closed = false;
         this._length = 0;
@@ -199,11 +200,11 @@ class Stream {
      * Push a new value to the stream. This triggers all sub streams and processing methods.
      * Pushing, in contrary to a true array does not buffer the value. If you need the value
      * after processing by the stream you must buffer it yourself.
-     * @param value
+     * @param values
      */
-    push(value) {
+    push(...values) {
         if (!this._closed) {
-            _private(this, addToBuffer, value);
+            _private(this, addToBuffer, values);
             this._length++;
             _private(this, processBuffers);
 
@@ -218,7 +219,7 @@ class Stream {
      * the stream chain until it hits the first error handling method.
      * @param error
      */
-    pushError(error) {
+    pushError(...error) {
         // If we can't handle the error ourselves we throw it again. That will give preceding streams the chance to handle these
         if (!this._errorMethods || !this._errorMethods.length) {
             throw error;
