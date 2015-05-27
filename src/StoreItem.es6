@@ -12,6 +12,10 @@ export default class Item {
         this._streams = StreamProvider.create();
     }
 
+    get isStore() {
+        return true;
+    }
+
     get updates() {
         return this._streams.newStream("updates");
     }
