@@ -30,6 +30,10 @@ export class Store {
         this._streams = StreamProvider.create();
     }
 
+    get isStore() {
+        return true;
+    }
+
     get isImmutable() {
         return false;
     }
@@ -83,5 +87,5 @@ export class ImmutableStore extends Store {
  * @returns {boolean}
  */
 export function isStore(thing) {
-    return thing && typeof thing.updates !== "undefined";
+    return thing && thing.isStore;
 }
