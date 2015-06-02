@@ -44,6 +44,31 @@ describe("A stream (used for reactive programming patterns)", function() {
         expect(calls[1]).to.equal(23);
     });
 
+    it("can be a relay of another stream", () => {
+        var s = Fluss.Stream.create("myStream");
+        var r = Fluss.Stream.relay(s);
+        var calls = [];
+
+        r.forEach(function(value) {
+            calls.push(value);
+        });
+
+        s.push("A");
+        s.push(23);
+
+        expect(calls.length).to.equal(2);
+        expect(calls[0]).to.equal("A");
+        expect(calls[1]).to.equal(23);
+    });
+
+    it("throws an error if no error handler is specified", () => {
+        var s = Fluss.Stream.create("myStream");
+        s.forEach(() => {
+            throw new Error("This must not be swallowed.");
+        });
+        expect(() => s.push("some")).to.throw(Error);
+    });
+
     it("can have more than one value pushed to it. They all compile one call", function() {
         var s = Fluss.Stream.create();
         var calls = [];
@@ -400,7 +425,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         expect(calls[5]).to.equal(12);
     });
 
-    it("that is closed and then concated will result in the concat to be the values of the other stream immediately", function() {
+    it("that is closed and then concatenated will result in the concat to be the values of the other stream immediately", function() {
         var calls = "";
         var s1 = Fluss.Stream.create("A");
         var s2 = Fluss.Stream.create("B");
@@ -607,6 +632,24 @@ describe("A stream (used for reactive programming patterns)", function() {
             expect(calls[1]).to.equal(23);
 
             expect(errors.length).to.equal(1);
+        });
+
+        it("throws when an error handling method fails itself", () => {
+            var s = Fluss.Stream.create("myStream");
+            var errors = [];
+
+            s.forEach(function(value) {
+                if (!value) {
+                    throw new Error("An error")
+                }
+            });
+
+            s.onError(function(error) {
+                throw new Error("I fail deliberately.");
+            });
+
+            expect(() => s.push(0)).to.throw(Error);
+
         });
 
         it("that are not handled on subsequent streams - 1", function() {
@@ -1009,7 +1052,7 @@ describe("A stream (used for reactive programming patterns)", function() {
 
 
     describe("will close automatically", function() {
-        it("when a specific number of values where processed by using 'times'", function() {
+        it("when a specific number of values where processed defined by 'times'", function() {
             var s = Fluss.Stream.create("myStream").times(4);
 
             s.push(1);
@@ -1045,7 +1088,6 @@ describe("A stream (used for reactive programming patterns)", function() {
             s.push(10);
 
             expect(count).to.equal(8);
-
         });
 
         it("when another stream processes by using 'until'", function() {
@@ -1151,7 +1193,7 @@ describe("A stream (used for reactive programming patterns)", function() {
             expect(co.closed).to.be.ok;
         });
 
-        it("when it is a concatAll and the concatted stream closes", function() {
+        it("when it is a concatAll and the concatenated stream closes", function() {
             var calls = [];
 
             var s = Fluss.Stream.create("MyStream");
@@ -1187,9 +1229,10 @@ describe("A stream (used for reactive programming patterns)", function() {
             XXXX.push(23); XXXX.close();
             OOOO.push(6534);  // <-- this is ignored
 
+            expect(co.closed).to.be.false;
             s.close();
-            expect(s.closed).to.be.ok;
-            expect(co.closed).to.be.ok;
+            expect(s.closed).to.be.true;
+            expect(co.closed).to.be.true;
         });
 
         it("when it is a combination and both of the combined streams close", function() {

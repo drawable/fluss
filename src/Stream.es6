@@ -27,7 +27,7 @@ function processBuffer(buffer, methods, baseIndex) {
             try {
                 m.apply(this, values.concat(i + baseIndex));
             } catch (e) {
-                errors.push([e]);
+                errors.push(e);
             }
         });
     }
@@ -35,15 +35,36 @@ function processBuffer(buffer, methods, baseIndex) {
     return errors;
 }
 
+function processErrors(buffer, methods, baseIndex) {
+    if (this._closed) return null;
+    if (!methods.length) return null;
+
+    var l = buffer.length;
+
+    while (l--) {
+        var values = buffer.pop();
+        methods.forEach((m) => {
+            try {
+                m.call(this, values);
+            } catch(e) {
+                e.message = "One of the error handling methods of " + this.name + " produces an error itself:\n" + e.message;
+                throw e;
+            }
+        });
+    }
+}
+
 function processBuffers() {
     var errors = _private(this, processBuffer, this._buffer, this._methods, this._length - this._buffer.length);
     if (errors && errors.length) {
         if (this._errorMethods.length) {
-            _private(this, processBuffer, errors, this._errorMethods, 0);
+            _private(this, processErrors, errors, this._errorMethods, 0);
         } else {
-            errors.forEach(function(e) {
-                throw e;
-            })
+            if (errors.length === 1) {
+                throw errors[0];
+            } else {
+                throw new Error("Errors occurred");
+            }
         }
     }
 }
@@ -622,4 +643,20 @@ class Stream {
  */
 export function create(name) {
     return new Stream(name || "stream");
+}
+
+/**
+ * Creates a relay of a stream. I.e. a stream that processes all values the
+ * sourceStream processes. This can be used for breaking the auto-close-chain
+ * for example.
+ * @param sourceStream
+ * @param name
+ */
+export function relay(sourceStream, name) {
+    var s = new Stream(name || "stream");
+    sourceStream.forEach((...values) => {
+        s.push.apply(s, values);
+    });
+
+    return s;
 }

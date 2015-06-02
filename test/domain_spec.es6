@@ -45,6 +45,12 @@ class SimplePlugin extends Plugin {
     }
 }
 
+class ErrorPlugin extends Plugin {
+    run() {
+        throw new Error("TestError");
+    }
+}
+
 class PluginNeverdone extends SimplePlugin {
 
     run(container, action, text) {
@@ -205,6 +211,14 @@ describe("Domain", function () {
 
         expect(cs).to.equal("(1:r-A-X)(1:r-B-X)(1:f-B)(1:f-A)");
         expect(finished).to.equal(1);
+    });
+
+    it("handles errors in plugins gracefully", () => {
+       var plg = new ErrorPlugin();
+
+        app.wrap(1, plg);
+        app.execute(1);
+        app.execute(1);
     });
 
     it("can be wrapped multiple times so that several plugins handle the same action", function () {

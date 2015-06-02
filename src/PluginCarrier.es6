@@ -77,6 +77,7 @@ export default class PluginCarrier {
         this._params = params;
         this._holds = false;
         this._aborted = false;
+        let ret = true;
 
         this._streams.push("started", true);
 
@@ -84,6 +85,7 @@ export default class PluginCarrier {
             this._plugin.run.apply(this._plugin, params);
         } catch (e) {
             this._streams.push("errors", e);
+            ret = false;
         }
 
         if (!this._aborted) {
@@ -93,6 +95,8 @@ export default class PluginCarrier {
                 this._streams.push("ran", params);
             }
         }
+
+        return ret;
     }
 
     getMemento(params) {

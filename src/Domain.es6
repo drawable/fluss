@@ -39,8 +39,9 @@ function executeAction(args, forAction) {
     }
 
     let memento = plugin.getMemento([this, forAction].concat(args));
-    plugin.run([this, forAction].concat(args));
-    this._mementos.push({plugin, memento})
+    if (plugin.run([this, forAction].concat(args))) {
+        this._mementos.push({plugin, memento})
+    }
 }
 
 /**
