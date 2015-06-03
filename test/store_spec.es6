@@ -169,6 +169,23 @@ describe("Data stores", function () {
             expect(imm["sub"].isImmutable).to.be.ok;
         });
 
+        it("provides an item object that can be used to work with a single value", () => {
+            var store = Store.record({
+                a: 12,
+                b: null
+            });
+
+            var a = store.item("a");
+            var b = store.item("b");
+
+            expect(a.value).to.equal(12);
+            expect(b.value).to.equal(null);
+
+            b.value = "lökjh";
+            expect(b.value).to.equal("lökjh");
+
+        });
+
         it("can be disposed and will delete all data and dispose all streams", function() {
             var closes = [];
             var store = Store.record({ a: 1, b: "x"} );

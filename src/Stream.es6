@@ -101,9 +101,6 @@ function registerNextStream(nextStream) {
         var i = this._nextStreams.indexOf(nextStream);
         if (i !== -1) {
             this._nextStreams.splice(i, 1);
-            if (!this._nextStreams.length) {
-                this.close();
-            }
         }
     })
 }
@@ -189,26 +186,40 @@ class Stream {
     }
 
     /**
-     * Automatically close the stream after the given amount of values processed. Subsequent call will reset that limit.
-     * Calling this on closed streams has no effect, i.e. it does not restart the stresm.
+     * Creates a new stream that processes all values the original processes but closes automatically after the given
+     * amount of values is processed.
+     * Calling this on closed streams has no effect, i.e. it does not restart the stream.
      * @param maxItems
      */
     times(maxLength) {
-        this._maxLength = maxLength;
-        return this;
+        var nextStream = new Stream("times");
+
+        var count = 0;
+        this.forEach((...values) => {
+            if (count < maxLength) {
+                nextStream.push.apply(nextStream, values);
+                count++;
+            }  else {
+                nextStream.close();
+            }
+        });
+
+        return nextStream;
     }
 
     /**
-     * This closes the stream when a given stream processes a value. Consider using times(1) on that given stream, when it is solely
-     * created for closing.
+     * Creates a new stream that processes all values the original processes but closes automatically after the given
+     * stream processes.
+     * Calling this on closed streams has no effect, i.e. it does not restart the stream.
      * @param stream
      */
     until(stream) {
-        if (stream) {
-            stream.forEach(() => this.close())
-        }
-        return this;
+        var nextStream = relay(this, "until");
+        stream.forEach(() => nextStream.close() );
+
+        return nextStream;
     }
+
 
     /**
      * Indicates whether the stream is closed.
@@ -228,10 +239,6 @@ class Stream {
             _private(this, addToBuffer, values);
             this._length++;
             _private(this, processBuffers);
-
-            if (this._maxLength && this._length >= this._maxLength) {
-                this.close();
-            }
         }
     }
 

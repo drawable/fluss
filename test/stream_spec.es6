@@ -28,6 +28,23 @@ describe("A stream (used for reactive programming patterns)", function() {
         }).not.to.throw(Error);
     });
 
+    it("counts the values it has  pushed to it", function() {
+        var s = Fluss.Stream.create("myStream");
+
+        expect(function() {
+            s.push("A");
+            s.push(23);
+            s.push("A");
+            s.push(23);
+            s.push("A");
+            s.push(23);
+            s.push("A");
+            s.push(23);
+        }).not.to.throw(Error);
+
+        expect(s.length).to.equal(8);
+    });
+
     it("provides 'forEach' to define a function to be called for every value pushed to it", function() {
         var s = Fluss.Stream.create("myStream");
         var calls = [];
@@ -1053,20 +1070,29 @@ describe("A stream (used for reactive programming patterns)", function() {
 
     describe("will close automatically", function() {
         it("when a specific number of values where processed defined by 'times'", function() {
-            var s = Fluss.Stream.create("myStream").times(4);
+            var b = Fluss.Stream.create();
+            var s = b.times(4);
+            var calls = [];
 
-            s.push(1);
-            s.push(2);
-            s.push(3);
-            s.push(4);
-            s.push(5);
+            s.forEach((value) => {
+                calls.push(value)
+            });
+
+            b.push(1);
+            b.push(2);
+            b.push(3);
+            b.push(4);
+            b.push(5);
+
+            b.push(6);
+            expect(calls.length).to.equal(4);
+            expect(b.length).to.equal(6);
             expect(s.length).to.equal(4);
-            expect(s.closed).to.be.ok;
-
-            expect(s._methods.length).to.equal(0);
+            expect(b.closed).to.be.false;
+            expect(s.closed).to.be.true;
         });
 
-        it("when a specific number of value where processed and can be reopend using reset", () => {
+        /*it("when a specific number of value where processed and can be reopend using reset", () => {
             var s = Fluss.Stream.create("myStream").times(4);
             var count = 0;
             s.forEach(() => count++);
@@ -1088,7 +1114,7 @@ describe("A stream (used for reactive programming patterns)", function() {
             s.push(10);
 
             expect(count).to.equal(8);
-        });
+        });*/
 
         it("when another stream processes by using 'until'", function() {
             var c = Fluss.Stream.create("closer");
@@ -1383,6 +1409,7 @@ describe("A stream (used for reactive programming patterns)", function() {
             expect(s3.closed).to.be.ok;
         });
 
+        /*
         it("will close automatically when all 'child-streams' close", function() {
             var calls = 0;
             var s = Fluss.Stream.create();
@@ -1403,7 +1430,7 @@ describe("A stream (used for reactive programming patterns)", function() {
             f.close();
 
             expect(calls).to.equal(2);
-        });
+        });*/
     });
 
     it("can be reopened", function() {
