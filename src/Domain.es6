@@ -174,6 +174,19 @@ export default class Domain {
 
 
     /**
+     * Tests if the domain provides at least one plugin that executes the given
+     * action. This does NOT test for "any"-plugins, only for plugins specific
+     * to this action.
+     *
+     * @param action
+     * @returns {boolean}
+     */
+    providesAction(action) {
+        return !!this._handlers[action]
+    }
+
+
+    /**
      * Returns a function that executes the given action on the domain this method is called on.
      * @param action
      * @returns {function(this:Domain)}

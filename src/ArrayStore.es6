@@ -539,6 +539,14 @@ export default class ArrayStore extends Store.Store {
     }
 
     /**
+     * Clears the array. This removes all the items from the array. Use this instead of creating
+     * a new one as it keeps all the stream references intact.
+     */
+    clear() {
+        this.splice(0, this.length)
+    }
+
+    /**
      * Insert a new item at the specified position.
      * @param atIndex
      * @param values
