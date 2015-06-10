@@ -648,7 +648,9 @@ class Stream {
         });
 
         _private(this, registerNextStream, nextStream);
+
         return nextStream;
+
     }
 }
 
