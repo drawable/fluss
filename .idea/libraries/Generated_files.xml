@@ -11,6 +11,7 @@
         <item url="file://$PROJECT_DIR$/test/actions_spec.js" />
         <item url="file://$PROJECT_DIR$/test/streamProvider_spec.js" />
         <item url="file://$PROJECT_DIR$/test/stream_spec.js" />
+        <item url="file://$PROJECT_DIR$/gulpfile.js" />
         <item url="file://$PROJECT_DIR$/src/PluginCarrier.js" />
         <item url="file://$PROJECT_DIR$/src/RecordStore.js" />
         <item url="file://$PROJECT_DIR$/test/store_spec.js" />
@@ -164,6 +165,7 @@
       <root url="file://$PROJECT_DIR$/src/StreamProvider.js" />
       <root url="file://$PROJECT_DIR$/test/actions_spec.js" />
       <root url="file://$PROJECT_DIR$/test/streamProvider_spec.js" />
+      <root url="file://$PROJECT_DIR$/gulpfile.js" />
       <root url="file://$PROJECT_DIR$/test/stream_spec.js" />
       <root url="file://$PROJECT_DIR$/src/PluginCarrier.js" />
       <root url="file://$PROJECT_DIR$/test/store_spec.js" />

@@ -14,6 +14,7 @@ function addCall(action, info) {
     calls.push({action: action, info: info});
 }
 
+
 function clearCalls() {
     calls = [];
 }
@@ -116,6 +117,7 @@ class App extends Domain {
 class Setter extends Plugin {
 
     constructor(propName, inc = 0) {
+        super();
         this.propName = propName;
         this.inc = inc;
     }
