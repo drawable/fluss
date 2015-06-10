@@ -168,10 +168,18 @@ class Stream {
         if (!this._closed) {
             this._closed = true;
             _private(this, callCloseMethods);
+            this._methods = null;
+            this._buffer = null;
+            this._closeMethods = null;
+            this._errorMethods = null;
+            this._nextStreams = null;
+
             this._methods = [];
             this._buffer = [];
             this._closeMethods = [];
             this._errorMethods = [];
+            this._nextStreams = [];
+
         }
     }
 
@@ -180,9 +188,13 @@ class Stream {
      */
     reset() {
         this.close();
-        this._buffer = [];
         this._closed = false;
         this._length = 0;
+        this._methods = [];
+        this._buffer = [];
+        this._closeMethods = [];
+        this._errorMethods = [];
+        this._nextStreams = [];
     }
 
     /**
@@ -219,7 +231,6 @@ class Stream {
 
         return nextStream;
     }
-
 
     /**
      * Indicates whether the stream is closed.
