@@ -525,5 +525,36 @@ describe("Domain", function () {
 
         app.undo();
         expect(app.value1).to.equal(initial);
-    })
+    });
+
+    it("can disable and reenable the creation of mementos", function() {
+        let setter1 = new Setter("value1");
+
+        let initial = app.value1;
+
+        app.disableMementos();
+
+        app.wrap(1, setter1);
+        app.execute(1, initial + 10);
+        expect(app.value1).to.equal(initial + 10);
+
+        app.undo();
+        expect(app.value1).to.equal(initial + 10);
+
+        app.enableMementos();
+        app.execute(1, initial + 20);
+        expect(app.value1).to.equal(initial + 20);
+        app.execute(1, initial + 21);
+        expect(app.value1).to.equal(initial + 21);
+        app.execute(1, initial + 22);
+        expect(app.value1).to.equal(initial + 22);
+
+        app.undo();
+        expect(app.value1).to.equal(initial + 21);
+        app.execute(Actions.IDs.UNDO);
+        expect(app.value1).to.equal(initial + 20);
+        app.undo();
+        expect(app.value1).to.equal(initial + 10);
+
+    });
 });

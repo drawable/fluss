@@ -71,6 +71,7 @@ function processBuffers() {
 
 
 function addMethod(method) {
+    if (this.closed) return;
     var firstMethod = this._methods.length === 0;
     this._methods.push(method);
 
@@ -80,7 +81,10 @@ function addMethod(method) {
 }
 
 function removeMethod(method) {
-    this._methods.indexOf(method);
+    if (this._methods) {
+        let i = this._methods.indexOf(method);
+        this._methods.splice(i, 1);
+    }
 }
 
 function addErrorMethod(method) {
@@ -96,11 +100,14 @@ function addCloseMethod(method) {
 }
 
 function registerNextStream(nextStream) {
+    if (this.closed) return;
     this._nextStreams.push(nextStream);
     nextStream.onClose(() => {
-        var i = this._nextStreams.indexOf(nextStream);
-        if (i !== -1) {
-            this._nextStreams.splice(i, 1);
+        if (this._nextStreams) {
+            var i = this._nextStreams.indexOf(nextStream);
+            if (i !== -1) {
+                this._nextStreams.splice(i, 1);
+            }
         }
     })
 }
@@ -173,13 +180,6 @@ class Stream {
             this._closeMethods = null;
             this._errorMethods = null;
             this._nextStreams = null;
-
-            this._methods = [];
-            this._buffer = [];
-            this._closeMethods = [];
-            this._errorMethods = [];
-            this._nextStreams = [];
-
         }
     }
 

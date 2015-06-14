@@ -38,9 +38,12 @@ function executeAction(args, forAction) {
         plugin = this._plugins[Actions.IDs.__ANY__]
     }
 
-    let memento = plugin.getMemento([this, forAction].concat(args));
-    if (plugin.run([this, forAction].concat(args))) {
-        this._mementos.push({plugin, memento})
+    let memento;
+    if (this._createMementos) {
+        memento = plugin.getMemento([this, forAction].concat(args));
+    }
+    if (plugin.run([this, forAction].concat(args)) && typeof memento !== "undefined") {
+        this._mementos.push({plugin, memento});
     }
 }
 
@@ -113,6 +116,7 @@ export default class Domain {
         this._mementos = null;
         this._anyPlugins = [];
         this._streams = StreamProvider.create();
+        this._createMementos = true;
 
         this.errors.forEach(() => this._mementos = null);
         this.finishedAction.forEach(() => this._undoStack.push(this._mementos));
@@ -246,6 +250,14 @@ export default class Domain {
             this._handlers[Actions.IDs.__ANY__](args, action);
         }
         this._mementos = null;
+    }
+
+    disableMementos() {
+        this._createMementos = false;
+    }
+
+    enableMementos() {
+        this._createMementos = true;
     }
 
     /**
