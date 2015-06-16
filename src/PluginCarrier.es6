@@ -26,7 +26,8 @@ export default class PluginCarrier {
                 getMemento: () => null,
                 restoreFromMemento: () => null,
                 afterFinish: () => null,
-                afterAbort: () => null
+                afterAbort: () => null,
+                undo: () => null
             }
         } else {
             this._plugin = plugin;

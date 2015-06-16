@@ -200,6 +200,34 @@ describe("A stream (used for reactive programming patterns)", function() {
         expect(calls2[1]).to.equal(23);
     });
 
+    it("can push while pushing", () => {
+
+        var s = Fluss.Stream.create();
+        var calls = "";
+        s.forEach(v => {
+            if (v == 1) {
+                s.push(2);
+                s.push(3);
+
+                calls += "|"
+        }
+            calls += v;
+        });
+
+        s.push(0);
+        s.push(1);
+
+        expect(calls).to.equal("0|123");
+
+        s.push(0);
+        s.push(1);
+        s.push(4);
+        s.push(5);
+
+        expect(calls).to.equal("0|1230|12345");
+
+    });
+
     it("provides 'map', that returns a new stream of values that are first processed by the map predicate", function() {
         var calls = [];
 

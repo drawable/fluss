@@ -135,6 +135,28 @@ class Setter extends Plugin {
     }
 }
 
+class Executer extends Plugin {
+
+    constructor(name, action) {
+        super();
+        this.action = action;
+        this.name = name;
+    }
+
+    run(container, action, text) {
+        this.action(text);
+        addCall(action, "r" + "-" + this.name + "-" + text);
+    }
+
+    afterFinish(container, action) {
+        addCall(action, "f" + "-" + this.name);
+    }
+
+    afterAbort(containter, action) {
+        addCall(action, "a" + "-" + this.name);
+    }
+}
+
 
 describe("Domain", function () {
 
@@ -463,6 +485,17 @@ describe("Domain", function () {
         app.execute(1, "Z");
         cs = getCallSignature();
         expect(cs).to.equal("(1:r-C-Z)(1:r-B-Z)(1:r-A-Z)(1:f-A)(1:f-B)(1:f-C)");
+    });
+
+    it("will queue nested execution of actions", () => {
+        let setter = new SimplePlugin("A");
+        app.wrap(1, setter);
+
+        let exec = new Executer("B", app.action(1));
+        app.wrap(2, exec);
+
+        app.execute(2, "X");
+        expect(getCallSignature()).to.equal("(2:r-B-X)(2:f-B)(1:r-A-X)(1:f-A)");
     });
 
     it("provides mementos for undoing actions - 1", function() {

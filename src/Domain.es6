@@ -2,6 +2,8 @@
  * Created by Stephan on 22.02.2015.
  */
 
+
+import * as Stream from './Stream';
 import * as Actions from './Actions';
 import PluginCarrier from './PluginCarrier';
 import * as StreamProvider from './StreamProvider';
@@ -118,6 +120,21 @@ export default class Domain {
         this._streams = StreamProvider.create();
         this._createMementos = true;
 
+        this._execution = Stream.create();
+
+        this._execution.forEach((action, ...args) => {
+            if (action === Actions.IDs.UNDO) {
+                this.undo();
+            } else if (this._handlers[action]) {
+                this._streams.push("startedAction", action);
+                this._handlers[action](args, action);
+            } else if (this._handlers[Actions.IDs.__ANY__]) {
+                this._streams.push("startedAction", action);
+                this._handlers[Actions.IDs.__ANY__](args, action);
+            }
+            this._mementos = null;
+        });
+
         this.errors.forEach(() => this._mementos = null);
         this.finishedAction.forEach(() => this._undoStack.push(this._mementos));
     }
@@ -134,6 +151,9 @@ export default class Domain {
         this._undoStack = null;
         this._streams.dispose();
         this._streams = null;
+
+        this._execution.close();
+        this._execution = null;
     }
 
     /**
@@ -240,16 +260,7 @@ export default class Domain {
      * @param args
      */
     execute(action, ...args) {
-        if (action === Actions.IDs.UNDO) {
-            this.undo();
-        } else if (this._handlers[action]) {
-            this._streams.push("startedAction", action);
-            this._handlers[action](args, action);
-        } else if (this._handlers[Actions.IDs.__ANY__]) {
-            this._streams.push("startedAction", action);
-            this._handlers[Actions.IDs.__ANY__](args, action);
-        }
-        this._mementos = null;
+        this._execution.push(action, ...args);
     }
 
     disableMementos() {

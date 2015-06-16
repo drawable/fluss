@@ -148,8 +148,8 @@ class Stream {
         this._closeMethods = [];
         this._closed = false;
         this._length = 0;
-        this._maxLength = 0;
         this._nextStreams = [];
+        this._queued = false;
     }
 
     /**
@@ -249,7 +249,15 @@ class Stream {
         if (!this._closed) {
             _private(this, addToBuffer, values);
             this._length++;
-            _private(this, processBuffers);
+            this._queued = true;
+            if (!this._processing) {
+                this._processing = true;
+                while (this._queued) {
+                    this._queued = false;
+                    _private(this, processBuffers);
+                }
+                this._processing = false;
+            }
         }
     }
 
