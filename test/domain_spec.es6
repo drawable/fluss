@@ -500,21 +500,21 @@ describe("Domain", function () {
 
     it("provides mementos for undoing actions - 1", function() {
         let setter1 = new Setter("value1");
+        let action = 123;
+        let initial = app.value1 = 100;
 
-        let initial = app.value1;
-
-        app.wrap(1, setter1);
-        app.execute(1, initial + 10);
+        app.wrap(action, setter1);
+        app.execute(action, initial + 10);
         expect(app.value1).to.equal(initial + 10);
 
         app.undo();
         expect(app.value1).to.equal(initial);
 
-        app.execute(1, initial + 10);
+        app.execute(action, initial + 10);
         expect(app.value1).to.equal(initial + 10);
-        app.execute(1, initial + 11);
+        app.execute(action, initial + 11);
         expect(app.value1).to.equal(initial + 11);
-        app.execute(1, initial + 12);
+        app.execute(action, initial + 12);
         expect(app.value1).to.equal(initial + 12);
 
         app.undo();
@@ -546,7 +546,7 @@ describe("Domain", function () {
 
     it("provides mementos for undoing actions - 3", function() {
         let setter1 = new Setter("value1", 5);
-        let setter2 = new Setter("value1");
+        let setter2 = new Setter("value1", 3);
 
         let initial = app.value1 = 10;
 

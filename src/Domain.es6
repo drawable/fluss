@@ -40,13 +40,14 @@ function executeAction(args, forAction) {
         plugin = this._plugins[Actions.IDs.__ANY__]
     }
 
-    let memento;
     if (this._createMementos) {
-        memento = plugin.getMemento([this, forAction].concat(args));
+        let memento = plugin.getMemento([this, forAction].concat(args));
+        if (typeof memento !== "undefined" && memento != null) {
+            this._mementos.unshift({plugin, memento});
+        }
     }
-    if (plugin.run([this, forAction].concat(args)) && typeof memento !== "undefined") {
-        this._mementos.push({plugin, memento});
-    }
+
+    plugin.run([this, forAction].concat(args))
 }
 
 /**
@@ -65,15 +66,20 @@ function dowrap(action, plugin) {
     if (this._plugins[action]) {
         let inner = this._plugins[action];
         carrier.ran.combine(carrier.holding).forEach((params) => {
-            let memento = inner.getMemento(params);
+            if (this._createMementos) {
+                let memento = inner.getMemento(params);
+                if (typeof memento !== "undefined" && memento != null) {
+                    this._mementos.unshift({plugin: inner, memento});
+                }
+            }
             inner.run(params);
-            this._mementos.push({plugin: inner, memento});
         });
 
         inner.finished.forEach((params) => carrier.afterFinish(params));
         inner.aborted.forEach((params) => carrier.abort(this, params));
     } else {
         carrier.ran.forEach((params) => carrier.afterFinish(params));
+
         _private(this, subscribe, action, (args, forAction) => _private(this, executeAction, args, forAction), null);
     }
 
@@ -136,7 +142,10 @@ export default class Domain {
         });
 
         this.errors.forEach(() => this._mementos = null);
-        this.finishedAction.forEach(() => this._undoStack.push(this._mementos));
+        this.finishedAction.forEach(() => {
+          if (this._mementos && this._mementos.length)
+            this._undoStack.push(this._mementos);
+        });
     }
 
     /**
@@ -275,6 +284,7 @@ export default class Domain {
      * Undo whatever is on the undostack
      */
     undo() {
+
         let mementos = this._undoStack.pop();
         if (mementos) {
             mementos.forEach(({plugin, memento}) => plugin.undo(this, memento));
