@@ -139,6 +139,38 @@ describe("A stream (used for reactive programming patterns)", function() {
 
     });
 
+    it("can create a volatile version of the stream that discards all values when not observerd", () => {
+        var s = Fluss.Stream.create();
+        var v = s.volatile();
+        var uv = Fluss.Stream.create();
+
+        var sCalls = 0;
+        var vCalls = 0;
+        var uvCalls = 0;
+
+        s.forEach(v => { sCalls += 1; uv.push(v) });
+
+        s.push(1);
+        s.push(1);
+        s.push(1);
+        s.push(1);
+
+        expect(sCalls).to.equal(4);
+
+        v.forEach(v => vCalls++);
+        uv.forEach(v => uvCalls++);
+
+        expect(vCalls).to.equal(0);
+        expect(uvCalls).to.equal(4);
+
+        s.push(1);
+
+        expect(sCalls).to.equal(5);
+        expect(vCalls).to.equal(1);
+        expect(uvCalls).to.equal(5);
+
+    });
+
     it("can tell you how many values where processed", function() {
         var s = Fluss.Stream.create("myStream");
 
@@ -635,10 +667,10 @@ describe("A stream (used for reactive programming patterns)", function() {
 
         ca.forEach((value) => calls += value);
 
-        a.push("A")
+        a.push("A");
         main.push(a);
         main.push(b);
-        a.push("A")
+        a.push("A");
         main.push(c);
         c.push("C");
         b.push("B");
@@ -1007,7 +1039,7 @@ describe("A stream (used for reactive programming patterns)", function() {
         });
 
         baseStream.push("A");
-        expect(calls).to.equal("")
+        expect(calls).to.equal("");
         clock.tick(199);
         baseStream.push("B");
         clock.tick(1);
@@ -1050,6 +1082,8 @@ describe("A stream (used for reactive programming patterns)", function() {
         valve.push(1);
         expect(calls).to.equal("[ABC][DE]");
     });
+
+
 
     it("can work as a multi-event detector", function() {
         var clock = sinon.useFakeTimers();
@@ -1347,6 +1381,33 @@ describe("A stream (used for reactive programming patterns)", function() {
             expect(co.closed).to.be.ok;
 
         });
+
+
+        it("will close upon until and all subsequent streams", () => {
+           var s = Fluss.Stream.create("A");
+           var x = Fluss.Stream.create("X");
+            var calls = 0;
+
+            var u = s.until(x).map(() => {
+                return "x";
+            }).forEach(() => {
+                calls++;
+            });
+
+            s.push("x");
+            s.push("lkj");
+            s.push("lkj");
+            s.push("lkj");
+
+            expect(calls).to.equal(4);
+            x.push(true);
+            s.push("x");
+            s.push("lkj");
+            s.push("lkj");
+            s.push("lkj");
+
+            expect(calls).to.equal(4);
+        });
     });
 
     describe("is closed from the start", function() {
@@ -1436,6 +1497,7 @@ describe("A stream (used for reactive programming patterns)", function() {
             expect(s2.closed).to.be.ok;
             expect(s3.closed).to.be.ok;
         });
+
 
         /*
         it("will close automatically when all 'child-streams' close", function() {

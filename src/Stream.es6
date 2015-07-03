@@ -286,6 +286,21 @@ class Stream {
 
 
     /**
+     * Returns a stream that processes every value the original stream processes, but it does not preload. I.e. if
+     * no one listens to the new streams the values will just 'vanish'.
+     * TODO: This makes the original volatile as well, as it now has a method that observes...
+     */
+    volatile() {
+        let nextStream = new Stream(this._name + ".volatile");
+
+        _private(this, addMethodToNextStream, nextStream,
+            value => { if (nextStream._methods.length) nextStream.push(value) } ) ;
+
+        return nextStream;
+    }
+
+
+    /**
      * Return a new stream that processes the values that only meet the given criterium.
      *
      * This criterium can either be:

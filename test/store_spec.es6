@@ -907,6 +907,15 @@ describe("Data stores", function () {
         });
     });
 
+    it("will return itself if it is immutable and is asked for its immutable", function() {
+        var rec = Store.record({a: "b"});
+        var arr = Store.array([1, 2, 3]);
+
+        expect(rec.immutable).to.equal(rec.immutable.immutable);
+        expect(arr.immutable).to.equal(arr.immutable.immutable);
+
+    })
+
     describe("Record store provides an item", () => {
         it("gives you access to the value", () => {
             let r = Store.record({ a: 1, b: "2" });
@@ -1036,7 +1045,7 @@ describe("Data stores", function () {
         it("will propagate updates up in nested stores", function() {
             var updateCount = 0;
             var store = Store.record();
-            var sub = Store.record({ a: 1, b: 2})
+            var sub = Store.record({ a: 1, b: 2});
             store.addItem("substore", sub);
 
             var updates = store.updates;

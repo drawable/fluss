@@ -60,7 +60,7 @@ describe("A StreamProvider manages different streams for different occasions. It
 
         sp.push("A", 1);
 
-        expect(calls).to.equal("(A1=1)(A2=1)(A3=1)")
+        expect(calls).to.equal("(A1=1)(A2=1)(A3=1)");
 
         sp.push("B", "X");
         expect(calls).to.equal("(A1=1)(A2=1)(A3=1)(B1=X)(B2=X)(B3=X)")

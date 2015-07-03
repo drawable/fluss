@@ -462,7 +462,7 @@ export default class ArrayStore extends Store.Store {
 
         values.forEach(function (value) {
             that._data.push(value);
-            that._streams.push("newItems", Store.createUpdateInfo(index, that._data[index], that))
+            that._streams.push("newItems", Store.createUpdateInfo(index, that._data[index], that));
             index++;
         });
 
@@ -494,7 +494,7 @@ export default class ArrayStore extends Store.Store {
         var that = this;
 
         _private(this, disposeSubstream, r);
-        this._streams.push("removedItems", Store.createUpdateInfo(that._data.length, r, that))
+        this._streams.push("removedItems", Store.createUpdateInfo(that._data.length, r, that));
         return r;
     }
 
@@ -506,7 +506,7 @@ export default class ArrayStore extends Store.Store {
         var that = this;
 
         _private(this, disposeSubstream, r);
-        this._streams.push("removedItems", Store.createUpdateInfo(0, r, that))
+        this._streams.push("removedItems", Store.createUpdateInfo(0, r, that));
         return r;
     }
 
@@ -524,7 +524,7 @@ export default class ArrayStore extends Store.Store {
 
         removed.forEach((value) => {
             _private(that, disposeSubstream, value);
-            this._streams.push("removedItems", Store.createUpdateInfo(index, value, that))
+            this._streams.push("removedItems", Store.createUpdateInfo(index, value, that));
             index++;
         });
 

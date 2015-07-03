@@ -6,6 +6,7 @@ import * as Tools from './Tools';
 import * as StoreBase from './StoreBase'
 import MArrayStore from './ArrayStore';
 import MRecordStore from './RecordStore';
+import MStackedRecordStore from './StackedRecordStore';
 import ImmutableArrayStore from './ImmutableArrayStore';
 import ImmutableRecordStore from './ImmutableArrayStore';
 
@@ -87,6 +88,10 @@ export function record(initial) {
     }
 }
 
+export function stackedRecord(parent) {
+    return new MStackedRecordStore(parent);
+}
+
 
 export const isStore = StoreBase.isStore;
 
@@ -97,5 +102,6 @@ export class Store extends StoreBase.Store {
 
 export const RecordStore = MRecordStore;
 export const ArrayStore = MArrayStore;
+export const StackedRecordStore = MStackedRecordStore;
 
 export const createUpdateInfo = StoreBase.createUpdateInfo;

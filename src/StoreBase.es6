@@ -79,6 +79,10 @@ export class ImmutableStore extends Store {
     get isImmutable() {
         return true;
     }
+
+    get immutable() {
+        return this;
+    }
 }
 
 /**
