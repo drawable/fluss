@@ -322,6 +322,25 @@ describe("A stream (used for reactive programming patterns)", function() {
     });
 
 
+    it("can 'map' to null", function() {
+        var calls = [];
+
+        var s = Fluss.Stream.create("myStream");
+        var m = s.map(null);
+
+        m.forEach(function(value) {
+            calls.push(value);
+        });
+
+        s.push("A");
+        s.push(23);
+
+        expect(m).not.to.equal(s);
+        expect(calls.length).to.equal(2);
+        expect(calls[0]).to.equal(null);
+        expect(calls[1]).to.equal(null);
+    });
+
     it("provides 'filter', that returns a new stream of values that meet a specific criterium", function() {
         var calls = [];
 
