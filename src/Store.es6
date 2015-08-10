@@ -88,8 +88,12 @@ export function record(initial) {
     }
 }
 
-export function stackedRecord(parent) {
-    return new MStackedRecordStore(parent);
+export function stackedRecord(parent, initial) {
+    if (Tools.isArray(initial)) {
+        throw new TypeError("Object expected for initial values of a stacked record. Provide a {...}")
+    }
+
+    return new MStackedRecordStore(parent, initial);
 }
 
 

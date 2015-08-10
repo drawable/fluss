@@ -47,6 +47,24 @@ describe("Stacked record store", () => {
         expect(store.a).to.equal(1);
     });
 
+    it("can be initialized", () => {
+        let store = Store.record({ a: 1});
+        let stack = Store.stackedRecord(store, { b: 2 });
+
+        expect(stack.a).to.equal(1);
+        expect(stack.b).to.equal(2);
+
+        stack.addItem("a", 2);
+
+        expect(store.b).to.not.be.ok();
+        expect(store.a).to.equal(1);
+        expect(stack.a).to.equal(2);
+
+        stack.removeItem("a");
+        expect(stack.a).to.equal(1);
+        expect(store.a).to.equal(1);
+    });
+
     it("works with nested stores as well", () => {
         let arr = Store.array();
         let store = Store.record({ a: arr});

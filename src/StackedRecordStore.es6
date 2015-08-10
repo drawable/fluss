@@ -20,8 +20,8 @@ function disposeSubStream(name) {
 
 export default class StackedRecordStore extends RecordStore {
 
-    constructor(parent) {
-        super();
+    constructor(parent, initial) {
+        super(initial);
         this._parent = parent;
 
         this._streams.relay(parent.updates.filter(({rootItem}) => !this._data.hasOwnProperty(rootItem)), "updates");
