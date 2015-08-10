@@ -127,6 +127,25 @@ describe("Stacked record store", () => {
         expect(a.value.length).to.equal(3);
     });
 
+    it("creates the correct item from the immutable as well", () => {
+        let store = Store.record({ a: 1 });
+        let stack = Store.stackedRecord(store.immutable);
+        let iStack = stack.immutable;
+
+        let a = iStack.item("a");
+
+        expect(a.value).to.equal(1);
+
+        stack.addItem("a", 2);
+
+        expect(store.a).to.equal(1);
+        expect(a.value).to.equal(2);
+
+        stack.removeItem("a");
+        expect(a.value).to.equal(1);
+        expect(store.a).to.equal(1);
+    });
+
     it("can be stacked using another stack", () => {
         let store = Store.record({ a: 1 });
         let stack = Store.stackedRecord(store);

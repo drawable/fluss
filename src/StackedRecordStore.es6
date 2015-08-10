@@ -73,7 +73,7 @@ export default class StackedRecordStore extends RecordStore {
     }
 
     removeItem(name) {
-        if (this._parent._data.hasOwnProperty(name)) {
+        if (this._parent.hasItem(name)) {
             delete this._data[name];
             _private(this, disposeSubStream, name);
         } else {
@@ -81,8 +81,12 @@ export default class StackedRecordStore extends RecordStore {
         }
     }
 
+    hasItem(name) {
+        return (this._data.hasOwnProperty(name) || this._parent.hasItem(name));
+    }
+
     item(name) {
-        if (this._data.hasOwnProperty(name) || this._parent._data.hasOwnProperty(name)) {
+        if (this.hasItem(name)) {
             if (!this._items.hasOwnProperty(name)) {
                 this._items[name] = new RecordItem(this, name);
             }

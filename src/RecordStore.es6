@@ -80,6 +80,10 @@ export default class RecordStore extends Store.Store {
         this._streams.push("updates", updateInfo);
     }
 
+    hasItem(name) {
+        return (this._data.hasOwnProperty(name));
+    }
+
     addItem(name, initial) {
         if (this._locked) {
             throw new Error("This record is locked. You cannot add new items to it.")
