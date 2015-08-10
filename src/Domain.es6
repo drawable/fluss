@@ -284,7 +284,6 @@ export default class Domain {
      * Undo whatever is on the undostack
      */
     undo() {
-
         let mementos = this._undoStack.pop();
         if (mementos) {
             mementos.forEach(({plugin, memento}) => plugin.undo(this, memento));
