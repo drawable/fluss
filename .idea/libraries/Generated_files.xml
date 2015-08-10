@@ -2,31 +2,31 @@
   <library name="Generated files" type="javaScript">
     <properties>
       <sourceFilesUrls>
+        <item url="file://$PROJECT_DIR$/test/streamProvider_spec.js" />
         <item url="file://$PROJECT_DIR$/test/stackedStore_spec.js" />
-        <item url="file://$PROJECT_DIR$/src/RecordItem.js" />
+        <item url="file://$PROJECT_DIR$/test/actions_spec.js" />
+        <item url="file://$PROJECT_DIR$/test/domain_spec.js" />
+        <item url="file://$PROJECT_DIR$/test/store_spec.js" />
+        <item url="file://$PROJECT_DIR$/test/customstore_spec.js" />
+        <item url="file://$PROJECT_DIR$/src/Actions.js" />
+        <item url="file://$PROJECT_DIR$/src/ArrayStore.js" />
+        <item url="file://$PROJECT_DIR$/src/ImmutableRecordStore.js" />
         <item url="file://$PROJECT_DIR$/src/Domain.js" />
-        <item url="file://$PROJECT_DIR$/src/Fluss.js" />
-        <item url="file://$PROJECT_DIR$/src/Tools.js" />
-        <item url="file://$PROJECT_DIR$/src/Store.js" />
-        <item url="file://$PROJECT_DIR$/src/StoreItem.js" />
+        <item url="file://$PROJECT_DIR$/src/RecordItem.js" />
+        <item url="file://$PROJECT_DIR$/src/RecordStore.js" />
+        <item url="file://$PROJECT_DIR$/src/ImmutableArrayStore.js" />
+        <item url="file://$PROJECT_DIR$/src/Plugin.js" />
+        <item url="file://$PROJECT_DIR$/src/PluginCarrier.js" />
+        <item url="file://$PROJECT_DIR$/src/StackedRecordStore.js" />
+        <item url="file://$PROJECT_DIR$/gulpfile.js" />
+        <item url="file://$PROJECT_DIR$/src/Stream.js" />
         <item url="file://$PROJECT_DIR$/src/StoreBase.js" />
         <item url="file://$PROJECT_DIR$/src/StreamProvider.js" />
-        <item url="file://$PROJECT_DIR$/test/actions_spec.js" />
-        <item url="file://$PROJECT_DIR$/test/streamProvider_spec.js" />
-        <item url="file://$PROJECT_DIR$/gulpfile.js" />
+        <item url="file://$PROJECT_DIR$/src/Store.js" />
+        <item url="file://$PROJECT_DIR$/src/StoreItem.js" />
+        <item url="file://$PROJECT_DIR$/src/Fluss.js" />
+        <item url="file://$PROJECT_DIR$/src/Tools.js" />
         <item url="file://$PROJECT_DIR$/test/stream_spec.js" />
-        <item url="file://$PROJECT_DIR$/src/PluginCarrier.js" />
-        <item url="file://$PROJECT_DIR$/test/store_spec.js" />
-        <item url="file://$PROJECT_DIR$/src/RecordStore.js" />
-        <item url="file://$PROJECT_DIR$/src/Plugin.js" />
-        <item url="file://$PROJECT_DIR$/test/customstore_spec.js" />
-        <item url="file://$PROJECT_DIR$/src/ImmutableArrayStore.js" />
-        <item url="file://$PROJECT_DIR$/src/ArrayStore.js" />
-        <item url="file://$PROJECT_DIR$/test/domain_spec.js" />
-        <item url="file://$PROJECT_DIR$/src/Stream.js" />
-        <item url="file://$PROJECT_DIR$/src/StackedRecordStore.js" />
-        <item url="file://$PROJECT_DIR$/src/ImmutableRecordStore.js" />
-        <item url="file://$PROJECT_DIR$/src/Actions.js" />
       </sourceFilesUrls>
     </properties>
     <CLASSES>
@@ -160,31 +160,31 @@
       <root url="file://$PROJECT_DIR$/test - Kopie/customstore_spec.js" />
       <root url="file://$PROJECT_DIR$/dist/index.js" />
       <root url="file://$PROJECT_DIR$/test - Kopie/store_spec.js" />
+      <root url="file://$PROJECT_DIR$/test/streamProvider_spec.js" />
       <root url="file://$PROJECT_DIR$/test/stackedStore_spec.js" />
-      <root url="file://$PROJECT_DIR$/src/RecordItem.js" />
+      <root url="file://$PROJECT_DIR$/test/actions_spec.js" />
+      <root url="file://$PROJECT_DIR$/test/domain_spec.js" />
+      <root url="file://$PROJECT_DIR$/test/store_spec.js" />
+      <root url="file://$PROJECT_DIR$/test/customstore_spec.js" />
+      <root url="file://$PROJECT_DIR$/src/Actions.js" />
+      <root url="file://$PROJECT_DIR$/src/ArrayStore.js" />
+      <root url="file://$PROJECT_DIR$/src/ImmutableRecordStore.js" />
       <root url="file://$PROJECT_DIR$/src/Domain.js" />
-      <root url="file://$PROJECT_DIR$/src/Fluss.js" />
-      <root url="file://$PROJECT_DIR$/src/Tools.js" />
-      <root url="file://$PROJECT_DIR$/src/Store.js" />
-      <root url="file://$PROJECT_DIR$/src/StoreItem.js" />
+      <root url="file://$PROJECT_DIR$/src/RecordItem.js" />
+      <root url="file://$PROJECT_DIR$/src/RecordStore.js" />
+      <root url="file://$PROJECT_DIR$/src/ImmutableArrayStore.js" />
+      <root url="file://$PROJECT_DIR$/src/Plugin.js" />
+      <root url="file://$PROJECT_DIR$/src/PluginCarrier.js" />
+      <root url="file://$PROJECT_DIR$/src/StackedRecordStore.js" />
+      <root url="file://$PROJECT_DIR$/gulpfile.js" />
+      <root url="file://$PROJECT_DIR$/src/Stream.js" />
       <root url="file://$PROJECT_DIR$/src/StoreBase.js" />
       <root url="file://$PROJECT_DIR$/src/StreamProvider.js" />
-      <root url="file://$PROJECT_DIR$/test/actions_spec.js" />
-      <root url="file://$PROJECT_DIR$/test/streamProvider_spec.js" />
-      <root url="file://$PROJECT_DIR$/gulpfile.js" />
+      <root url="file://$PROJECT_DIR$/src/Store.js" />
+      <root url="file://$PROJECT_DIR$/src/StoreItem.js" />
+      <root url="file://$PROJECT_DIR$/src/Fluss.js" />
+      <root url="file://$PROJECT_DIR$/src/Tools.js" />
       <root url="file://$PROJECT_DIR$/test/stream_spec.js" />
-      <root url="file://$PROJECT_DIR$/src/PluginCarrier.js" />
-      <root url="file://$PROJECT_DIR$/test/store_spec.js" />
-      <root url="file://$PROJECT_DIR$/src/RecordStore.js" />
-      <root url="file://$PROJECT_DIR$/src/Plugin.js" />
-      <root url="file://$PROJECT_DIR$/test/customstore_spec.js" />
-      <root url="file://$PROJECT_DIR$/src/ImmutableArrayStore.js" />
-      <root url="file://$PROJECT_DIR$/src/ArrayStore.js" />
-      <root url="file://$PROJECT_DIR$/test/domain_spec.js" />
-      <root url="file://$PROJECT_DIR$/src/Stream.js" />
-      <root url="file://$PROJECT_DIR$/src/StackedRecordStore.js" />
-      <root url="file://$PROJECT_DIR$/src/ImmutableRecordStore.js" />
-      <root url="file://$PROJECT_DIR$/src/Actions.js" />
     </CLASSES>
     <SOURCES />
   </library>

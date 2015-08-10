@@ -51,7 +51,8 @@ export default class StackedRecordStore extends RecordStore {
 
     _get(name) {
         if (this._data.hasOwnProperty(name)) {
-            return super._get(name)
+            return this._data[name];
+            //return super._get(name)
         }
 
         else return this._parent._get(name);

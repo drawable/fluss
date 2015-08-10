@@ -19,3 +19,4 @@ export default class Plugin {
     release(action) {}
     abort(action) {}
 }
+
