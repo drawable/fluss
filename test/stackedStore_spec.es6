@@ -134,16 +134,25 @@ describe("Stacked record store", () => {
 
         let a = iStack.item("a");
 
+        expect(a.updates).to.be.ok;
+
+        var called = false;
+        a.updates.forEach( value => called = true );
+
         expect(a.value).to.equal(1);
+
+        expect(called).to.be.false;
+        store.a = 3;
+        expect(called).to.be.true;
 
         stack.addItem("a", 2);
 
-        expect(store.a).to.equal(1);
+        expect(store.a).to.equal(3);
         expect(a.value).to.equal(2);
 
         stack.removeItem("a");
-        expect(a.value).to.equal(1);
-        expect(store.a).to.equal(1);
+        expect(a.value).to.equal(3);
+        expect(store.a).to.equal(3);
     });
 
     it("can be stacked using another stack", () => {

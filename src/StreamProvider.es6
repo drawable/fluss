@@ -73,12 +73,12 @@ class StreamProvider {
     /**
      * Forward all messages from the given stream to all streams of the given ID
      * @param stream
-     * @param streamType
+     * @param streamName
      */
-    relay(stream, streamType) {
+    relay(stream, streamName) {
         var that = this;
         stream.forEach((value) =>
-            that.push(streamType, value)
+            that.push(streamName, value)
         );
     }
 }
