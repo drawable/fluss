@@ -52,10 +52,14 @@ class ImmutableItem {
     constructor(parent) {
         this._parent = parent;
         this._streams = StreamProvider.create();
+        this._streams.relay(this._parent.updates, "updates");
+    }
+
+    get isStore() {
+        return true;
     }
 
     get updates() {
-        this._streams.relay(this._parent.updates, "updates");
         return this._streams.newStream("updates");
     }
 

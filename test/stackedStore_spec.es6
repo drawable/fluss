@@ -133,17 +133,17 @@ describe("Stacked record store", () => {
         let iStack = stack.immutable;
 
         let a = iStack.item("a");
-
+        expect(a.isStore).to.be.ok;
         expect(a.updates).to.be.ok;
 
-        var called = false;
-        a.updates.forEach( value => called = true );
+        var called = 0;
+        a.updates.forEach( value => called++ );
 
         expect(a.value).to.equal(1);
 
-        expect(called).to.be.false;
+        expect(called).to.equal(0);
         store.a = 3;
-        expect(called).to.be.true;
+        expect(called).to.equal(1);
 
         stack.addItem("a", 2);
 
