@@ -124,7 +124,7 @@ export default class PluginCarrier {
         }
     }
 
-    undo(container, memento) {
-        this._plugin.undo(container, memento);
+    undo(...args) {
+        this._plugin.undo(...args);
     }
 }

@@ -9,8 +9,9 @@ import * as Stream from './Stream';
  * that want to provide streams for different events.
  */
 class StreamProvider {
-    constructor() {
+    constructor(namePrefix = "") {
         this._streams = {};
+        this._namePrefix = namePrefix;
     }
 
     /**
@@ -28,7 +29,7 @@ class StreamProvider {
      * @param type
      */
     newStream(type) {
-        var s = Stream.create(type);
+        var s = Stream.create(this._namePrefix + type);
 
         if (!this._streams[type]) {
             this._streams[type] = [];
