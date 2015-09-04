@@ -80,6 +80,10 @@ export default class RecordStore extends Store.Store {
         this._streams.push("updates", updateInfo);
     }
 
+    get newItemsPrio() {
+        return this._streams.newStream("newItemsPrio");
+    }
+
     hasItem(name) {
         return (this._data.hasOwnProperty(name));
     }
@@ -110,6 +114,7 @@ export default class RecordStore extends Store.Store {
 
         this._data[name] = initial;
         _private(this, setupSubStream, name, initial);
+        this._streams.push("newItemsPrio", Store.createUpdateInfo(name, initial, that))
         this._streams.push("newItems", Store.createUpdateInfo(name, initial, that))
     }
 
@@ -128,6 +133,9 @@ export default class RecordStore extends Store.Store {
 
     item(name) {
         if (this._data.hasOwnProperty(name)) {
+            if (this._data[name] && this._data[name].isStore) {
+                return this._get(name);
+            }
             if (!this._items.hasOwnProperty(name)) {
                 this._items[name] = new RecordItem(this, name);
             }
@@ -155,6 +163,10 @@ export default class RecordStore extends Store.Store {
         }
 
         return r;
+    }
+
+    clear() {
+        this.keys.forEach(name => this.removeItem(name));
     }
 
     dispose() {

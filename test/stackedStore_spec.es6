@@ -56,7 +56,7 @@ describe("Stacked record store", () => {
 
         stack.addItem("a", 2);
 
-        expect(store.b).to.not.be.ok();
+        expect(store.b).to.not.be.ok;
         expect(store.a).to.equal(1);
         expect(stack.a).to.equal(2);
 
@@ -88,6 +88,35 @@ describe("Stacked record store", () => {
         stack.removeItem("a");
         arr.push(1);
         expect(calls).to.equal(2);
+
+        store.addItem("b", 12);
+        expect(store.b).to.equal(12);
+        expect(stack.b).to.equal(12);
+
+        store.removeItem("b");
+        expect(store.b).not.to.be.ok;
+        expect(stack.b).not.to.be.ok;
+        expect(stack.hasItem("b")).to.be.false;
+    });
+
+    it("works with nested records as well", () => {
+        let store = Store.record({ subStore: Store.record() });
+        let stack = Store.stackedRecord(store.immutable);
+        let iStack = stack.immutable;
+
+        store.subStore.addItem("a", 10);
+
+        expect(store.subStore.a).to.equal(10);
+        expect(stack.subStore.a).to.equal(10);
+
+        let subStore = iStack.subStore;
+        expect(subStore.a).to.equal(10);
+
+
+        stack.subStore.a = 11;
+
+        expect(store.subStore.a).to.equal(11);
+        expect(stack.subStore.a).to.equal(11);
     });
 
     it("creates the correct item for an item", () => {

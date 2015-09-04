@@ -222,10 +222,11 @@ export default class Domain {
     /**
      * Returns a function that executes the given action on the domain this method is called on.
      * @param action
+     * @param args      Additionaly parameters that are statically passed to the action (
      * @returns {function(this:Domain)}
      */
-    action(action) {
-        return this.execute.bind(this, action);
+    action(action, ...args) {
+        return this.execute.bind(this, action, ...args);
     }
 
 

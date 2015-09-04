@@ -37,11 +37,11 @@ export default class ImmutableRecord extends Store.ImmutableStore {
 
         parent.keys.forEach((key) => _private(that, addItem, key));
 
-        parent.newItems.forEach(function (update) {
+        parent.newItemsPrio.filter(({store}) => store === parent).forEach(function (update) {
             _private(that, addItem, update.item);
         }).until(parent.isDisposing);
 
-        parent.removedItems.forEach(function (update) {
+        parent.removedItems.filter(({store}) => store === parent).forEach(function (update) {
             _private(that, removeItem, update.item);
         }).until(parent.isDisposing);
 

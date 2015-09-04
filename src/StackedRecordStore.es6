@@ -30,6 +30,17 @@ export default class StackedRecordStore extends RecordStore {
         this._streams.relay(parent.isDisposing.filter(({rootItem}) => !this._data.hasOwnProperty(rootItem)), "isDisposing");
 
         parent.keys.forEach(name => this._setupParentItem(name));
+
+        parent.newItems.filter(({store}) => store === parent).forEach(({item}) => this._setupParentItem(item));
+        parent.removedItems.filter(({store}) => store === parent).forEach(({item}) => this._removeParentItem(item));
+    }
+
+    _removeParentItem(name) {
+        var that = this;
+
+        if(Object.getPrototypeOf(this).hasOwnProperty(name)) {
+            Object.removeProperty(name);
+        }
     }
 
     _setupParentItem(name) {
@@ -58,12 +69,12 @@ export default class StackedRecordStore extends RecordStore {
         else return this._parent._get(name);
     }
 
-    _set(name) {
+    _set(name, value) {
         if (this._data.hasOwnProperty(name)) {
-            return super._set(name)
+            return super._set(name, value)
         }
 
-        else return this._parent._set(name);
+        else return this._parent._set(name, value);
     }
 
 
