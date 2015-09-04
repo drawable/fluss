@@ -133,9 +133,6 @@ export default class RecordStore extends Store.Store {
 
     item(name) {
         if (this._data.hasOwnProperty(name)) {
-            if (this._data[name] && this._data[name].isStore) {
-                return this._get(name);
-            }
             if (!this._items.hasOwnProperty(name)) {
                 this._items[name] = new RecordItem(this, name);
             }
