@@ -222,4 +222,16 @@ describe("Stacked record store", () => {
         expect(stack.a).to.equal(1);
         expect(stack2.a).to.equal(1);
     });
+
+    it("supports changing values through the store", () => {
+        let store = Store.record({ a: 1 });
+        let stack = Store.stackedRecord(store.immutable);
+        let iStack = stack.immutable;
+
+        let item = iStack.item("a");
+
+        store.a = "2";
+
+        expect(item.value).to.equal("2")
+    })
 });

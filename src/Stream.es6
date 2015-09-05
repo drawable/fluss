@@ -138,7 +138,7 @@ function addMethodToNextStream(nextStream, method, onClose) {
 /**
  * An implementation of a collection stream for reactive progremming
  */
-class Stream {
+export class Stream {
 
     constructor(name) {
         this._name = name;
