@@ -66,46 +66,6 @@ describe("Record store provides an item", () => {
         expect(called).to.equal(true);
     });
 
-    it("will be the store if the record item is a store itself", () => {
-        let r = Store.record({ a: []});  // This makes a substore
-
-        expect(r.a.map).to.be.ok;
-        expect(r.a.isStore).to.be.ok;
-
-        let i = r.item("a");
-
-        expect(i.map).to.be.ok;
-        expect(i.isStore).to.be.ok;
-    });
-
-    it("will be the immutable store if the item is a store and the record is immutable", () => {
-        let r = Store.record({ a: []}).immutable;  // This makes a substore
-
-        expect(r.a.map).to.be.ok;
-        expect(r.a.isStore).to.be.ok;
-
-        let i = r.item("a");
-
-        expect(i.map).to.be.ok;
-        expect(i.isStore).to.be.ok;
-        expect(i.immutable).to.equal(i);  // This is a weak test
-        expect(i.push).not.to.be.ok;
-    });
-
-    it("will be the immutable store if the item is a store and the record is immutable of a stack that is based on a immutable", () => {
-        let m = Store.record({ a: []});  // This makes a substore
-        let r = Store.stackedRecord(m.immutable).immutable;
-
-        expect(r.a.map).to.be.ok;
-        expect(r.a.isStore).to.be.ok;
-
-        let i = r.item("a");
-
-        expect(i.map).to.be.ok;
-        /*expect(i.isStore).to.be.ok;
-        expect(i.immutable).to.equal(i);  // This is a weak test
-        expect(i.push).not.to.be.ok;*/
-    });
 });
 /*
  describe("and Item stores. They", function() {

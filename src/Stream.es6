@@ -228,9 +228,6 @@ export class Stream {
     until(stream) {
         var nextStream = relay(this, "until");
         stream.forEach(() => nextStream.close() );
-
-
-
         return nextStream;
     }
 

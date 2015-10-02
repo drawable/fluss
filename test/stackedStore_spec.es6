@@ -224,14 +224,16 @@ describe("Stacked record store", () => {
     });
 
     it("supports changing values through the store", () => {
-        let store = Store.record({ a: 1 });
-        let stack = Store.stackedRecord(store.immutable);
-        let iStack = stack.immutable;
+        let appStore = Store.record({ a: 1 });
+        let uiStore = Store.stackedRecord(appStore.immutable, {});
 
-        let item = iStack.item("a");
+        let frontendStore = uiStore.immutable;
+        let item = frontendStore.item("a");
 
-        store.a = "2";
+        item.updates.forEach(() => { console.log(".")});
 
-        expect(item.value).to.equal("2")
-    })
+        appStore.a = "2";
+        expect(uiStore.a).to.equal("2")
+    });
+
 });

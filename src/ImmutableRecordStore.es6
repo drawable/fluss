@@ -13,6 +13,11 @@ function addItem(name) {
         configurable: true,
         get: function () {
             if (Store.isStore(that._parent[name])) {
+                let i = that._parent[name].immutable;
+                if (i === null) {
+                    console.log("WARNING: item " + name + " is a Store but does not provide an immutable. Consider providing an immutable.");
+                    return that._parent[name];
+                }
                 return that._parent[name].immutable;
             }
             return that._parent[name];

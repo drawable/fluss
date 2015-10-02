@@ -16,6 +16,10 @@ function checkNameAllowed(name) {
 function setupSubStream(name, value) {
     _private(this, disposeSubStream, name);
     if (Store.isStore(value)) {
+        if (value === this) {
+            throw new Error("You try to set the value of a record field to the record itself. Cyclic dependencies are not supported!")
+        }
+
         let subStream = {};
 
         let doSubStream = (streamId) => {
