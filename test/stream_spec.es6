@@ -1163,6 +1163,7 @@ describe("A stream (used for reactive programming patterns)", function() {
             b.push(2);
             b.push(3);
             b.push(4);
+            expect(s.closed).to.be.true;
             b.push(5);
 
             b.push(6);
@@ -1171,6 +1172,25 @@ describe("A stream (used for reactive programming patterns)", function() {
             expect(s.length).to.equal(4);
             expect(b.closed).to.be.false;
             expect(s.closed).to.be.true;
+        });
+
+        it("when a specific number of values where processed defined by 'times' - 2", function() {
+            var b = Fluss.Stream.create();
+            var closed = false;
+            var s = b.times(4);
+            s.onClose(() => {
+                closed = true;
+            });
+
+            b.push(1);
+            expect(closed).to.be.false;
+            b.push(2);
+            expect(closed).to.be.false;
+            b.push(3);
+            expect(closed).to.be.false;
+            b.push(4);
+            expect(s.closed).to.be.true;
+            //expect(closed).to.be.true;
         });
 
         /*it("when a specific number of value where processed and can be reopend using reset", () => {
@@ -1570,6 +1590,59 @@ describe("A stream (used for reactive programming patterns)", function() {
 });
 
 describe("Stream - Usage patterns, demonstrating", function() {
+    describe("Sinon fake timer", () => {
+        it("works", () => {
+            var clock = sinon.useFakeTimers();
+            var r = false;
+
+
+            setTimeout(() => r = true, 100);
+
+            expect(r).to.be.false;
+            clock.tick(10);
+            expect(r).to.be.false;
+            clock.tick(90);
+            expect(r).to.be.true;
+
+
+            clock.restore();
+        })
+    });
+
+
+    it("can combine several async stuff", () => {
+        var clock = sinon.useFakeTimers();
+
+        var st = Fluss.Stream.create();
+        var result = "";
+        var localResult = "";
+
+        [1, 2, 3, 4, 5, 6].forEach(v => {
+            var s = Fluss.Stream.create();
+            st.push(s);
+            s.forEach(v => localResult += v);
+
+            setTimeout(() => {
+                s.push(v);
+                s.close();
+            }, 100);
+        });
+
+
+        st.concatAll().forEach(v => {
+            result += v;
+        });
+
+        expect(localResult).to.equal("");
+        clock.tick(1000);
+
+        expect(localResult).to.equal("123456");
+        expect(result).to.equal("123456");
+
+        clock.restore();
+    });
+
+
     it("being started by one event, processing another event and stopping on a third (use for D'n'D e.g)", function() {
         var start = Fluss.Stream.create();
         var interest = Fluss.Stream.create();

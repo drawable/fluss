@@ -208,11 +208,13 @@ export class Stream {
 
         var count = 0;
         this.forEach((...values) => {
-            if (count < maxLength) {
+            count++;
+            if (count <= maxLength) {
                 nextStream.push.apply(nextStream, values);
-                count++;
-            }  else {
-                nextStream.close();
+
+                if (count == maxLength) {
+                    nextStream.close();
+                }
             }
         });
 
