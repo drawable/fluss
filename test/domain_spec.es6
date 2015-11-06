@@ -590,4 +590,46 @@ describe("Domain", function () {
         expect(app.value1).to.equal(initial + 10);
 
     });
+
+    it("can provide an action function for a given action", () => {
+        var calls = "";
+
+        app.wrap(1, (v) => calls += v);
+
+        var ac = app.action(1);
+
+        ac("A");
+        ac("B");
+        ac("C");
+
+        expect(calls).to.equal("ABC");
+    });
+
+    it("provides action functions that can be easily curried", () => {
+        var calls = "";
+
+        app.wrap(1, (v,w) => calls += v + w);
+
+        var ac = app.action(1).curried("-");
+
+        ac("A");
+        ac("B");
+        ac("C");
+
+        expect(calls).to.equal("-A-B-C");
+    });
+
+    it("provides action functions that can be easily curried multiple times", () => {
+        var calls = "";
+
+        app.wrap(1, (v,w,x) => calls += v + w + x);
+
+        var ac = app.action(1).curried("-").curried("+");
+
+        ac("A");
+        ac("B");
+        ac("C");
+
+        expect(calls).to.equal("-+A-+B-+C");
+    })
 });

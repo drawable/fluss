@@ -226,7 +226,16 @@ export default class Domain {
      * @returns {function(this:Domain)}
      */
     action(action, ...args) {
-        return this.execute.bind(this, action, ...args);
+        function curriable(that, f) {
+            f.curried = (...args) => {
+                var c = f.bind(that, ...args);
+                return curriable(that, c);
+            };
+
+            return f;
+        }
+
+        return curriable(this, this.execute.bind(this, action, ...args));
     }
 
 
