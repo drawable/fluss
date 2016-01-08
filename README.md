@@ -1,3 +1,10 @@
+
+## DEPRECATED
+
+Fluss is deprecated and not actively maintained anymore. It was a good learning experience but the core concepts are flawed.
+I'd suggest using Redux, Immutable and Bacon.
+
+
 fluss
 =====
 
